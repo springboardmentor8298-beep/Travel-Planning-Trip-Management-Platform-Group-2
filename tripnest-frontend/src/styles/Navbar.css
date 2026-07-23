@@ -1,0 +1,17 @@
+.navbar {
+    padding: 15px 0;
+}
+
+.nav-link {
+    font-size: 18px;
+    margin-right: 15px;
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    color: #0d6efd !important;
+}
+
+.navbar-brand {
+    font-size: 30px;
+}

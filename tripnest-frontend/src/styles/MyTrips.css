@@ -1,0 +1,15 @@
+.trip-box{
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
+    transition:.3s;
+}
+
+.trip-box:hover{
+    transform:translateY(-6px);
+}
+
+.trip-box h4{
+    color:#0d6efd;
+}

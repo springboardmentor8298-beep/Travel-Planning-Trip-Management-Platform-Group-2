@@ -1,0 +1,50 @@
+.dashboard {
+    background: #f4f8fb;
+    min-height: 100vh;
+    padding: 30px;
+}
+
+.welcome-card {
+    background: linear-gradient(135deg, #0077b6, #00b4d8);
+    color: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.welcome-card h1 {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.welcome-card p {
+    font-size: 18px;
+}
+
+.features {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.feature-box {
+    width: 220px;
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    transition: 0.3s;
+}
+
+.feature-box:hover {
+    transform: translateY(-8px);
+}
+
+.feature-box h3 {
+    color: #0077b6;
+    margin-top: 15px;
+}
