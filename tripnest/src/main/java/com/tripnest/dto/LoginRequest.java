@@ -1,0 +1,17 @@
+package com.tripnest.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+
+/**
+ * DTO for user login request.
+ */
+@Data
+public class LoginRequest {
+
+    @NotBlank
+    private String username;
+
+    @NotBlank
+    private String password;
+}
