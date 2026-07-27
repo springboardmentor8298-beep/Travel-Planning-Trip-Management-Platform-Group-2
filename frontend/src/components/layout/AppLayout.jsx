@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Plane, LayoutDashboard, Map, Wallet, Bell, LogOut, Menu } from 'lucide-react';
+import { Plane, LayoutDashboard, Map, Compass, Wallet, Bell, LogOut, Menu } from 'lucide-react';
 import { useState } from 'react';
 import clsx from 'clsx';
 import { useAuth } from '../../context/AuthContext';
@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 const navItems = [
   { to: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { to: '/dashboard/trips', label: 'My Trips', icon: Map },
+  { to: '/dashboard/destinations', label: 'Destinations', icon: Compass },
   { to: '/dashboard/budgets', label: 'Budgets', icon: Wallet },
   { to: '/dashboard/notifications', label: 'Notifications', icon: Bell }
 ];

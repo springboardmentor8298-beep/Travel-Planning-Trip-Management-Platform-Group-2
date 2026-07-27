@@ -37,3 +37,43 @@ export const resetPasswordSchema = z
     message: "Passwords don't match",
     path: ['confirmPassword']
   });
+
+export const tripSchema = z
+  .object({
+    title: z.string().trim().min(2, 'Give your trip a title').max(150),
+    destinationId: z.string().min(1, 'Choose a destination'),
+    startDate: z.string().min(1, 'Start date is required'),
+    endDate: z.string().min(1, 'End date is required'),
+    totalBudget: z
+      .union([z.string().length(0), z.string().regex(/^\d+(\.\d{1,2})?$/, 'Enter a valid amount')])
+      .optional(),
+    notes: z.string().max(2000).optional()
+  })
+  .refine((data) => new Date(data.endDate) >= new Date(data.startDate), {
+    message: 'End date cannot be before start date',
+    path: ['endDate']
+  });
+
+export const itineraryDaySchema = z.object({
+  date: z.string().min(1, 'Date is required'),
+  title: z.string().max(150).optional(),
+  notes: z.string().max(2000).optional()
+});
+
+export const activitySchema = z
+  .object({
+    title: z.string().trim().min(2, 'Give the activity a title').max(150),
+    activityType: z.string().min(1, 'Choose a type'),
+    startTime: z.string().optional(),
+    endTime: z.string().optional(),
+    location: z.string().max(255).optional(),
+    estimatedCost: z
+      .union([z.string().length(0), z.string().regex(/^\d+(\.\d{1,2})?$/, 'Enter a valid amount')])
+      .optional(),
+    notes: z.string().max(2000).optional(),
+    reminderEnabled: z.boolean().optional()
+  })
+  .refine((data) => !data.startTime || !data.endTime || data.endTime > data.startTime, {
+    message: 'End time must be after start time',
+    path: ['endTime']
+  });

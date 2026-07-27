@@ -1,16 +1,33 @@
-import { Map, Wallet, Users, ArrowUpRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Map, Wallet, Users, ArrowUpRight, CalendarDays } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
-
-const statCards = [
-  { label: 'Trips planned', value: '0', icon: Map, hint: 'Trip planning arrives in Milestone 2' },
-  { label: 'Budget tracked', value: '$0', icon: Wallet, hint: 'Budgets & expenses arrive in Milestone 3' },
-  { label: 'Group members', value: '0', icon: Users, hint: 'Group collaboration arrives in Milestone 4' }
-];
+import { tripApi } from '../api/tripApi';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const firstName = user?.fullName?.split(' ')[0];
+  const [trips, setTrips] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    tripApi
+      .list()
+      .then(({ data }) => setTrips(data.data))
+      .catch(() => setTrips([]))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const upcoming = trips
+    .filter((t) => t.status === 'PLANNING' || t.status === 'UPCOMING' || t.status === 'ONGOING')
+    .slice(0, 3);
+
+  const statCards = [
+    { label: 'Trips planned', value: isLoading ? '—' : String(trips.length), icon: Map, hint: 'Across all statuses' },
+    { label: 'Budget tracked', value: '$0', icon: Wallet, hint: 'Budgets & expenses arrive in Milestone 3' },
+    { label: 'Group members', value: '0', icon: Users, hint: 'Group collaboration arrives in Milestone 3' }
+  ];
 
   return (
     <AppLayout>
@@ -20,8 +37,8 @@ export default function DashboardPage() {
           Welcome back, {firstName || 'traveler'}
         </h1>
         <p className="mt-2 max-w-xl text-sm text-ink-soft">
-          Your account is set up. Trip planning, itineraries, and budgets unlock in the next
-          milestones — this dashboard will fill in as each module ships.
+          Plan trips, build day-wise itineraries, and schedule activities. Budgets and group
+          collaboration unlock in the next milestone.
         </p>
       </header>
 
@@ -44,12 +61,45 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <section className="mt-8 rounded-xl border border-dashed border-voyage-300 bg-voyage-50/50 p-8 text-center">
-        <p className="font-display text-lg font-semibold text-ink">Trip planning is on the way</p>
-        <p className="mx-auto mt-2 max-w-md text-sm text-ink-soft">
-          Milestone 1 covers your account, security, and this dashboard shell. Day-wise itineraries,
-          budgets, and group trips are built next.
-        </p>
+      <section className="mt-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold text-ink">Upcoming trips</h2>
+          <Link to="/dashboard/trips" className="text-sm font-semibold text-voyage-500 hover:underline">
+            View all
+          </Link>
+        </div>
+
+        {!isLoading && upcoming.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-voyage-300 bg-voyage-50/40 p-8 text-center">
+            <p className="font-display text-lg font-semibold text-ink">Plan your first trip</p>
+            <p className="mx-auto mt-2 max-w-md text-sm text-ink-soft">
+              Pick a destination, set your dates, and start building a day-wise itinerary.
+            </p>
+            <Link
+              to="/dashboard/trips"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-voyage-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-voyage-600"
+            >
+              Plan a trip
+            </Link>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-3">
+            {upcoming.map((trip) => (
+              <Link
+                key={trip.id}
+                to={`/dashboard/trips/${trip.id}`}
+                className="rounded-xl border border-voyage-100 bg-white p-5 transition-shadow hover:shadow-ticket"
+              >
+                <h3 className="truncate font-display text-base font-semibold text-ink">{trip.title}</h3>
+                <p className="mt-1 text-sm text-ink-soft">{trip.destination?.name}</p>
+                <p className="mt-2 flex items-center gap-1 text-xs text-ink-soft/70">
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  {trip.startDate} → {trip.endDate}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
     </AppLayout>
   );

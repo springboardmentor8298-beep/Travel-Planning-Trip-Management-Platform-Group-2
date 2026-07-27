@@ -5,6 +5,9 @@ import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
 import OAuthCallbackPage from '../pages/OAuthCallbackPage';
 import DashboardPage from '../pages/DashboardPage';
+import TripsPage from '../pages/TripsPage';
+import TripDetailPage from '../pages/TripDetailPage';
+import DestinationsPage from '../pages/DestinationsPage';
 import ComingSoonPage from '../pages/ComingSoonPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import ProtectedRoute from './ProtectedRoute';
@@ -35,11 +38,23 @@ export default function AppRouter() {
           path="/dashboard/trips"
           element={
             <ProtectedRoute>
-              <ComingSoonPage
-                title="Trip planning"
-                milestone="Milestone 2"
-                description="Create trips, set destinations, and build day-wise itineraries."
-              />
+              <TripsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/trips/:tripId"
+          element={
+            <ProtectedRoute>
+              <TripDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/destinations"
+          element={
+            <ProtectedRoute>
+              <DestinationsPage />
             </ProtectedRoute>
           }
         />
