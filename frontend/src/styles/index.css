@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+@layer base {
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+  }
+
+  h1, h2, h3 {
+    @apply font-display;
+  }
+
+  ::selection {
+    @apply bg-sunset-300 text-ink;
+  }
+
+  /* Visible keyboard focus everywhere, per accessibility baseline */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    @apply outline-none ring-2 ring-voyage-500 ring-offset-2 ring-offset-paper;
+  }
+}
+
+@layer utilities {
+  .perforated {
+    background-image: radial-gradient(circle, rgba(18,49,63,0.18) 1.5px, transparent 1.5px);
+    background-size: 10px 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
