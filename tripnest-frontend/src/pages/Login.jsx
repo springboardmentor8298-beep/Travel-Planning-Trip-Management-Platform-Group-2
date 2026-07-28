@@ -1,53 +1,150 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { loginUser } from "../services/authService";
+import { useNavigate } from "react-router-dom";
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const { login } = useAuth();
-  const navigate = useNavigate();
+import "../styles/Login.css";
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    try {
-      await login(email, password);
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.response?.data?.error || "Login failed");
-    }
-  };
+import { MdEmail, MdLock } from "react-icons/md";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-  return (
-    <div className="max-w-md mx-auto mt-16 p-6 border rounded-lg shadow">
-      <h1 className="text-2xl font-bold mb-4">Login to TripNest</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full border p-2 rounded"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full border p-2 rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded">
-          Login
-        </button>
-      </form>
-      <p className="mt-4 text-sm">
-        No account? <Link to="/register" className="text-blue-600">Register</Link>
-      </p>
+import loginIllustration from "../assets/login-illustration.png";
+
+function Login() {
+
+    const [formData, setFormData] = useState({
+        email: "",
+        password: ""
+    });
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+
+    const navigate = useNavigate();
+    const handleChange = (event) => {
+
+        setFormData({
+            ...formData,
+            [event.target.name]: event.target.value
+        });
+
+        setErrorMessage("");
+    };
+
+    const handleSubmit = async (event) => {
+
+        event.preventDefault();
+
+        setLoading(true);
+
+        try {
+
+            const response = await loginUser(formData);
+
+            setErrorMessage("");
+
+            localStorage.setItem("token", response.token);
+
+            localStorage.setItem(
+                "user",
+                JSON.stringify({
+                    id: response.id,
+                    name: response.name,
+                    email: response.email
+                })
+            );
+
+            // console.log(localStorage.getItem("token"));
+
+            // console.log(response);
+
+            navigate("/home");
+
+        } catch (error) {
+
+            console.log(error);
+
+            setErrorMessage("Invalid email or password.");
+
+        } finally{
+            setLoading(false);
+        }
+
+    };
+
+return (
+  <div className="login-page">
+  <div className="login-left">
+
+      <img
+          src={loginIllustration}
+          alt="Travel Illustration"
+          className="login-illustration"
+      />
+
+  </div>
+
+    <div className="login-right">
+      <div className="login-card">
+        <h2>Welcome Back</h2>
+
+        <p>Login to continue planning your trips.</p>
+
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
+
+        <form onSubmit={handleSubmit}>
+          <label>Email Address</label>
+
+          <div className="input-group">
+            <MdEmail className="input-icon" />
+
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={handleChange}
+              autoComplete="email"
+            />
+          </div>
+          <label>Password</label>
+
+          <div className="input-group">
+            <MdLock className="input-icon" />
+
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+              autoComplete="current-password"
+            />
+
+            <button
+              type="button"
+              className="eye-btn"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
+          <button className="login-btn" type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+
+        <p>
+          Don't have an account?{" "}
+          <span className="register-link" onClick={() => navigate("/register")}>
+            Register
+          </span>
+        </p>
+      </div>
     </div>
-  );
+  </div>
+);
+
 }
+
+export default Login;

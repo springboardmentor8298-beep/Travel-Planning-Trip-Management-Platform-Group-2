@@ -1,0 +1,753 @@
+
+.trip-details{
+    max-width:1200px;
+    margin:40px auto;
+    padding:0 20px;
+}
+
+.trip-hero{
+    position:relative;
+    border-radius:24px;
+    overflow:hidden;
+    margin-bottom:35px;
+    box-shadow:0 15px 40px rgba(0,0,0,.15);
+}
+
+.trip-banner{
+    width:100%;
+    height:360px;
+    object-fit:cover;
+}
+
+.trip-overlay{
+
+    position:absolute;
+
+    inset:0;
+
+    background:linear-gradient(
+        rgba(0,0,0,.2),
+        rgba(0,0,0,.65)
+    );
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:flex-end;
+
+    padding:40px;
+
+    color:white;
+
+}
+
+.trip-overlay h1{
+
+    font-size:46px;
+
+    margin:8px 0;
+
+}
+
+.trip-overlay p{
+
+    font-size:18px;
+
+    margin:6px 0;
+
+}
+
+.trip-status{
+    display:inline-block;
+    padding:6px 14px;
+    border-radius:999px;
+    color:white;
+    font-weight:600;
+    font-size:14px;
+}
+
+.trip-details-title{
+    font-size:48px;
+    font-weight:700;
+    color:white;
+    margin-bottom:30px;
+}
+
+.trip-status.planned{
+    background:#22C55E;
+}
+
+.trip-status.ongoing{
+    background:#3B82F6;
+}
+
+.trip-status.completed{
+    background:#6B7280;
+}
+
+.trip-status.cancelled{
+    background:#EF4444;
+}
+
+.trip-description{
+
+    background:white;
+
+    padding:30px;
+
+    border-radius:20px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+    margin-bottom:35px;
+
+}
+
+.trip-info-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:18px;
+
+    margin-top:25px;
+
+}
+
+.info-card{
+
+    background:rgba(255,255,255,.15);
+
+    backdrop-filter:blur(3px);
+
+    border:1px solid rgba(255,255,255,.2);
+
+    border-radius:16px;
+
+    padding:18px;
+
+    transition:.3s;
+
+}
+
+.info-card:hover{
+
+    transform:translateY(-4px);
+
+    background:rgba(255,255,255,.24);
+
+}
+
+.info-icon{
+
+    font-size:20px;
+
+}
+
+.info-card small{
+
+    display:block;
+
+    margin-top:8px;
+
+    opacity:.8;
+
+}
+
+.info-card h4{
+
+    margin:8px 0 0;
+
+    font-size:18px;
+
+    color:white;
+
+}
+
+.add-day-card{
+
+    background:white;
+
+    border-radius:20px;
+
+    padding:35px;
+
+    margin-bottom:40px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+}
+
+.add-day-card h2{
+
+    margin-top:0;
+
+    margin-bottom:30px;
+
+    color:#1E293B;
+
+}
+
+.add-day-form{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:24px;
+
+}
+
+.form-group.full{
+
+    grid-column:1 / -1;
+
+}
+
+.form-group label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-weight:600;
+
+}
+
+.add-day-form .form-group input,
+.add-day-form .form-group textarea{
+
+    width:100%;
+
+    padding:14px;
+
+    border:1px solid #dbe4ee;
+
+    border-radius:12px;
+
+    font-size:15px;
+
+    outline:none;
+
+    box-sizing:border-box;
+
+}
+
+.add-day-form .form-group input:focus,
+.add-day-form .form-group textarea:focus{
+
+    border-color:#2563EB;
+
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+
+}
+
+.add-day-btn{
+
+    margin-top:25px;
+
+    background:#2563EB;
+
+    color:white;
+
+    border:none;
+
+    padding:14px 30px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.add-day-btn:hover{
+
+    background:#1D4ED8;
+
+}
+
+.day-header{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:18px;
+
+}
+
+.day-badge{
+
+    background:#DBEAFE;
+
+    color:#2563EB;
+
+    padding:8px 18px;
+
+    border-radius:30px;
+
+    font-weight:600;
+
+}
+
+.day-notes{
+
+    background:#F8FAFC;
+
+    padding:16px;
+
+    border-radius:12px;
+
+    color:#475569;
+
+    margin-bottom:22px;
+
+}
+
+.activity-card{
+
+    background:white;
+
+    border-radius:16px;
+
+    padding:20px;
+
+    margin:18px 0;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.07);
+
+}
+
+.activity-top{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:10px;
+
+}
+
+.activity-top h5{
+
+    margin:0;
+
+    font-size:22px;
+
+    color:#1E293B;
+
+}
+
+.activity-top span{
+
+    background:#EFF6FF;
+
+    color:#2563EB;
+
+    padding:6px 14px;
+
+    border-radius:25px;
+
+    font-size:14px;
+
+}
+
+.activity-description{
+
+    color:#64748B;
+
+    margin:12px 0 20px;
+
+}
+
+.activity-actions{
+
+    display:flex;
+
+    gap:14px;
+
+    margin-top:22px;
+
+}
+
+.activity-actions button{
+
+    flex:1;
+
+}
+
+.edit-btn{
+
+    border:none;
+
+    background:#FEF3C7;
+
+    color:#92400E;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.edit-btn:hover{
+
+    background:#FCD34D;
+
+}
+
+.edit-heading{
+
+    margin-bottom:20px;
+
+    color:#1E293B;
+
+    font-size:22px;
+
+}
+
+.delete-btn{
+
+    border:none;
+
+    background:#FEE2E2;
+
+    color:#B91C1C;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.delete-btn:hover{
+
+    background:#FCA5A5;
+
+}
+
+.add-day-placeholder{
+
+    background:white;
+
+    border:3px dashed #CBD5E1;
+
+    border-radius:18px;
+
+    padding:40px;
+
+    margin:40px 0;
+
+    text-align:center;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.add-day-placeholder:hover{
+
+    border-color:#2563EB;
+
+    background:#F8FAFC;
+
+    transform:translateY(-3px);
+
+}
+
+.plus-icon{
+
+    display:inline-flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    width:70px;
+
+    height:70px;
+
+    border-radius:50%;
+
+    background:#DBEAFE;
+
+    color:#2563EB;
+
+    font-size:40px;
+
+    font-weight:bold;
+
+    margin-bottom:18px;
+
+}
+
+.add-day-placeholder h3{
+
+    margin:0;
+
+    color:#1E293B;
+
+    font-size:28px;
+
+}
+
+.add-day-placeholder p{
+
+    margin-top:10px;
+
+    color:#64748B;
+
+}
+
+.save-day-btn{
+
+    background:#22C55E;
+
+    color:white;
+
+    border:none;
+
+    padding:14px 24px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    margin-right:12px;
+
+}
+
+.cancel-day-btn{
+
+    background:#EF4444;
+
+    color:white;
+
+    border:none;
+
+    padding:14px 24px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+}
+
+.activity-form{
+
+    background:#F8FAFC;
+
+    border-radius:18px;
+
+    padding:28px;
+
+    margin-top:20px;
+
+}
+
+.activity-form .form-group{
+
+    display:flex;
+
+    flex-direction:column;
+
+    margin-bottom:18px;
+
+}
+
+.activity-form label{
+
+    margin-bottom:8px;
+
+    font-weight:600;
+
+    color:#1E293B;
+
+}
+
+.activity-form input,
+.activity-form textarea{
+
+    padding:14px;
+
+    border:1px solid #CBD5E1;
+
+    border-radius:12px;
+
+    font-size:15px;
+
+    outline:none;
+
+}
+
+.activity-form input:focus,
+.activity-form textarea:focus{
+
+    border-color:#2563EB;
+
+    box-shadow:0 0 0 3px rgba(37,99,235,.15);
+
+}
+
+.time-row{
+
+    display:flex;
+
+    gap:20px;
+
+}
+
+.time-row .form-group{
+
+    flex:1;
+
+}
+
+.save-activity-btn{
+
+    width:100%;
+
+    padding:16px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#2563EB;
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.save-activity-btn:hover{
+
+    background:#1D4ED8;
+
+}
+
+.show-activity-btn{
+
+    margin-top:20px;
+
+    width:100%;
+
+    padding:14px;
+
+    border:2px dashed #CBD5E1;
+
+    border-radius:12px;
+
+    background:white;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.show-activity-btn:hover{
+
+    border-color:#2563EB;
+
+    background:#EFF6FF;
+
+}
+
+.activity-form-buttons{
+
+    display:flex;
+
+    gap:14px;
+
+    margin-top:18px;
+
+}
+
+.activity-form-buttons button{
+
+    flex:1;
+
+}
+
+.save-activity-btn{
+
+    background:#2563EB;
+
+    color:white;
+
+    border:none;
+
+    border-radius:12px;
+
+    padding:14px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.save-activity-btn:hover{
+
+    background:#1D4ED8;
+
+}
+
+.cancel-activity-btn{
+
+    background:#E5E7EB;
+
+    color:#374151;
+
+    border:none;
+
+    border-radius:12px;
+
+    padding:14px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.cancel-activity-btn:hover{
+
+    background:#D1D5DB;
+
+}

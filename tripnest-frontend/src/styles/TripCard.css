@@ -1,0 +1,245 @@
+.hotel-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.hotel-card{
+
+    width:320px;
+
+    background:#ffffff;
+
+    border-radius:22px;
+
+    overflow:hidden;
+
+    box-shadow:0 12px 30px rgba(15,23,42,.08);
+
+    transition:.3s;
+
+    position:relative;
+
+}
+
+.hotel-card:hover{
+
+    transform:translateY(-8px);
+
+    box-shadow:0 20px 40px rgba(37,99,235,.18);
+
+}
+
+.hotel-image {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.hotel-content{
+
+    padding:26px;
+
+}
+.hotel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hotel-header h3 {
+    margin: 0;
+}
+
+.hotel-content p{
+
+    margin:0;
+
+    font-size:15px;
+
+    color:#64748B;
+
+}
+
+.hotel-content h4{
+
+    margin:10px 0 0;
+
+    font-size:24px;
+
+    color:#111827;
+
+}
+
+.trip-title{
+
+    font-size:26px;
+
+    color:#1E293B;
+
+    margin-bottom:18px;
+
+    padding-right:90px;
+
+}
+
+.trip-status{
+
+    position:absolute;
+
+    top:20px;
+
+    right:20px;
+
+    background:#DCFCE7;
+
+    color:#15803D;
+
+    padding:6px 14px;
+
+    border-radius:50px;
+
+    font-size:12px;
+
+    font-weight:700;
+
+    letter-spacing:.5px;
+
+}
+
+.trip-info{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+    color:#64748B;
+
+}
+
+.trip-divider{
+
+    margin:24px 0;
+
+    border:none;
+
+    border-top:1px solid #E5E7EB;
+
+}
+
+.trip-actions{
+    display: flex;
+    gap: 10px;
+
+    width: 90%;
+    margin: 16px auto 0;
+}
+
+.hotel-header h3{
+    margin:0;
+    color:#1E293B;
+    font-size:22px;
+    font-weight:700;
+}
+
+.edit-btn,
+.delete-btn{
+    flex: 1;
+    padding: 14px 0;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.view-btn{
+
+    display:block;
+
+    width:90%;
+
+    margin:0 auto;
+
+    text-align:center;
+
+    text-decoration:none;
+
+    background:#2563EB;
+
+    color:white;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+    box-sizing:border-box;
+
+}
+
+.view-btn:hover{
+
+    background:#1D4ED8;
+
+}
+
+.edit-btn{
+
+    flex:1;
+
+    border:none;
+
+    background:#FEF3C7;
+
+    color:#92400E;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.edit-btn:hover{
+
+    background:#FCD34D;
+
+}
+
+.delete-btn{
+
+    flex:1;
+
+    border:none;
+
+    background:#FEE2E2;
+
+    color:#B91C1C;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.delete-btn:hover{
+
+    background:#FCA5A5;
+
+}
