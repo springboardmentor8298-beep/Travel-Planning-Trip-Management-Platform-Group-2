@@ -1,97 +1,53 @@
-# TripNest — Week 1 & 2 Setup Guide
+# TripNest Milestone 2 Starter Project
 
-## What's included
-- `tripnest-backend/` — Spring Boot 3 project: entities (User, Role), JWT auth, Register/Login APIs, Security config
-- `tripnest-frontend/` — React skeleton: Login, Register, protected Dashboard, Axios with JWT interceptor
+Includes:
+- User signup and login
+- Trip management
+- Itinerary creation
+- Destination management
+- Activity scheduling
+- Dashboard
+- MySQL + Spring Boot backend
+- React + Vite frontend
 
-## Step 1 — Backend Setup
+## Backend
 
-1. Install: **Java 17**, **Maven**, **MySQL** (local dev DB per your tech stack doc)
-2. Open `tripnest-backend/` in IntelliJ IDEA (recommended) or VS Code
-3. Edit `src/main/resources/application.properties`:
-   - Set `spring.datasource.password` to your actual MySQL root password
-   - Change `app.jwt.secret` to any long random string
-4. Create the database (auto-created by `createDatabaseIfNotExist=true`, or manually):
-   ```sql
-   CREATE DATABASE tripnest_db;
-   ```
-5. Run the app:
-   ```bash
-   cd tripnest-backend
-   mvn spring-boot:run
-   ```
-6. It should start on `http://localhost:8080`. Hibernate auto-creates the `users` and `roles` tables.
+1. Make sure MySQL is running.
+2. Check `tripnest-backend/src/main/resources/application.properties`.
+3. Default database settings:
+   - database: tripnest_db
+   - username: root
+   - password: root
+4. Run:
 
-## Step 2 — Test Auth APIs in Postman
+Windows:
+mvnw.cmd spring-boot:run
 
-**Register**
-```
-POST http://localhost:8080/api/auth/register
-Body (JSON):
-{
-  "fullName": "Karthik Raja",
-  "email": "karthik@test.com",
-  "password": "test123"
-}
-```
-Expect: `200 OK` with `{ token, email, fullName }`
+Backend: http://localhost:8080
 
-**Login**
-```
-POST http://localhost:8080/api/auth/login
-Body (JSON):
-{
-  "email": "karthik@test.com",
-  "password": "test123"
-}
-```
-Expect: `200 OK` with a JWT token.
+## Frontend
 
-If both work — Milestone 1's core backend requirement is done.
+Open a second terminal:
 
-## Step 3 — Frontend Setup
+cd tripnest-frontend
+npm install
+npm run dev
 
-1. Install **Node.js** (v18+)
-2. ```bash
-   cd tripnest-frontend
-   npm install
-   npm start
-   ```
-3. Opens at `http://localhost:3000`
-4. Go to `/register` → create an account → should redirect to `/dashboard`
-5. Refresh, logout, then `/login` → should work with the same credentials
+Frontend: http://localhost:5173
 
-## Step 4 — Verify Week 1&2 Milestone (per your plan doc)
-- [x] Spring Boot project setup completed
-- [x] JWT authentication implemented
-- [x] Database schema finalized (Users, Roles — Trips/Itineraries etc. come in Week 3-4)
-- [x] Frontend authentication flow working
-- [x] Role-based access control configured
-- [x] Profile management (get/update/change password)
+## Demo flow
 
-## Week 2 — What's new
+1. Open http://localhost:5173/signup
+2. Create an account.
+3. Login.
+4. Dashboard opens.
+5. Demonstrate:
+   - Trips
+   - Itinerary
+   - Destinations
+   - Activities
 
-| Feature | Endpoint | File |
-|---|---|---|
-| Get my profile | `GET /api/users/me` | `UserController.java` |
-| Update my profile | `PUT /api/users/me` | `UserController.java` |
-| Change password | `PUT /api/users/me/password` | `UserController.java` |
-| Admin-only demo (RBAC proof) | `GET /api/admin/dashboard-stub` | `AdminController.java` |
+The database tables are created automatically by JPA (`ddl-auto=update`).
 
-**Import `TripNest-Week1-2.postman_collection.json`** into Postman — run requests 1→6 in order. Request 2 (Login) returns a token; paste it into the collection variable `token` (top-right eye icon → edit) before running 3-6.
-
-Request 6 should return **403 Forbidden** when logged in as a freshly registered user (default role = TRAVELER). That 403 is the proof RBAC works — not a bug.
-
-## Deferred to later (per project plan, flagged deliberately)
-- OAuth2 Google Login — complexity risk before review, revisit Week 3
-- Email-based password reset — needs SMTP/JavaMailSender setup, revisit with Week 5-6 notifications work
-
-
-## Common Beginner Errors
-| Error | Fix |
-|---|---|
-| `Communications link failure` | MySQL not running — start MySQL service |
-| `Access denied for user 'root'` | Wrong password in `application.properties` |
-| `401 Unauthorized` on login | Check password matches what you registered with |
-| CORS error in browser console | Confirm frontend runs on `localhost:3000` (matches `SecurityConfig` CORS origin) |
-| `Bean not found` on startup | Run `mvn clean install` first |
+IMPORTANT:
+This starter uses simple password comparison for a milestone/demo project. It is not production-grade authentication. JWT and password hashing should be added before production use.
