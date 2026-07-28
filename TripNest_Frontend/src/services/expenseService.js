@@ -1,0 +1,9 @@
+import API from "./api";
+
+export const createExpense = (budgetId, expense) => {
+    return API.post(`/budgets/${budgetId}/expenses`, expense);
+};
+
+export const deleteExpense = (expenseId) => {
+    return API.delete(`/budgets/expenses/${expenseId}`);
+};

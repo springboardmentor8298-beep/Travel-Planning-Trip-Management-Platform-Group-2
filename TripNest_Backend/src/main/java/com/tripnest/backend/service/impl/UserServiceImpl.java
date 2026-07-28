@@ -3,6 +3,7 @@ package com.tripnest.backend.service.impl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.tripnest.backend.common.ApiResponse;
@@ -15,6 +16,7 @@ import com.tripnest.backend.exception.DuplicateResourceException;
 import com.tripnest.backend.exception.ResourceNotFoundException;
 import com.tripnest.backend.repository.UserRepository;
 import com.tripnest.backend.security.JwtService;
+import com.tripnest.backend.dto.UserProfileDto;
 import com.tripnest.backend.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -102,6 +104,65 @@ public class UserServiceImpl implements UserService {
                 .success(true)
                 .message("Login Successful")
                 .data(response)
+                .build();
+    }
+
+    private User getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    @Override
+    public ApiResponse<UserProfileDto> getProfile() {
+        User user = getCurrentUser();
+        UserProfileDto dto = UserProfileDto.builder()
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .country(user.getCountry())
+                .bio(user.getBio())
+                .photo(user.getPhoto())
+                .travelStyle(user.getTravelStyle())
+                .emergencyContact(user.getEmergencyContact())
+                .build();
+
+        return ApiResponse.<UserProfileDto>builder()
+                .success(true)
+                .message("Profile fetched successfully")
+                .data(dto)
+                .build();
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public ApiResponse<UserProfileDto> updateProfile(UserProfileDto request) {
+        User user = getCurrentUser();
+        user.setFullName(request.getFullName());
+        user.setPhone(request.getPhone());
+        user.setCountry(request.getCountry());
+        user.setBio(request.getBio());
+        user.setPhoto(request.getPhoto());
+        user.setTravelStyle(request.getTravelStyle());
+        user.setEmergencyContact(request.getEmergencyContact());
+
+        userRepository.save(user);
+
+        UserProfileDto dto = UserProfileDto.builder()
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .country(user.getCountry())
+                .bio(user.getBio())
+                .photo(user.getPhoto())
+                .travelStyle(user.getTravelStyle())
+                .emergencyContact(user.getEmergencyContact())
+                .build();
+
+        return ApiResponse.<UserProfileDto>builder()
+                .success(true)
+                .message("Profile updated successfully")
+                .data(dto)
                 .build();
     }
 }

@@ -48,8 +48,23 @@ public class User extends BaseEntity{
 	@Column(nullable = false)
 	private Role role;
 
+	@Builder.Default
 	@Column(nullable = false)
 	private boolean enabled = true;
+	
+	private String phone;
+
+	private String country;
+
+	@Column(length = 1000)
+	private String bio;
+
+	@Column(length = 500)
+	private String photo;
+
+	private String travelStyle;
+
+	private String emergencyContact;
 	
 	@OneToMany(
 	        mappedBy = "user",
@@ -64,6 +79,7 @@ public class User extends BaseEntity{
 	        cascade = CascadeType.ALL,
 	        orphanRemoval = true
 	)
+	@Builder.Default
 	private List<Trip> trips = new ArrayList<>();
 
 }

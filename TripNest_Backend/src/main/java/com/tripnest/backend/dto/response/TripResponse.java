@@ -2,6 +2,7 @@ package com.tripnest.backend.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import com.tripnest.backend.entity.enums.TripStatus;
 
@@ -38,7 +39,13 @@ public class TripResponse {
 
     private BigDecimal spent;
 
+    private Long budgetId;
+
+    private List<ExpenseResponse> expenses;
+
     private String description;
     
     private String coverImage;
+    
+    private List<ItineraryResponse> itinerary;
 }

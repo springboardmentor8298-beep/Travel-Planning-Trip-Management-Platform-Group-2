@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,17 +43,24 @@ public class ExpenseServiceImpl implements ExpenseService {
                         new ResourceNotFoundException("User not found"));
     }
 
+    private void validateBudgetOwnership(Budget budget) {
+        User currentUser = getCurrentUser();
+        if (!budget.getTrip().getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You do not have permission to access or modify this budget.");
+        }
+    }
+
     @Override
     @Transactional
     public ApiResponse<ExpenseResponse> createExpense(
             Long budgetId,
             CreateExpenseRequest request) {
 
-        getCurrentUser();
-
         Budget budget = budgetRepository.findById(budgetId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Budget not found"));
+
+        validateBudgetOwnership(budget);
 
         Expense expense = Expense.builder()
                 .amount(request.getAmount())
@@ -92,11 +100,11 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Transactional(readOnly = true)
     public ApiResponse<List<ExpenseResponse>> getExpenses(Long budgetId) {
 
-        getCurrentUser();
-
         Budget budget = budgetRepository.findById(budgetId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Budget not found"));
+
+        validateBudgetOwnership(budget);
 
         List<ExpenseResponse> response = expenseRepository
                 .findByBudget(budget)
@@ -123,11 +131,11 @@ public class ExpenseServiceImpl implements ExpenseService {
             Long expenseId,
             CreateExpenseRequest request) {
 
-        getCurrentUser();
-
         Expense expense = expenseRepository.findById(expenseId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Expense not found"));
+
+        validateBudgetOwnership(expense.getBudget());
 
         Budget budget = expense.getBudget();
 
@@ -171,11 +179,11 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Transactional
     public ApiResponse<String> deleteExpense(Long expenseId) {
 
-        getCurrentUser();
-
         Expense expense = expenseRepository.findById(expenseId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Expense not found"));
+
+        validateBudgetOwnership(expense.getBudget());
 
         Budget budget = expense.getBudget();
 

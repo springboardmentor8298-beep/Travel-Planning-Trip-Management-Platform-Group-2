@@ -11,10 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tripnest.backend.common.ApiResponse;
 import com.tripnest.backend.dto.CreateTripRequest;
 import com.tripnest.backend.dto.UpdateTripRequest;
+import com.tripnest.backend.dto.response.ActivityResponse;
+import com.tripnest.backend.dto.response.ItineraryResponse;
 import com.tripnest.backend.dto.response.TripResponse;
+import com.tripnest.backend.dto.response.ExpenseResponse;
 import com.tripnest.backend.entity.Budget;
 import com.tripnest.backend.entity.Destination;
-import com.tripnest.backend.entity.Expense;
 import com.tripnest.backend.entity.Trip;
 import com.tripnest.backend.entity.User;
 import com.tripnest.backend.entity.enums.TripStatus;
@@ -52,6 +54,7 @@ public class TripServiceImpl implements TripService {
     }
     
     @Override
+    @Transactional
     public ApiResponse<TripResponse> createTrip(CreateTripRequest request) {
 
         User user = getCurrentUser();
@@ -129,7 +132,9 @@ public class TripServiceImpl implements TripService {
                             ? null
                             : trip.getDestinations().get(0);
 
-                    BigDecimal spent = BigDecimal.ZERO;
+                    BigDecimal spent = trip.getBudget() != null
+                            ? trip.getBudget().getTotalSpent()
+                            : BigDecimal.ZERO;
 
                     return TripResponse.builder()
                             .id(trip.getId())
@@ -145,8 +150,72 @@ public class TripServiceImpl implements TripService {
                                             : BigDecimal.ZERO
                             )
                             .spent(spent)
+                            .budgetId(
+                                    trip.getBudget() != null
+                                            ? trip.getBudget().getId()
+                                            : null
+                            )
+                            .expenses(
+                                    trip.getBudget() != null
+                                            ? trip.getBudget().getExpenses()
+                                                    .stream()
+                                                    .map(expense ->
+                                                            ExpenseResponse.builder()
+                                                                    .id(expense.getId())
+                                                                    .amount(expense.getAmount())
+                                                                    .category(expense.getCategory())
+                                                                    .description(expense.getDescription())
+                                                                    .expenseDate(expense.getExpenseDate())
+                                                                    .build()
+                                                    )
+                                                    .toList()
+                                            : java.util.Collections.<ExpenseResponse>emptyList()
+                            )
                             .coverImage(trip.getCoverImage())
-                            .build();
+
+                            .itinerary(
+
+                                    trip.getItineraries()
+
+                                            .stream()
+
+                                            .map(itinerary ->
+
+                                                    ItineraryResponse.builder()
+
+                                                            .id(itinerary.getId())
+
+                                                            .dayNumber(itinerary.getDayNumber())
+
+                                                            .date(itinerary.getDate())
+
+                                                            .notes(itinerary.getNotes())
+
+                                                            .activities(
+
+                                                                    itinerary.getActivities()
+
+                                                                            .stream()
+
+                                                                            .map(activity ->
+
+                                                                                    ActivityResponse.builder()
+
+                                                                                            .id(activity.getId())
+
+                                                                                            .title(activity.getTitle())
+
+                                                                                            .description(activity.getDescription())
+
+                                                                                            .activityTime(activity.getActivityTime())
+
+                                                                                            .activityType(activity.getActivityType())
+                                                                                            .build()
+                                                                            )
+                                                                            .toList()
+                                                            ).build()
+                                           ) .toList()      
+                                           ) .build();
                 })
                 .toList();
 
@@ -195,6 +264,27 @@ public class TripServiceImpl implements TripService {
                 	            : BigDecimal.ZERO
                 	)
                 .coverImage(trip.getCoverImage())
+                .budgetId(
+                        trip.getBudget() != null
+                                ? trip.getBudget().getId()
+                                : null
+                )
+                .expenses(
+                        trip.getBudget() != null
+                                ? trip.getBudget().getExpenses()
+                                        .stream()
+                                        .map(expense ->
+                                                ExpenseResponse.builder()
+                                                        .id(expense.getId())
+                                                        .amount(expense.getAmount())
+                                                        .category(expense.getCategory())
+                                                        .description(expense.getDescription())
+                                                        .expenseDate(expense.getExpenseDate())
+                                                        .build()
+                                        )
+                                        .toList()
+                                : java.util.Collections.<ExpenseResponse>emptyList()
+                )
                 .build();
 
         return ApiResponse.<TripResponse>builder()

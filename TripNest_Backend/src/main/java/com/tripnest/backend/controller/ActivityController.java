@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.tripnest.backend.common.ApiResponse;
 import com.tripnest.backend.dto.CreateActivityRequest;
+import com.tripnest.backend.dto.UpdateActivityRequest;
 import com.tripnest.backend.dto.response.ActivityResponse;
 import com.tripnest.backend.service.ActivityService;
 
@@ -13,20 +14,21 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/itineraries")
+@RequestMapping("/api/trips")
 @RequiredArgsConstructor
 public class ActivityController {
 
     private final ActivityService activityService;
 
-    @PostMapping("/{itineraryId}/activities")
+    @PostMapping("/{tripId}/days/{dayNumber}/activities")
     public ApiResponse<ActivityResponse> createActivity(
-            @PathVariable Long itineraryId,
+            @PathVariable Long tripId,
+            @PathVariable Integer dayNumber,
             @Valid @RequestBody CreateActivityRequest request) {
+    	 System.out.println("=== CREATE ACTIVITY API HIT ===");
 
-        return activityService.createActivity(itineraryId, request);
+        return activityService.createActivity(tripId, dayNumber, request);
     }
-
     @GetMapping("/{itineraryId}/activities")
     public ApiResponse<List<ActivityResponse>> getActivities(
             @PathVariable Long itineraryId) {
@@ -37,7 +39,7 @@ public class ActivityController {
     @PutMapping("/activities/{activityId}")
     public ApiResponse<ActivityResponse> updateActivity(
             @PathVariable Long activityId,
-            @Valid @RequestBody CreateActivityRequest request) {
+            @Valid @RequestBody UpdateActivityRequest request) {
 
         return activityService.updateActivity(activityId, request);
     }

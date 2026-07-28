@@ -36,15 +36,16 @@ const Profile = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    // Mock tiny delay for premium feel
-    setTimeout(() => {
-      updateProfile(formFields);
+    try {
+      await updateProfile(formFields);
+    } catch (err) {
+      console.error(err);
+    } finally {
       setIsSubmitting(false);
-    }, 400);
+    }
   };
 
   const getInitials = (name) => {

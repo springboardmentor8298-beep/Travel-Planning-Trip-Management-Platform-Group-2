@@ -48,7 +48,10 @@ const Dashboard = ({ setActivePage, setSelectedTripId, onAddTripClick }) => {
     totalTrips: 0,
     activeTrips: 0,
     upcomingTrips: 0,
-    completedTrips: 0
+    completedTrips: 0,
+    totalBudget: 0,
+    totalSpent: 0,
+    remainingBudget: 0
   });
 
   useEffect(() => {
@@ -58,15 +61,22 @@ const Dashboard = ({ setActivePage, setSelectedTripId, onAddTripClick }) => {
   async function loadDashboard() {
     try {
       const response = await getDashboard();
-      setDashboard(response.data.data);
+      const data = response?.data?.data || {};
+      setDashboard({
+        totalTrips: data.totalTrips || 0,
+        activeTrips: data.ongoingTrips || 0,
+        upcomingTrips: data.upcomingTrips || 0,
+        completedTrips: data.completedTrips || 0,
+        totalBudget: data.totalBudget || 0,
+        totalSpent: data.totalSpent || 0,
+        remainingBudget: data.remainingBudget || 0
+      });
     } catch (err) {
       console.log(err);
     }
   }
 
-  // Calculate dynamic trip calculations
-  const totalTrips = trips.length;
-
+  // Calculate dynamic trip lists for rendering
   const upcomingTrips = trips.filter(trip =>
     getTripStatus(trip.startDate, trip.endDate) === 'Upcoming'
   );
@@ -75,26 +85,19 @@ const Dashboard = ({ setActivePage, setSelectedTripId, onAddTripClick }) => {
     getTripStatus(trip.startDate, trip.endDate) === 'Active'
   );
 
-  const completedTrips = trips.filter(trip =>
-    getTripStatus(trip.startDate, trip.endDate) === 'Completed'
-  );
-
-  // Budget Analytics
-  const totalBudgetAllocated = trips.reduce((sum, trip) => sum + (trip.budget || 0), 0);
-
-  const totalExpenses = trips.reduce((sum, trip) => {
-    const tripExpenses = trip.expenses ? trip.expenses.reduce((s, e) => s + e.amount, 0) : 0;
-    return sum + tripExpenses;
-  }, 0);
+  // Statistics derived directly from backend dashboard API
+  const totalTrips = dashboard.totalTrips;
+  const totalBudgetAllocated = dashboard.totalBudget;
+  const totalExpenses = dashboard.totalSpent;
 
   const budgetUsagePercent = totalBudgetAllocated > 0
     ? Math.round((totalExpenses / totalBudgetAllocated) * 100)
     : 0;
 
-  // Status Breakdown Percentages
-  const activePercent = totalTrips > 0 ? Math.round((activeTrips.length / totalTrips) * 100) : 0;
-  const upcomingPercent = totalTrips > 0 ? Math.round((upcomingTrips.length / totalTrips) * 100) : 0;
-  const completedPercent = totalTrips > 0 ? Math.round((completedTrips.length / totalTrips) * 100) : 0;
+  // Status Breakdown Percentages using backend statistics
+  const activePercent = totalTrips > 0 ? Math.round((dashboard.activeTrips / totalTrips) * 100) : 0;
+  const upcomingPercent = totalTrips > 0 ? Math.round((dashboard.upcomingTrips / totalTrips) * 100) : 0;
+  const completedPercent = totalTrips > 0 ? Math.round((dashboard.completedTrips / totalTrips) * 100) : 0;
 
   // Activity Icon helpers based on events
   const getActivityIcon = (type) => {
@@ -313,7 +316,7 @@ const Dashboard = ({ setActivePage, setSelectedTripId, onAddTripClick }) => {
                       <div className="flex flex-wrap gap-x-3 gap-y-1 pt-1">
                         <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
                           <MapPin className="h-3 w-3" />
-                          {trip.destination.split(',')[0]}
+                          {trip.destination ? trip.destination.split(",")[0] : "No Destination"}
                         </span>
                         <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
                           <Users className="h-3 w-3" />
@@ -321,7 +324,7 @@ const Dashboard = ({ setActivePage, setSelectedTripId, onAddTripClick }) => {
                         </span>
                         <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
                           <DollarSign className="h-3 w-3" />
-                          {trip.destination.includes('India') || trip.destination.includes('IN') ? 'INR' : 'USD'}
+                          {trip.destination?.includes('India') || trip.destination?.includes('IN') ? 'INR' : 'USD'}
                         </span>
                       </div>
                     </div>
@@ -421,7 +424,7 @@ const Dashboard = ({ setActivePage, setSelectedTripId, onAddTripClick }) => {
 
               <div>
                 <div className="mb-1.5 flex justify-between text-xs font-bold text-slate-600 dark:text-slate-400">
-                  <span>{t('dashboard.completedTripsLabel', { defaultValue: 'COMPLETED TRIPS' })} ({completedTrips.length})</span>
+                  <span>{t('dashboard.completedTripsLabel', { defaultValue: 'COMPLETED TRIPS' })} ({dashboard.completedTrips})</span>
                   <span>{completedPercent}%</span>
                 </div>
                 <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-850 overflow-hidden">

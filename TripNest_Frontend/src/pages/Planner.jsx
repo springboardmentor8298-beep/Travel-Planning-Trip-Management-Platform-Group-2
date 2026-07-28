@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { getDatesInRange, formatDate } from '../utils/date';
 import { formatCurrency } from '../utils/currency';
-import { 
-  MapPin, 
-  Clock, 
-  Plus, 
-  Trash2, 
-  ArrowUp, 
-  ArrowDown, 
-  Grab, 
-  Map, 
+import {
+    createActivity,
+    updateActivity,
+    deleteActivity
+} from "../services/activityService";
+import {
+  MapPin,
+  Clock,
+  Plus,
+  Trash2,
+  Edit,
+  ArrowUp,
+  ArrowDown,
+  Grab,
+  Map,
   Compass,
   AlertCircle,
   Tag,
@@ -18,15 +24,28 @@ import {
 } from 'lucide-react';
 
 const Planner = () => {
-  const { trips, updateItinerary } = useAppContext();
+    const { trips, loadTrips } = useAppContext();
 
   // Selected Trip ID
-  const [selectedTripId, setSelectedTripId] = useState(() => {
-    return trips.length > 0 ? trips[0].id : '';
-  });
+  const [selectedTripId, setSelectedTripId] = useState("");
+  useEffect(() => {
+    if (trips.length === 0) {
+      setSelectedTripId('');
+      return;
+    }
+
+    const exists = trips.some(t => t.id === selectedTripId);
+
+    if (!exists) {
+      setSelectedTripId(trips[0].id);
+    }
+  }, [trips, selectedTripId]);
 
   // Selected Day (defaults to Day 1)
   const [selectedDay, setSelectedDay] = useState(1);
+
+  // Edit Activity State
+  const [editingActivityId, setEditingActivityId] = useState(null);
 
   // New Activity Form State
   const [activityForm, setActivityForm] = useState({
@@ -49,16 +68,46 @@ const Planner = () => {
   }
 
   // Get current day's activities
-  const dayPlan = trip && trip.itinerary 
-    ? trip.itinerary.find(item => item.day === selectedDay) 
+ const dayPlan = trip && trip.itinerary
+    ? trip.itinerary.find(item => item.dayNumber === selectedDay)
     : null;
-    
-  const currentActivities = dayPlan ? dayPlan.activities : [];
 
+  const currentActivities = dayPlan ? dayPlan.activities : [];
+const convertType = (type) => {
+    switch (type) {
+        case "Sightseeing":
+            return "SIGHTSEEING";
+
+        case "Dining":
+            return "DINING";
+
+        case "Transport":
+            return "TRANSPORTATION";
+
+        case "Relaxation":
+            return "ACCOMMODATION";
+
+        case "Meeting":
+            return "ADVENTURE";
+
+        default:
+            return "SIGHTSEEING";
+    }
+};
+
+    const convertTime = (time) => {
+        const [clock, period] = time.split(" ");
+        let [hour, minute] = clock.split(":").map(Number);
+
+        if (period === "PM" && hour !== 12) hour += 12;
+        if (period === "AM" && hour === 12) hour = 0;
+
+        return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`;
+    };
   // Helper: Save updated activities list for the current trip and day
   const saveActivities = (updatedActivities) => {
     if (!trip) return;
-    
+
     let newItinerary = trip.itinerary ? [...trip.itinerary] : [];
     const existingDayIndex = newItinerary.findIndex(item => item.day === selectedDay);
 
@@ -77,42 +126,99 @@ const Planner = () => {
 
     // Sort itinerary by day number
     newItinerary.sort((a, b) => a.day - b.day);
-    
+
     updateItinerary(trip.id, newItinerary);
   };
 
-  // Add new activity
-  const handleAddActivity = (e) => {
+  const handleAddActivity = async (e) => {
     e.preventDefault();
-    if (!activityForm.title) return;
 
-    const newActivity = {
-      id: `act-${Date.now()}`,
-      time: activityForm.time,
-      title: activityForm.title,
-      description: activityForm.description,
-      cost: activityForm.cost ? parseFloat(activityForm.cost) : 0,
-      type: activityForm.type
-    };
+    if (!activityForm.title || !trip) return;
 
-    const updated = [...currentActivities, newActivity];
-    // Sort activities by time (standard string sort fits mostly, or let them place at bottom)
-    saveActivities(updated);
+    try {
+        const payload = {
+            title: activityForm.title,
+            description: activityForm.description,
+            activityTime: convertTime(activityForm.time),
+            activityType: convertType(activityForm.type)
+        };
 
-    // Reset Form
-    setActivityForm({
-      time: '09:00 AM',
-      title: '',
-      description: '',
-      cost: '',
-      type: 'Sightseeing'
-    });
+        if (editingActivityId) {
+            await updateActivity(editingActivityId, payload);
+        } else {
+            await createActivity(trip.id, selectedDay, payload);
+        }
+
+        await loadTrips();
+
+        setEditingActivityId(null);
+        setActivityForm({
+            time: "09:00 AM",
+            title: "",
+            description: "",
+            cost: "",
+            type: "Sightseeing"
+        });
+
+    } catch (err) {
+        console.error(err);
+    }
   };
 
   // Delete Activity
-  const handleDeleteActivity = (actId) => {
-    const updated = currentActivities.filter(act => act.id !== actId);
-    saveActivities(updated);
+  const handleDeleteActivity = async (actId) => {
+    try {
+      await deleteActivity(actId);
+      await loadTrips();
+    } catch (err) {
+      console.error("Failed to delete activity:", err);
+    }
+  };
+
+  const formatTimeForForm = (timeStr) => {
+    if (!timeStr) return "09:00 AM";
+    const parts = timeStr.split(":");
+    if (parts.length < 2) return "09:00 AM";
+    let hour = parseInt(parts[0], 10);
+    const minute = parts[1];
+    const period = hour >= 12 ? "PM" : "AM";
+    if (hour > 12) hour -= 12;
+    if (hour === 0) hour = 12;
+    return `${String(hour).padStart(2, "0")}:${minute} ${period}`;
+  };
+
+  const convertTypeToForm = (type) => {
+    switch (type) {
+      case "SIGHTSEEING": return "Sightseeing";
+      case "DINING": return "Dining";
+      case "TRANSPORTATION": return "Transport";
+      case "ACCOMMOMDATION":
+      case "ACCOMMODATION": return "Relaxation";
+      case "ADVENTURE": return "Meeting";
+      default: return "Sightseeing";
+    }
+  };
+
+  const handleStartEdit = (activity) => {
+    setEditingActivityId(activity.id);
+    setActivityForm({
+      time: formatTimeForForm(activity.time),
+      title: activity.title,
+      description: activity.description || "",
+      cost: "",
+      type: convertTypeToForm(activity.type)
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingActivityId(null);
+    setActivityForm({
+      time: "09:00 AM",
+      title: "",
+      description: "",
+      cost: "",
+      type: "Sightseeing"
+    });
   };
 
   // Move Activity Up/Down (click reordering)
@@ -122,7 +228,7 @@ const Planner = () => {
 
     const updated = [...currentActivities];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    
+
     // Swap
     const temp = updated[index];
     updated[index] = updated[targetIndex];
@@ -150,7 +256,7 @@ const Planner = () => {
 
     const updated = [...currentActivities];
     const draggedItem = updated[draggedIndex];
-    
+
     // Remove the item from its old position
     updated.splice(draggedIndex, 1);
     // Insert the item into its new position
@@ -181,13 +287,18 @@ const Planner = () => {
             <select
               value={selectedTripId}
               onChange={(e) => {
-                setSelectedTripId(e.target.value);
+                console.log("Selected:", e.target.value);
+                console.log("Type:", typeof e.target.value);
+
+                setSelectedTripId(Number(e.target.value));
                 setSelectedDay(1);
               }}
-              className="mt-1 text-lg font-black text-slate-800 bg-white border border-slate-200 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+              className="mt-1 text-lg font-black ..."
             >
               {trips.map(t => (
-                <option key={t.id} value={t.id}>{t.title} ({t.destination})</option>
+                <option key={t.id} value={t.id}>
+                  {t.title} ({t.destination})
+                </option>
               ))}
             </select>
           ) : (
@@ -199,7 +310,7 @@ const Planner = () => {
           <div className="flex items-center gap-2.5 bg-slate-50 rounded-xl px-4 py-2 border border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
             <MapPin className="w-5 h-5 text-indigo-500" />
             <div className="text-xs">
-              <p className="font-bold text-slate-700 dark:text-slate-350">{trip.destination}</p>
+              <p className="font-bold text-slate-700 dark:text-slate-350">{trip.destinationName}</p>
               <p className="text-slate-400 mt-0.5">{formatDate(trip.startDate)} &ndash; {formatDate(trip.endDate)}</p>
             </div>
           </div>
@@ -226,23 +337,21 @@ const Planner = () => {
                     <button
                       key={dayNum}
                       onClick={() => setSelectedDay(dayNum)}
-                      className={`flex-shrink-0 flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-left border text-sm font-bold transition-all duration-200 ${
-                        isSelected
-                          ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 border-indigo-200 text-indigo-700 dark:from-indigo-950/40 dark:to-sky-950/20 dark:border-indigo-900/40 dark:text-sky-400'
-                          : 'bg-white border-slate-100 text-slate-650 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800'
-                      }`}
+                      className={`flex-shrink-0 flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-left border text-sm font-bold transition-all duration-200 ${isSelected
+                        ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 border-indigo-200 text-indigo-700 dark:from-indigo-950/40 dark:to-sky-950/20 dark:border-indigo-900/40 dark:text-sky-400'
+                        : 'bg-white border-slate-100 text-slate-650 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800'
+                        }`}
                     >
                       <div>
                         <p>Day {dayNum}</p>
                         <p className="text-[10px] text-slate-450 dark:text-slate-500 font-semibold">{formatDate(dateStr)}</p>
                       </div>
-                      
+
                       {/* Count indicator */}
-                      <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                        isSelected ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950' : 'bg-slate-100 text-slate-500 dark:bg-slate-800'
-                      }`}>
-                        {trip.itinerary && trip.itinerary.find(it => it.day === dayNum) 
-                          ? trip.itinerary.find(it => it.day === dayNum).activities.length 
+                      <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${isSelected ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950' : 'bg-slate-100 text-slate-500 dark:bg-slate-800'
+                        }`}>
+                        {trip.itinerary && trip.itinerary.find(it => it.day === dayNum)
+                          ? trip.itinerary.find(it => it.day === dayNum).activities.length
                           : 0}
                       </span>
                     </button>
@@ -281,9 +390,8 @@ const Planner = () => {
                       onDragStart={(e) => handleDragStart(e, index)}
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, index)}
-                      className={`p-4 bg-slate-50 hover:bg-slate-100/70 border border-slate-100 rounded-xl dark:bg-slate-805/40 dark:border-slate-800 flex items-start justify-between gap-3 cursor-grab active:cursor-grabbing transition-colors duration-150 ${
-                        draggedIndex === index ? 'opacity-40 bg-slate-200 border-indigo-200' : ''
-                      }`}
+                      className={`p-4 bg-slate-50 hover:bg-slate-100/70 border border-slate-100 rounded-xl dark:bg-slate-805/40 dark:border-slate-800 flex items-start justify-between gap-3 cursor-grab active:cursor-grabbing transition-colors duration-150 ${draggedIndex === index ? 'opacity-40 bg-slate-200 border-indigo-200' : ''
+                        }`}
                     >
                       <div className="flex gap-2">
                         {/* Drag Handle indicator */}
@@ -303,7 +411,7 @@ const Planner = () => {
 
                           <h4 className="text-sm font-extrabold text-slate-800 dark:text-white mt-2">{activity.title}</h4>
                           <p className="text-xs text-slate-500 mt-1 dark:text-slate-400 leading-normal max-w-xl">{activity.description}</p>
-                          
+
                           {activity.cost > 0 && (
                             <span className="inline-block mt-2.5 text-[10px] font-bold text-slate-455 bg-white border border-slate-100 dark:bg-slate-850 dark:border-slate-800 px-2 py-0.5 rounded">
                               Cost: {formatCurrency(activity.cost)}
@@ -323,7 +431,7 @@ const Planner = () => {
                         >
                           <ArrowUp className="w-3.5 h-3.5" />
                         </button>
-                        
+
                         {/* Down arrow */}
                         <button
                           disabled={index === currentActivities.length - 1}
@@ -332,6 +440,14 @@ const Planner = () => {
                           title="Move Down"
                         >
                           <ArrowDown className="w-3.5 h-3.5" />
+                        </button>
+
+                        <button
+                          onClick={() => handleStartEdit(activity)}
+                          className="p-1 text-slate-400 hover:text-indigo-650 rounded hover:bg-slate-100 dark:hover:bg-slate-800 ml-1"
+                          title="Edit Activity"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
                         </button>
 
                         <button
@@ -350,7 +466,9 @@ const Planner = () => {
 
             {/* Add Activity Form */}
             <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-850">
-              <h3 className="text-base font-bold text-slate-800 dark:text-white mb-4">Add Day Activity</h3>
+              <h3 className="text-base font-bold text-slate-800 dark:text-white mb-4">
+                {editingActivityId ? "Edit Day Activity" : "Add Day Activity"}
+              </h3>
               <form onSubmit={handleAddActivity} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1">
@@ -360,7 +478,7 @@ const Planner = () => {
                       required
                       placeholder="e.g. 10:30 AM"
                       value={activityForm.time}
-                      onChange={(e) => setActivityForm({...activityForm, time: e.target.value})}
+                      onChange={(e) => setActivityForm({ ...activityForm, time: e.target.value })}
                       className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                     />
                   </div>
@@ -368,7 +486,7 @@ const Planner = () => {
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Activity Type</label>
                     <select
                       value={activityForm.type}
-                      onChange={(e) => setActivityForm({...activityForm, type: e.target.value})}
+                      onChange={(e) => setActivityForm({ ...activityForm, type: e.target.value })}
                       className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none dark:bg-slate-800 dark:border-slate-700 dark:text-slate-350"
                     >
                       <option value="Sightseeing">Sightseeing</option>
@@ -379,18 +497,18 @@ const Planner = () => {
                     </select>
                   </div>
                   <div className="space-y-1">
-                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Est. Cost (₹)</label>
-                     <div className="relative">
-                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₹</span>
-                       <input
-                         type="number"
-                         placeholder="0"
-                         value={activityForm.cost}
-                         onChange={(e) => setActivityForm({...activityForm, cost: e.target.value})}
-                         className="w-full pl-8 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                       />
-                     </div>
-                   </div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Est. Cost (₹)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₹</span>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={activityForm.cost}
+                        onChange={(e) => setActivityForm({ ...activityForm, cost: e.target.value })}
+                        className="w-full pl-8 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-1">
@@ -400,7 +518,7 @@ const Planner = () => {
                     required
                     placeholder="e.g. Visit Louvre Museum"
                     value={activityForm.title}
-                    onChange={(e) => setActivityForm({...activityForm, title: e.target.value})}
+                    onChange={(e) => setActivityForm({ ...activityForm, title: e.target.value })}
                     className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                   />
                 </div>
@@ -410,7 +528,7 @@ const Planner = () => {
                   <textarea
                     placeholder="Provide details, address or booking codes..."
                     value={activityForm.description}
-                    onChange={(e) => setActivityForm({...activityForm, description: e.target.value})}
+                    onChange={(e) => setActivityForm({ ...activityForm, description: e.target.value })}
                     rows="3"
                     className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                   />
@@ -421,8 +539,17 @@ const Planner = () => {
                   className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-650 hover:bg-indigo-755 text-white text-sm font-semibold shadow transition-colors"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Add to Day Plan</span>
+                  <span>{editingActivityId ? "Save Changes" : "Add to Day Plan"}</span>
                 </button>
+                {editingActivityId && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition-colors mt-2"
+                  >
+                    Cancel Edit
+                  </button>
+                )}
               </form>
             </div>
           </div>

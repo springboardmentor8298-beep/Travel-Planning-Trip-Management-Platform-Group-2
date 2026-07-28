@@ -156,7 +156,7 @@ const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeC
       };
 
       await createTrip(tripPayload);
-      addTripToContext(tripPayload);
+      await loadTrips();
       await loadTrips();
       alert("Trip Created Successfully");
 

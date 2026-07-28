@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { initialProfile, initialTrips, initialSettings } from '../data/seedData';
+import { getMyTrips } from "../services/tripService";
+import { createExpense as createExpenseApi, deleteExpense as deleteExpenseApi } from "../services/expenseService";
+import { getProfile as getProfileApi, updateProfile as updateProfileApi } from "../services/userService";
 
 const AppContext = createContext();
 
@@ -10,10 +13,84 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : initialProfile;
   });
 
-  const [trips, setTrips] = useState(() => {
-    const saved = localStorage.getItem('tripnest_trips');
-    return saved ? JSON.parse(saved) : initialTrips;
-  });
+  const [trips, setTrips] = useState([]);
+  const loadTrips = async () => {
+    try {
+      const response = await getMyTrips();
+
+      const tripList = Array.isArray(response?.data?.data)
+        ? response.data.data
+        : [];
+
+      setTrips(
+    tripList.map((trip) => ({
+        ...trip,
+
+        title: trip.tripName,
+
+        destination: trip.destination,
+
+        budgetId: trip.budgetId,
+
+        expenses: (trip.expenses || []).map(e => ({
+            id: e.id,
+            title: e.description,
+            category: e.category === "TRANSPORTATION" ? "Transport" :
+                      e.category === "HOTEL" ? "Lodging" :
+                      e.category === "FOOD" ? "Food" : "Activities",
+            amount: e.amount,
+            date: e.expenseDate
+        })),
+
+        itinerary:
+            (trip.itinerary || []).map(day => ({
+                day: day.dayNumber,
+                dayNumber: day.dayNumber,
+                date: day.date,
+                activities: (day.activities || []).map(a => ({
+                    id: a.id,
+                    title: a.title,
+                    description: a.description,
+                    time: a.activityTime,
+                    type: a.activityType,
+                    cost: 0
+                }))
+            }))
+    }))
+);
+
+    } catch (error) {
+      console.error("Failed to load trips:", error);
+    }
+  };
+  const loadProfile = async () => {
+    try {
+      const response = await getProfileApi();
+      const user = response?.data?.data;
+      if (user) {
+        setProfile({
+          name: user.fullName || "",
+          email: user.email || "",
+          phone: user.phone || "",
+          country: user.country || "",
+          bio: user.bio || "",
+          photo: user.photo || "",
+          travelStyle: user.travelStyle || "",
+          emergencyContact: user.emergencyContact || ""
+        });
+      }
+    } catch (error) {
+      console.error("Failed to load profile:", error);
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      loadProfile();
+      loadTrips();
+    }
+  }, []);
 
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('tripnest_settings');
@@ -34,10 +111,6 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('tripnest_profile', JSON.stringify(profile));
   }, [profile]);
-
-  useEffect(() => {
-    localStorage.setItem('tripnest_trips', JSON.stringify(trips));
-  }, [trips]);
 
   useEffect(() => {
     localStorage.setItem('tripnest_settings', JSON.stringify(settings));
@@ -114,29 +187,48 @@ export const AppProvider = ({ children }) => {
   };
 
   // Expenses actions
-  const addExpense = (tripId, expenseData) => {
-    const newExpense = {
-      id: `exp-${Date.now()}`,
-      date: new Date().toISOString().split('T')[0],
-      ...expenseData
-    };
+  const addExpense = async (tripId, expenseData) => {
     const t = trips.find(trip => trip.id === tripId);
-    if (t) {
-      logActivity('budget', `Added expense "${newExpense.title}" ($${newExpense.amount}) to "${t.title}"`);
+    if (!t || !t.budgetId) {
+      triggerNotification("Budget not found for this trip", "error");
+      return;
     }
-    setTrips(prev => prev.map(t => t.id === tripId ? { ...t, expenses: [...(t.expenses || []), newExpense] } : t));
-    triggerNotification(`Added expense: ${newExpense.title}`, 'success');
+    try {
+      const convertCategory = (cat) => {
+          switch (cat) {
+              case "Transport": return "TRANSPORTATION";
+              case "Lodging": return "HOTEL";
+              case "Food": return "FOOD";
+              case "Activities": return "ENTERTAINMENT";
+              default: return "MISCELLANEOUS";
+          }
+      };
+
+      await createExpenseApi(t.budgetId, {
+          amount: expenseData.amount,
+          category: convertCategory(expenseData.category),
+          description: expenseData.title,
+          expenseDate: expenseData.date
+      });
+
+      await loadTrips();
+      logActivity('budget', `Added expense "${expenseData.title}" ($${expenseData.amount}) to "${t.title}"`);
+      triggerNotification(`Added expense: ${expenseData.title}`, 'success');
+    } catch (error) {
+      console.error(error);
+      triggerNotification("Failed to add expense", "error");
+    }
   };
 
-  const deleteExpense = (tripId, expenseId) => {
-    const t = trips.find(trip => trip.id === tripId);
-    if (t) {
-      const targetExp = t.expenses.find(e => e.id === expenseId);
-      const expLabel = targetExp ? `"${targetExp.title}"` : 'expense';
-      logActivity('budget', `Deleted expense ${expLabel} from "${t.title}"`);
+  const deleteExpense = async (tripId, expenseId) => {
+    try {
+      await deleteExpenseApi(expenseId);
+      await loadTrips();
+      triggerNotification("Expense deleted.", "info");
+    } catch (error) {
+      console.error(error);
+      triggerNotification("Failed to delete expense", "error");
     }
-    setTrips(prev => prev.map(t => t.id === tripId ? { ...t, expenses: t.expenses.filter(e => e.id !== expenseId) } : t));
-    triggerNotification("Expense deleted.", "info");
   };
 
   // Itinerary Planner actions
@@ -176,20 +268,47 @@ export const AppProvider = ({ children }) => {
   };
 
   // Profile actions
-  const loginUser = (user) => {
-
+  const loginUser = async (user) => {
     setProfile({
       name: user.fullName,
       email: user.email,
       role: user.role,
       photo: null
     });
-
+    await loadProfile();
   };
-  const updateProfile = (updatedProfile) => {
-    logActivity('profile', `Updated travel profile details`);
-    setProfile(prev => ({ ...prev, ...updatedProfile }));
-    triggerNotification("Profile details saved!", "success");
+
+  const updateProfile = async (updatedProfile) => {
+    try {
+      const response = await updateProfileApi({
+        fullName: updatedProfile.name,
+        email: updatedProfile.email,
+        phone: updatedProfile.phone,
+        country: updatedProfile.country,
+        bio: updatedProfile.bio,
+        photo: updatedProfile.photo,
+        travelStyle: updatedProfile.travelStyle,
+        emergencyContact: updatedProfile.emergencyContact
+      });
+      const data = response?.data?.data;
+      if (data) {
+        setProfile({
+          name: data.fullName || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          country: data.country || "",
+          bio: data.bio || "",
+          photo: data.photo || "",
+          travelStyle: data.travelStyle || "",
+          emergencyContact: data.emergencyContact || ""
+        });
+        logActivity('profile', `Updated travel profile details`);
+        triggerNotification("Profile details saved!", "success");
+      }
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      triggerNotification("Failed to save profile details.", "error");
+    }
   };
 
   // Settings actions
@@ -231,6 +350,7 @@ export const AppProvider = ({ children }) => {
       updateTrip,
       deleteTrip,
       addExpense,
+      loadTrips,
       deleteExpense,
       updateItinerary,
       addDocument,

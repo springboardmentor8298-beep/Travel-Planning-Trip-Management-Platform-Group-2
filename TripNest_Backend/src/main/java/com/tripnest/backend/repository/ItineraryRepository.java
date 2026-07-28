@@ -13,4 +13,6 @@ public interface ItineraryRepository extends JpaRepository<Itinerary, Long> {
     List<Itinerary> findByTripOrderByDayNumberAsc(Trip trip);
     
     Optional<Itinerary> findById(Long id);
+    
+    Optional<Itinerary> findByTripAndDayNumber(Trip trip, Integer dayNumber);
 }
