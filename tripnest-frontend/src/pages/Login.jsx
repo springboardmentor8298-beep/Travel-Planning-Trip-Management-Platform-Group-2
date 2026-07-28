@@ -1,53 +1,58 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../services/AuthService";
 
-export default function Login() {
+function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
+    setLoading(true);
+
     try {
-      await login(email, password);
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.response?.data?.error || "Login failed");
+      const response = await loginUser({ email, password });
+
+      if (response.data.message === "Login Successful") {
+        localStorage.setItem("userEmail", email);
+        navigate("/dashboard");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Login failed. Make sure the backend is running on port 8080.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-16 p-6 border rounded-lg shadow">
-      <h1 className="text-2xl font-bold mb-4">Login to TripNest</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full border p-2 rounded"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full border p-2 rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded">
-          Login
-        </button>
-      </form>
-      <p className="mt-4 text-sm">
-        No account? <Link to="/register" className="text-blue-600">Register</Link>
-      </p>
+    <div className="auth-page">
+      <div className="card">
+        <h1>TripNest</h1>
+        <p className="subtitle">Plan your perfect journey</p>
+
+        <form onSubmit={handleLogin}>
+          <label>Email</label>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                 placeholder="Enter email" required />
+
+          <label>Password</label>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                 placeholder="Enter password" required />
+
+          <button type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+
+        <p>New to TripNest? <Link to="/signup">Create an account</Link></p>
+      </div>
     </div>
   );
 }
+
+export default Login;
