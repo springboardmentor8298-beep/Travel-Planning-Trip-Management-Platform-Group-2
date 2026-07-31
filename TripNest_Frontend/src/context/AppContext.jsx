@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { initialProfile, initialTrips, initialSettings } from '../data/seedData';
-import { getMyTrips } from "../services/tripService";
+import { getMyTrips, updateTrip as updateTripApi } from "../services/tripService";
 import { createExpense as createExpenseApi, deleteExpense as deleteExpenseApi } from "../services/expenseService";
 import { getProfile as getProfileApi, updateProfile as updateProfileApi } from "../services/userService";
 
@@ -164,18 +164,40 @@ export const AppProvider = ({ children }) => {
     return newTrip.id;
   };
 
-  const updateTrip = (tripId, updatedFields) => {
+  const updateTrip = async (tripId, updatedFields) => {
     const t = trips.find(trip => trip.id === tripId);
-    if (t) {
-      const titleChanged = updatedFields.title && t.title !== updatedFields.title;
-      if (titleChanged) {
-        logActivity('edit', `Renamed trip "${t.title}" to "${updatedFields.title}"`);
-      } else {
-        logActivity('edit', `Updated details for trip "${t.title}"`);
+    if (!t) return;
+
+    const hasBackendFields = 'notes' in updatedFields || 'title' in updatedFields || 'startDate' in updatedFields || 'endDate' in updatedFields || 'totalMembers' in updatedFields || 'description' in updatedFields || 'coverImage' in updatedFields || 'destination' in updatedFields || 'budget' in updatedFields;
+
+    if (hasBackendFields) {
+      try {
+        const payload = {
+          tripName: updatedFields.title || t.title || t.tripName,
+          startDate: updatedFields.startDate || t.startDate,
+          endDate: updatedFields.endDate || t.endDate,
+          totalMembers: Number(updatedFields.totalMembers || t.totalMembers || 1),
+          notes: updatedFields.notes !== undefined ? updatedFields.notes : t.notes,
+          description: updatedFields.description !== undefined ? updatedFields.description : t.description,
+          coverImage: updatedFields.coverImage !== undefined ? updatedFields.coverImage : t.coverImage,
+          destinationName: updatedFields.destination || t.destination || t.destinationName || "",
+          city: updatedFields.city || t.city || t.destination || "",
+          state: updatedFields.state || t.state || "India",
+          country: updatedFields.country || t.country || "India",
+          budget: Number(updatedFields.budget || t.budget || 0)
+        };
+
+        await updateTripApi(tripId, payload);
+        await loadTrips();
+        triggerNotification("Trip updated successfully!", "success");
+      } catch (error) {
+        console.error("Failed to update trip on backend:", error);
+        triggerNotification("Failed to update trip", "error");
       }
+    } else {
+      setTrips(prev => prev.map(trip => trip.id === tripId ? { ...trip, ...updatedFields } : trip));
+      triggerNotification("Trip updated successfully!", "success");
     }
-    setTrips(prev => prev.map(t => t.id === tripId ? { ...t, ...updatedFields } : t));
-    triggerNotification("Trip updated successfully!", "success");
   };
 
   const deleteTrip = (tripId) => {

@@ -8,11 +8,12 @@ import Planner from './pages/Planner';
 import Calendar from './pages/Calendar';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import DestinationsPage from './pages/Destinations/DestinationsPage';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AuthPage from "./pages/Auth/AuthPage";
 
 const AppContent = () => {
-  // Navigation states: 'dashboard' | 'trips' | 'planner' | 'calendar' | 'profile' | 'settings' | 'trip-details'
+  // Navigation states: 'dashboard' | 'trips' | 'planner' | 'calendar' | 'profile' | 'settings' | 'trip-details' | 'destinations'
   const [activePage, setActivePage] = useState('dashboard');
   const [selectedTripId, setSelectedTripId] = useState('');
 
@@ -74,6 +75,8 @@ const AppContent = () => {
         return <Profile />;
       case 'settings':
         return <Settings />;
+      case 'destinations':
+        return <DestinationsPage />;
       default:
         return (
           <Dashboard
@@ -102,6 +105,7 @@ function App() {
       <AppProvider>
         <Routes>
           <Route path="/" element={<AuthPage />} />
+          <Route path="/login" element={<AuthPage />} />
           <Route path="/dashboard" element={<AppContent />} />
         </Routes>
       </AppProvider>

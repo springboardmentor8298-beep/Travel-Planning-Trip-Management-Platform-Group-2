@@ -240,6 +240,26 @@ public class TripServiceImpl implements TripService {
                 ? null
                 : trip.getDestinations().get(0);
 
+        List<ItineraryResponse> itineraryResponses = trip.getItineraries()
+                .stream()
+                .map(itinerary -> ItineraryResponse.builder()
+                        .id(itinerary.getId())
+                        .dayNumber(itinerary.getDayNumber())
+                        .date(itinerary.getDate())
+                        .notes(itinerary.getNotes())
+                        .activities(itinerary.getActivities()
+                                .stream()
+                                .map(activity -> ActivityResponse.builder()
+                                        .id(activity.getId())
+                                        .title(activity.getTitle())
+                                        .description(activity.getDescription())
+                                        .activityTime(activity.getActivityTime())
+                                        .activityType(activity.getActivityType())
+                                        .build())
+                                .toList())
+                        .build())
+                .toList();
+
         TripResponse response = TripResponse.builder()
                 .id(trip.getId())
                 .tripName(trip.getTripName())
@@ -285,6 +305,7 @@ public class TripServiceImpl implements TripService {
                                         .toList()
                                 : java.util.Collections.<ExpenseResponse>emptyList()
                 )
+                .itinerary(itineraryResponses)
                 .build();
 
         return ApiResponse.<TripResponse>builder()
@@ -329,6 +350,26 @@ public class TripServiceImpl implements TripService {
 
         tripRepository.save(trip);
 
+        List<ItineraryResponse> itineraryResponses = trip.getItineraries()
+                .stream()
+                .map(itinerary -> ItineraryResponse.builder()
+                        .id(itinerary.getId())
+                        .dayNumber(itinerary.getDayNumber())
+                        .date(itinerary.getDate())
+                        .notes(itinerary.getNotes())
+                        .activities(itinerary.getActivities()
+                                .stream()
+                                .map(activity -> ActivityResponse.builder()
+                                        .id(activity.getId())
+                                        .title(activity.getTitle())
+                                        .description(activity.getDescription())
+                                        .activityTime(activity.getActivityTime())
+                                        .activityType(activity.getActivityType())
+                                        .build())
+                                .toList())
+                        .build())
+                .toList();
+
         TripResponse response = TripResponse.builder()
                 .id(trip.getId())
                 .tripName(trip.getTripName())
@@ -353,6 +394,7 @@ public class TripServiceImpl implements TripService {
                 	            ? trip.getBudget().getTotalSpent()
                 	            : BigDecimal.ZERO
                 	)
+                .itinerary(itineraryResponses)
                 .build();
 
         return ApiResponse.<TripResponse>builder()
