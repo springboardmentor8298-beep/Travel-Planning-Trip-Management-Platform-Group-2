@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalTime;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "activities")
@@ -30,6 +31,10 @@ public class Activity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ActivityType activityType;
+
+    @Column(precision = 12, scale = 2)
+    @Builder.Default
+    private BigDecimal cost = BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itinerary_id", nullable = false)

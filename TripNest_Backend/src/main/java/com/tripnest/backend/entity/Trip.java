@@ -80,6 +80,22 @@ public class Trip extends BaseEntity{
             orphanRemoval = true
     )
     private Budget budget;
+
+    @OneToMany(
+            mappedBy = "trip",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<TripMember> tripMembers = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "trip",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<Document> documents = new ArrayList<>();
     
     @Column(length = 1000)
     private String description;

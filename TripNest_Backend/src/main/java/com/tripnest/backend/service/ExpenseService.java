@@ -19,4 +19,6 @@ public interface ExpenseService {
             CreateExpenseRequest request);
 
     ApiResponse<String> deleteExpense(Long expenseId);
+
+    ApiResponse<java.util.Map<String, java.math.BigDecimal>> getExpensesAnalytics(Long budgetId);
 }

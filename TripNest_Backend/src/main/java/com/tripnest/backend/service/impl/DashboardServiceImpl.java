@@ -45,19 +45,31 @@ public class DashboardServiceImpl implements DashboardService {
 	public ApiResponse<DashboardResponse> getDashboard() {
 		User user = getCurrentUser();
 
-		List<Trip> trips = tripRepository.findByUser(user);
+		org.springframework.data.jpa.domain.Specification<Trip> spec = (root, query, cb) -> {
+			jakarta.persistence.criteria.Join<Trip, com.tripnest.backend.entity.TripMember> membersJoin = root.join("tripMembers", jakarta.persistence.criteria.JoinType.LEFT);
+			return cb.or(
+					cb.equal(root.get("user"), user),
+					cb.and(
+							cb.equal(membersJoin.get("user"), user),
+							cb.equal(membersJoin.get("status"), "ACCEPTED")
+					)
+			);
+		};
+		List<Trip> trips = tripRepository.findAll(spec).stream().distinct().collect(java.util.stream.Collectors.toList());
 		long totalTrips = trips.size();
 
+		java.time.LocalDate today = java.time.LocalDate.now();
+
 		long upcomingTrips = trips.stream()
-		        .filter(trip -> trip.getStatus() == TripStatus.PLANNED)
+		        .filter(trip -> trip.getStatus() != TripStatus.CANCELLED && today.isBefore(trip.getStartDate()))
 		        .count();
 
 		long ongoingTrips = trips.stream()
-		        .filter(trip -> trip.getStatus() == TripStatus.ONGOING)
+		        .filter(trip -> trip.getStatus() != TripStatus.CANCELLED && !today.isBefore(trip.getStartDate()) && !today.isAfter(trip.getEndDate()))
 		        .count();
 
 		long completedTrips = trips.stream()
-		        .filter(trip -> trip.getStatus() == TripStatus.COMPLETED)
+		        .filter(trip -> trip.getStatus() == TripStatus.COMPLETED || (trip.getStatus() != TripStatus.CANCELLED && today.isAfter(trip.getEndDate())))
 		        .count();
 		BigDecimal totalBudget = trips.stream()
 		        .map(Trip::getBudget)
@@ -72,6 +84,7 @@ public class DashboardServiceImpl implements DashboardService {
 		        .reduce(BigDecimal.ZERO, BigDecimal::add);
 
 		BigDecimal remainingBudget = trips.stream()
+		        .filter(trip -> trip.getStatus() != TripStatus.CANCELLED && !today.isBefore(trip.getStartDate()) && !today.isAfter(trip.getEndDate()))
 		        .map(Trip::getBudget)
 		        .filter(Objects::nonNull)
 		        .map(Budget::getRemainingBudget)

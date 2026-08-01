@@ -1,6 +1,7 @@
 package com.tripnest.backend.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -47,5 +48,11 @@ public class ExpenseController {
             @PathVariable Long expenseId) {
 
         return expenseService.deleteExpense(expenseId);
+    }
+
+    @GetMapping("/{budgetId}/expenses/analytics")
+    public ApiResponse<Map<String, java.math.BigDecimal>> getExpensesAnalytics(
+            @PathVariable Long budgetId) {
+        return expenseService.getExpensesAnalytics(budgetId);
     }
 }

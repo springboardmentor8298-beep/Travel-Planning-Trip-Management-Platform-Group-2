@@ -11,9 +11,9 @@ public interface TripService {
 
     ApiResponse<TripResponse> createTrip(CreateTripRequest request);
 
-    ApiResponse<List<TripResponse>> getMyTrips();
+    ApiResponse<List<TripResponse>> getMyTrips(String search, String status, String sort);
 
-    ApiResponse<TripResponse> getTripById(Long id);
+    ApiResponse<com.tripnest.backend.dto.response.TripDetailsResponse> getTripById(Long id);
 
     ApiResponse<TripResponse> updateTrip(Long id, UpdateTripRequest request);
 

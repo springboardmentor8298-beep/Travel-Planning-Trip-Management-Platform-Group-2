@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { formatDate, formatDateRange } from '../utils/date';
 import { formatCurrency } from '../utils/currency';
+import { getBudgetSummary } from '../services/budgetService';
+import { getExpensesAnalytics } from '../services/expenseService';
 import { 
   ArrowLeft, 
   LayoutDashboard, 
@@ -18,7 +20,8 @@ import {
   Wallet,
   Tag,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Download
 } from 'lucide-react';
 
 const TripDetails = ({ activeTripId, setActivePage }) => {
@@ -28,7 +31,11 @@ const TripDetails = ({ activeTripId, setActivePage }) => {
     deleteExpense, 
     addDocument, 
     deleteDocument, 
-    updateTrip 
+    updateTrip,
+    loadTripDetails,
+    downloadTripDocument,
+    inviteTripMember,
+    removeTripMember
   } = useAppContext();
 
   // Selected sub-tab
@@ -36,23 +43,67 @@ const TripDetails = ({ activeTripId, setActivePage }) => {
 
   // Modal / Form input states
   const [expenseForm, setExpenseForm] = useState({ title: '', category: 'Transport', amount: '', date: '' });
-  const [travelerForm, setTravelerForm] = useState({ name: '', email: '', role: 'Traveler' });
+  const [travelerForm, setTravelerForm] = useState({ name: '', email: '', role: 'Member' });
   const [docForm, setDocForm] = useState({ name: '', type: 'Ticket' });
   const [notesText, setNotesText] = useState('');
   const [hasUnsavedNotes, setHasUnsavedNotes] = useState(false);
+  const [isSubmittingExpense, setIsSubmittingExpense] = useState(false);
+
+  // Local document upload states
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [fileValidationError, setFileValidationError] = useState('');
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+
+  // Lazy-loaded budget summary & analytics states
+  const [budgetSummary, setBudgetSummary] = useState(null);
+  const [expensesAnalytics, setExpensesAnalytics] = useState(null);
+  const [isBudgetLoaded, setIsBudgetLoaded] = useState(false);
+  const [isLoadingBudget, setIsLoadingBudget] = useState(false);
 
   // Retrieve current trip from state
   const trip = trips.find(t => t.id === activeTripId);
+
+  // Helper to load budget summary and analytics
+  const loadBudgetInfo = async (budgetId) => {
+    setIsLoadingBudget(true);
+    try {
+      const summaryRes = await getBudgetSummary(budgetId);
+      setBudgetSummary(summaryRes?.data?.data || null);
+
+      const analyticsRes = await getExpensesAnalytics(budgetId);
+      setExpensesAnalytics(analyticsRes?.data?.data || null);
+      setIsBudgetLoaded(true);
+    } catch (err) {
+      console.error("Failed to load budget summary/analytics:", err);
+    } finally {
+      setIsLoadingBudget(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTripId) {
+      loadTripDetails(activeTripId);
+      setIsBudgetLoaded(false);
+      setBudgetSummary(null);
+      setExpensesAnalytics(null);
+    }
+  }, [activeTripId]);
+
+  useEffect(() => {
+    if (activeTab === 'budget' && trip && trip.budgetId && !isBudgetLoaded) {
+      loadBudgetInfo(trip.budgetId);
+    }
+  }, [activeTab, trip, isBudgetLoaded]);
 
   if (!trip) {
     return (
       <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center dark:bg-slate-900 dark:border-slate-800">
         <Luggage className="w-12 h-12 text-slate-300 mx-auto mb-3" />
         <h3 className="text-lg font-bold text-slate-800 dark:text-white">Trip Not Found</h3>
-        <p className="text-sm text-slate-400 mt-1">This trip may have been deleted or the link is invalid.</p>
+        <p className="text-sm text-slate-455 mt-1">This trip may have been deleted or the link is invalid.</p>
         <button 
           onClick={() => setActivePage('trips')}
-          className="mt-4 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold"
+          className="mt-4 px-4 py-2 rounded-xl bg-indigo-650 text-white text-sm font-semibold"
         >
           Back to Trips
         </button>
@@ -68,7 +119,14 @@ const TripDetails = ({ activeTripId, setActivePage }) => {
   // Statistics calculation
   const totalExp = trip.expenses ? trip.expenses.reduce((sum, e) => sum + e.amount, 0) : 0;
   const remainingBudget = trip.budget - totalExp;
-  const budgetPercentage = Math.min(Math.round((totalExp / trip.budget) * 100), 100);
+  const budgetPercentage = trip.budget > 0 ? (totalExp / trip.budget) * 100 : 0;
+
+  const displayBudget = budgetSummary?.totalBudget !== undefined ? budgetSummary.totalBudget : (trip.budget || 0);
+  const displayEstimated = budgetSummary?.estimatedCost !== undefined ? budgetSummary.estimatedCost : (trip.estimatedCost || 0);
+  const displaySpent = budgetSummary?.totalSpent !== undefined ? budgetSummary.totalSpent : totalExp;
+  const displayRemaining = budgetSummary?.remainingBudget !== undefined ? budgetSummary.remainingBudget : remainingBudget;
+  const displayPercentage = budgetSummary?.utilizationPercentage !== undefined ? budgetSummary.utilizationPercentage : budgetPercentage;
+  const displayStatus = budgetSummary?.status !== undefined ? budgetSummary.status : (displaySpent > displayBudget ? "Over Budget! ❌" : "Within Budget ✅");
 
   // Category Icons helper
   const getCategoryColor = (cat) => {
@@ -82,53 +140,112 @@ const TripDetails = ({ activeTripId, setActivePage }) => {
   };
 
   // Add Expense trigger
-  const handleAddExpenseSubmit = (e) => {
+  const handleAddExpenseSubmit = async (e) => {
     e.preventDefault();
-    if (!expenseForm.title || !expenseForm.amount) return;
+    if (!expenseForm.title || !expenseForm.amount || isSubmittingExpense) return;
     
-    addExpense(trip.id, {
-      title: expenseForm.title,
-      category: expenseForm.category,
-      amount: parseFloat(expenseForm.amount),
-      date: expenseForm.date || new Date().toISOString().split('T')[0]
-    });
-    setExpenseForm({ title: '', category: 'Transport', amount: '', date: '' });
+    setIsSubmittingExpense(true);
+    try {
+      await addExpense(trip.id, {
+        title: expenseForm.title,
+        category: expenseForm.category,
+        amount: parseFloat(expenseForm.amount),
+        date: expenseForm.date || new Date().toISOString().split('T')[0]
+      });
+      setExpenseForm({ title: '', category: 'Transport', amount: '', date: '' });
+      if (trip.budgetId) {
+        await loadBudgetInfo(trip.budgetId);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmittingExpense(false);
+    }
   };
 
   // Add Traveler trigger
-  const handleAddTravelerSubmit = (e) => {
+  const handleAddTravelerSubmit = async (e) => {
     e.preventDefault();
     if (!travelerForm.name || !travelerForm.email) return;
 
-    const newTraveler = {
-      id: `trav-${Date.now()}`,
-      name: travelerForm.name,
-      email: travelerForm.email,
-      role: travelerForm.role
-    };
-
-    const updatedTravelers = [...(trip.travelers || []), newTraveler];
-    updateTrip(trip.id, { travelers: updatedTravelers });
-    setTravelerForm({ name: '', email: '', role: 'Traveler' });
+    try {
+      await inviteTripMember(trip.id, {
+        name: travelerForm.name,
+        email: travelerForm.email,
+        role: travelerForm.role.toUpperCase()
+      });
+      setTravelerForm({ name: '', email: '', role: 'Member' });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Remove Traveler
-  const handleRemoveTraveler = (travId) => {
-    const updated = trip.travelers.filter(t => t.id !== travId);
-    updateTrip(trip.id, { travelers: updated });
+  const handleRemoveTraveler = async (travId) => {
+    try {
+      await removeTripMember(trip.id, travId);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const formatBytes = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      setSelectedFile(null);
+      return;
+    }
+
+    if (file.size === 0) {
+      setFileValidationError("File is empty.");
+      setSelectedFile(null);
+      return;
+    }
+
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setFileValidationError("File size exceeds 10 MB limit.");
+      setSelectedFile(null);
+      return;
+    }
+
+    const allowedExtensions = /(\.pdf|\.jpg|\.jpeg|\.png)$/i;
+    if (!allowedExtensions.exec(file.name)) {
+      setFileValidationError("Unsupported file format. Please upload PDF, JPG, JPEG, or PNG.");
+      setSelectedFile(null);
+      return;
+    }
+
+    setFileValidationError('');
+    setSelectedFile(file);
+    const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+    setDocForm(prev => ({ ...prev, name: baseName }));
   };
 
   // Add Document upload
-  const handleAddDocSubmit = (e) => {
+  const handleAddDocSubmit = async (e) => {
     e.preventDefault();
-    if (!docForm.name) return;
+    if (!selectedFile || isUploadingDoc) return;
 
-    addDocument(trip.id, {
-      name: docForm.name.endsWith('.pdf') ? docForm.name : `${docForm.name}.pdf`,
-      type: docForm.type,
-      size: `${Math.floor(Math.random() * 800) + 50} KB`
-    });
-    setDocForm({ name: '', type: 'Ticket' });
+    setIsUploadingDoc(true);
+    try {
+      await addDocument(trip.id, selectedFile, docForm.type);
+      setDocForm({ name: '', type: 'Ticket' });
+      setSelectedFile(null);
+      setFileValidationError('');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUploadingDoc(false);
+    }
   };
 
   // Save notes
@@ -180,7 +297,7 @@ const TripDetails = ({ activeTripId, setActivePage }) => {
           <div className="w-full bg-slate-200 rounded-full h-2 dark:bg-slate-700">
             <div 
               className={`h-2 rounded-full ${budgetPercentage > 90 ? 'bg-rose-500' : 'bg-indigo-650'}`}
-              style={{ width: `${budgetPercentage}%` }}
+              style={{ width: `${Math.min(budgetPercentage, 100)}%` }}
             />
           </div>
           <p className="text-[10px] text-slate-400 mt-2 font-medium text-right">
@@ -375,7 +492,59 @@ const TripDetails = ({ activeTripId, setActivePage }) => {
 
         {/* BUDGET PANEL */}
         {activeTab === 'budget' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
+          <div className="space-y-6 animate-fade-in">
+            {/* Budget Dashboard Card */}
+            <div className="bg-gradient-to-r from-indigo-50 to-sky-50 dark:from-slate-900 dark:to-slate-800 border border-indigo-100/50 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-4 flex-1">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <Wallet className="w-5 h-5 text-indigo-600 dark:text-sky-400" />
+                    <span>Trip Budget Dashboard</span>
+                  </h3>
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                    displaySpent > displayBudget 
+                      ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-455' 
+                      : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-455'
+                  }`}>
+                    {displayStatus}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="p-3 bg-white dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-xl">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Budget</span>
+                    <h4 className="text-base font-extrabold text-slate-800 dark:text-white mt-0.5">{formatCurrency(displayBudget)}</h4>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-xl">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Estimated Cost</span>
+                    <h4 className="text-base font-extrabold text-slate-800 dark:text-white mt-0.5">{formatCurrency(displayEstimated)}</h4>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-xl">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Actual Spent</span>
+                    <h4 className="text-base font-extrabold text-slate-800 dark:text-white mt-0.5">{formatCurrency(displaySpent)}</h4>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-xl">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Remaining</span>
+                    <h4 className={`text-base font-extrabold mt-0.5 ${displayRemaining < 0 ? 'text-rose-600' : 'text-slate-800 dark:text-slate-200'}`}>{formatCurrency(displayRemaining)}</h4>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs font-bold text-slate-500">
+                    <span>Usage Progress</span>
+                    <span>{Math.round(displayPercentage)}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        displayPercentage > 90 ? 'bg-rose-500' : 'bg-indigo-650 dark:bg-sky-400'
+                      }`}
+                      style={{ width: `${Math.min(displayPercentage, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Expenses List */}
             <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-850 space-y-6">
               <h3 className="text-lg font-bold text-slate-800 dark:text-white">Logged Expenses</h3>
@@ -407,7 +576,12 @@ const TripDetails = ({ activeTripId, setActivePage }) => {
                           <td className="py-3 text-right font-bold text-slate-700 dark:text-slate-350">{formatCurrency(exp.amount)}</td>
                           <td className="py-3 text-right">
                             <button
-                              onClick={() => deleteExpense(trip.id, exp.id)}
+                              onClick={async () => {
+                                await deleteExpense(trip.id, exp.id);
+                                if (trip.budgetId) {
+                                  await loadBudgetInfo(trip.budgetId);
+                                }
+                              }}
                               className="text-slate-400 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
                               title="Delete Expense"
                             >
@@ -478,15 +652,59 @@ const TripDetails = ({ activeTripId, setActivePage }) => {
 
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-650 hover:bg-indigo-750 text-white text-sm font-semibold shadow transition-colors"
+                  disabled={isSubmittingExpense}
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-650 hover:bg-indigo-750 disabled:bg-slate-200 text-white disabled:text-slate-400 text-sm font-semibold shadow transition-all duration-200"
                 >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Expense</span>
+                  {isSubmittingExpense ? (
+                    <span>Adding...</span>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      <span>Add Expense</span>
+                    </>
+                  )}
                 </button>
               </form>
             </div>
+
+            {/* Expense by Category Card */}
+            <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-850 h-fit mt-6">
+              <h3 className="text-base font-bold text-slate-800 dark:text-white mb-4">Expense by Category</h3>
+              {isLoadingBudget ? (
+                <div className="flex justify-center py-6">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-650" />
+                </div>
+              ) : (!expensesAnalytics || Object.keys(expensesAnalytics).length === 0) ? (
+                <p className="text-xs text-slate-450 italic text-center py-6">No expenses categorized yet.</p>
+              ) : (
+                <div className="space-y-4">
+                  {Object.entries(expensesAnalytics).map(([category, amount]) => {
+                    const categoryLabel = category === "TRANSPORTATION" ? "Transport" :
+                                          category === "HOTEL" ? "Lodging" :
+                                          category === "FOOD" ? "Food" :
+                                          category === "ENTERTAINMENT" ? "Activities" : "Other";
+                    const percentage = displaySpent > 0 ? Math.round((amount / displaySpent) * 100) : 0;
+                    return (
+                      <div key={category} className="space-y-1">
+                        <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-400">
+                          <span>{categoryLabel}</span>
+                          <span>{formatCurrency(amount)} ({percentage}%)</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-1.5 dark:bg-slate-800">
+                          <div 
+                            className="h-1.5 rounded-full bg-indigo-650 dark:bg-sky-400"
+                            style={{ width: `${Math.min(percentage, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        </div>
+      )}
 
         {/* TRAVELERS PANEL */}
         {activeTab === 'travelers' && (
@@ -505,17 +723,17 @@ const TripDetails = ({ activeTripId, setActivePage }) => {
                       <div className="flex items-center gap-2">
                         <h4 className="text-sm font-extrabold text-slate-800 dark:text-white">{trav.name}</h4>
                         <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                          trav.role === 'Organizer' 
+                          (trav.role === 'Organizer' || trav.role === 'OWNER')
                             ? 'bg-indigo-50 text-indigo-755 dark:bg-indigo-950/40 dark:text-sky-400' 
                             : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                         }`}>
                           {trav.role}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-450 dark:text-slate-500 mt-1">{trav.email}</p>
+                      <p className="text-xs text-slate-450 dark:text-slate-505 mt-1">{trav.email}</p>
                     </div>
 
-                    {trav.role !== 'Organizer' && (
+                    {(trav.role !== 'Organizer' && trav.role !== 'OWNER') && (
                       <button
                         onClick={() => handleRemoveTraveler(trav.id)}
                         className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
@@ -564,8 +782,8 @@ const TripDetails = ({ activeTripId, setActivePage }) => {
                     onChange={(e) => setTravelerForm({...travelerForm, role: e.target.value})}
                     className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none dark:bg-slate-800 dark:border-slate-700 dark:text-slate-350"
                   >
-                    <option value="Traveler">Traveler</option>
-                    <option value="Organizer">Organizer</option>
+                    <option value="Member">Member</option>
+                    <option value="Editor">Editor</option>
                   </select>
                 </div>
 
@@ -616,7 +834,14 @@ const TripDetails = ({ activeTripId, setActivePage }) => {
                         </div>
                       </div>
 
-                      <div className="flex items-center">
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => downloadTripDocument(doc.id, doc.name)}
+                          className="text-slate-400 hover:text-indigo-650 p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
+                          title="Download Document"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => deleteDocument(trip.id, doc.id)}
                           className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
@@ -631,7 +856,7 @@ const TripDetails = ({ activeTripId, setActivePage }) => {
               )}
             </div>
 
-            {/* Upload Mock Document Form */}
+            {/* Upload Document Form */}
             <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-850 h-fit">
               <h3 className="text-base font-bold text-slate-800 dark:text-white mb-4">Attach Document</h3>
               <form onSubmit={handleAddDocSubmit} className="space-y-4">
@@ -662,12 +887,54 @@ const TripDetails = ({ activeTripId, setActivePage }) => {
                   </select>
                 </div>
 
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Select File *</label>
+                  <div className="flex flex-col gap-2">
+                    <input
+                      type="file"
+                      id="file-upload"
+                      className="hidden"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleFileChange}
+                    />
+                    <label
+                      htmlFor="file-upload"
+                      className="flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+                    >
+                      <Upload className="w-5 h-5 text-slate-450" />
+                      <span className="text-sm font-semibold text-slate-500">Choose PDF or Image</span>
+                    </label>
+                    {fileValidationError && (
+                      <p className="text-xs font-bold text-rose-500 mt-1">{fileValidationError}</p>
+                    )}
+                  </div>
+                </div>
+
+                {selectedFile && (
+                  <div className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-655 dark:text-sky-400">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-extrabold text-slate-700 dark:text-slate-200 truncate">{selectedFile.name}</p>
+                      <p className="text-[10px] text-slate-450 mt-0.5">{formatBytes(selectedFile.size)}</p>
+                    </div>
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-650 hover:bg-indigo-755 text-white text-sm font-semibold shadow transition-colors"
+                  disabled={!selectedFile || isUploadingDoc}
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-650 hover:bg-indigo-755 disabled:bg-slate-200 text-white disabled:text-slate-400 text-sm font-semibold shadow transition-all duration-200"
                 >
-                  <Upload className="w-4 h-4" />
-                  <span>Upload Document</span>
+                  {isUploadingDoc ? (
+                    <span>Uploading...</span>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      <span>Upload Document</span>
+                    </>
+                  )}
                 </button>
               </form>
             </div>

@@ -30,6 +30,10 @@ public class Notification extends BaseEntity{
     @Column(nullable = false)
     private NotificationType type;
 
+    private Long referenceId;
+
+    private String referenceType;
+
     @Builder.Default
     @Column(nullable = false)
     private Boolean isRead = false;

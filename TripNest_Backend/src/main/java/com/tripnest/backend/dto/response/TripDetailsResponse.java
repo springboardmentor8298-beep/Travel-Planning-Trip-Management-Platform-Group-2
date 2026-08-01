@@ -1,0 +1,60 @@
+package com.tripnest.backend.dto.response;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import com.tripnest.backend.entity.enums.TripStatus;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class TripDetailsResponse {
+
+    private Long id;
+
+    private String tripName;
+
+    private LocalDate startDate;
+
+    private LocalDate endDate;
+
+    private TripStatus status;
+
+    private String destination;
+
+    private String city;
+
+    private String state;
+
+    private String country;
+
+    private Integer totalMembers;
+
+    private String notes;
+    
+    private BigDecimal budget;
+
+    private BigDecimal spent;
+
+    private Long budgetId;
+
+    private List<ExpenseResponse> expenses;
+
+    private String description;
+    
+    private String coverImage;
+    
+    private List<ItineraryResponse> itinerary;
+
+    // Milestone 3 Additions
+    private List<TripMemberResponse> travelers;
+
+    private List<DocumentResponse> documents;
+
+    private BigDecimal estimatedCost;
+
+    private Double utilizationPercentage;
+}

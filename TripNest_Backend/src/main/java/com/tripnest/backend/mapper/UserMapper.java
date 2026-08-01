@@ -1,19 +1,32 @@
 package com.tripnest.backend.mapper;
 
+import org.springframework.stereotype.Component;
 import com.tripnest.backend.dto.RegisterRequest;
 import com.tripnest.backend.dto.response.UserResponse;
 import com.tripnest.backend.entity.User;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
-public interface UserMapper {
+@Component
+public class UserMapper {
 
-    @Mapping(target = "password", ignore = true)
-    @Mapping(target = "role", ignore = true)
-    @Mapping(target = "enabled", ignore = true)
-    User toEntity(RegisterRequest request);
+    public User toEntity(RegisterRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return User.builder()
+                .fullName(request.getFullName())
+                .email(request.getEmail())
+                .build();
+    }
 
-    @Mapping(target = "role", expression = "java(user.getRole().name())")
-    UserResponse toResponse(User user);
+    public UserResponse toResponse(User user) {
+        if (user == null) {
+            return null;
+        }
+        return UserResponse.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .role(user.getRole() != null ? user.getRole().name() : null)
+                .build();
+    }
 }

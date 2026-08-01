@@ -21,6 +21,7 @@ import com.tripnest.backend.repository.ActivityRepository;
 import com.tripnest.backend.repository.ItineraryRepository;
 import com.tripnest.backend.repository.TripRepository;
 import com.tripnest.backend.repository.UserRepository;
+import com.tripnest.backend.repository.TripMemberRepository;
 import com.tripnest.backend.service.ActivityService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class ActivityServiceImpl implements ActivityService {
     private final ItineraryRepository itineraryRepository;
     private final UserRepository userRepository;
     private final TripRepository tripRepository;
+    private final TripMemberRepository tripMemberRepository;
     
     @Override
     @Transactional
@@ -65,6 +67,7 @@ public class ActivityServiceImpl implements ActivityService {
                 .description(request.getDescription())
                 .activityTime(request.getActivityTime())
                 .activityType(request.getActivityType())
+                .cost(request.getCost() != null ? request.getCost() : java.math.BigDecimal.ZERO)
                 .itinerary(itinerary)
                 .build();
 
@@ -76,6 +79,7 @@ public class ActivityServiceImpl implements ActivityService {
                 .description(activity.getDescription())
                 .activityTime(activity.getActivityTime())
                 .activityType(activity.getActivityType())
+                .cost(activity.getCost())
                 .build();
 
         return ApiResponse.<ActivityResponse>builder()
@@ -104,6 +108,7 @@ public class ActivityServiceImpl implements ActivityService {
                         .description(activity.getDescription())
                         .activityTime(activity.getActivityTime())
                         .activityType(activity.getActivityType())
+                        .cost(activity.getCost())
                         .build())
                 .toList();
 
@@ -115,6 +120,7 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    @Transactional
     public ApiResponse<ActivityResponse> updateActivity(
             Long activityId,
             UpdateActivityRequest request) {
@@ -129,6 +135,9 @@ public class ActivityServiceImpl implements ActivityService {
         activity.setDescription(request.getDescription());
         activity.setActivityTime(request.getActivityTime());
         activity.setActivityType(request.getActivityType());
+        if (request.getCost() != null) {
+            activity.setCost(request.getCost());
+        }
 
         activity = activityRepository.save(activity);
 
@@ -138,6 +147,7 @@ public class ActivityServiceImpl implements ActivityService {
                 .description(activity.getDescription())
                 .activityTime(activity.getActivityTime())
                 .activityType(activity.getActivityType())
+                .cost(activity.getCost())
                 .build();
 
         return ApiResponse.<ActivityResponse>builder()
@@ -149,6 +159,7 @@ public class ActivityServiceImpl implements ActivityService {
 
 
     @Override
+    @Transactional
     public ApiResponse<String> deleteActivity(
             Long activityId) {
 
@@ -180,7 +191,14 @@ public class ActivityServiceImpl implements ActivityService {
 
     private void validateTripOwnership(Trip trip) {
         User currentUser = getCurrentUser();
-        if (!trip.getUser().getId().equals(currentUser.getId())) {
+        if (trip.getUser().getId().equals(currentUser.getId())) {
+            return;
+        }
+        String role = tripMemberRepository.findByTripAndUser(trip, currentUser)
+                .filter(m -> "ACCEPTED".equalsIgnoreCase(m.getStatus()))
+                .map(m -> m.getRole().toUpperCase())
+                .orElse("MEMBER");
+        if (!"OWNER".equals(role) && !"EDITOR".equals(role)) {
             throw new AccessDeniedException("You do not have permission to modify this trip.");
         }
     }

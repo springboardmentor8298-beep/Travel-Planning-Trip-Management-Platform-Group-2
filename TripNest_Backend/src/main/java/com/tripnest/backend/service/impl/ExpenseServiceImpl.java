@@ -2,6 +2,8 @@ package com.tripnest.backend.service.impl;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,11 +16,13 @@ import com.tripnest.backend.dto.CreateExpenseRequest;
 import com.tripnest.backend.dto.response.ExpenseResponse;
 import com.tripnest.backend.entity.Budget;
 import com.tripnest.backend.entity.Expense;
+import com.tripnest.backend.entity.Trip;
 import com.tripnest.backend.entity.User;
 import com.tripnest.backend.exception.ResourceNotFoundException;
 import com.tripnest.backend.repository.BudgetRepository;
 import com.tripnest.backend.repository.ExpenseRepository;
 import com.tripnest.backend.repository.UserRepository;
+import com.tripnest.backend.repository.TripMemberRepository;
 import com.tripnest.backend.service.ExpenseService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,6 +34,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     private final ExpenseRepository expenseRepository;
     private final BudgetRepository budgetRepository;
     private final UserRepository userRepository;
+    private final TripMemberRepository tripMemberRepository;
 
     private User getCurrentUser() {
 
@@ -45,7 +50,15 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     private void validateBudgetOwnership(Budget budget) {
         User currentUser = getCurrentUser();
-        if (!budget.getTrip().getUser().getId().equals(currentUser.getId())) {
+        Trip trip = budget.getTrip();
+        if (trip.getUser().getId().equals(currentUser.getId())) {
+            return;
+        }
+        String role = tripMemberRepository.findByTripAndUser(trip, currentUser)
+                .filter(m -> "ACCEPTED".equalsIgnoreCase(m.getStatus()))
+                .map(m -> m.getRole().toUpperCase())
+                .orElse("MEMBER");
+        if (!"OWNER".equals(role) && !"EDITOR".equals(role)) {
             throw new AccessDeniedException("You do not have permission to access or modify this budget.");
         }
     }
@@ -201,6 +214,29 @@ public class ExpenseServiceImpl implements ExpenseService {
                 .success(true)
                 .message("Expense deleted successfully")
                 .data("Expense deleted successfully")
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ApiResponse<Map<String, BigDecimal>> getExpensesAnalytics(Long budgetId) {
+        Budget budget = budgetRepository.findById(budgetId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Budget not found"));
+
+        validateBudgetOwnership(budget);
+
+        Map<String, BigDecimal> analytics = expenseRepository.findByBudget(budget)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        exp -> exp.getCategory().name(),
+                        Collectors.reducing(BigDecimal.ZERO, Expense::getAmount, BigDecimal::add)
+                ));
+
+        return ApiResponse.<Map<String, BigDecimal>>builder()
+                .success(true)
+                .message("Expense analytics retrieved successfully")
+                .data(analytics)
                 .build();
     }
 }

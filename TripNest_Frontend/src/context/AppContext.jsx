@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { initialProfile, initialTrips, initialSettings } from '../data/seedData';
-import { getMyTrips, updateTrip as updateTripApi } from "../services/tripService";
+import { getMyTrips, updateTrip as updateTripApi, getTripById } from "../services/tripService";
 import { createExpense as createExpenseApi, deleteExpense as deleteExpenseApi } from "../services/expenseService";
 import { getProfile as getProfileApi, updateProfile as updateProfileApi } from "../services/userService";
+import { inviteMember, removeMember, acceptInvitation, declineInvitation, getPendingInvitations } from "../services/collaborationService";
+import { uploadDocument as uploadDocumentApi, deleteDocument as deleteDocumentApi, downloadDocument as downloadDocumentApi } from "../services/documentService";
+import { getUnreadNotifications as getNotificationsApi, markAsRead as markAsReadApi, markAllAsRead as markAllAsReadApi } from "../services/notificationService";
 
 const AppContext = createContext();
 
@@ -14,50 +17,52 @@ export const AppProvider = ({ children }) => {
   });
 
   const [trips, setTrips] = useState([]);
-  const loadTrips = async () => {
+  const loadTrips = async (search, status, sort) => {
     try {
-      const response = await getMyTrips();
+      const response = await getMyTrips(search, status, sort);
 
       const tripList = Array.isArray(response?.data?.data)
         ? response.data.data
         : [];
 
-      setTrips(
-    tripList.map((trip) => ({
-        ...trip,
-
-        title: trip.tripName,
-
-        destination: trip.destination,
-
-        budgetId: trip.budgetId,
-
-        expenses: (trip.expenses || []).map(e => ({
-            id: e.id,
-            title: e.description,
-            category: e.category === "TRANSPORTATION" ? "Transport" :
-                      e.category === "HOTEL" ? "Lodging" :
-                      e.category === "FOOD" ? "Food" : "Activities",
-            amount: e.amount,
-            date: e.expenseDate
-        })),
-
-        itinerary:
-            (trip.itinerary || []).map(day => ({
-                day: day.dayNumber,
-                dayNumber: day.dayNumber,
-                date: day.date,
-                activities: (day.activities || []).map(a => ({
-                    id: a.id,
-                    title: a.title,
-                    description: a.description,
-                    time: a.activityTime,
-                    type: a.activityType,
-                    cost: 0
-                }))
-            }))
-    }))
-);
+      setTrips(prev => {
+        return tripList.map((trip) => {
+          const existing = prev.find(t => t.id === trip.id);
+          return {
+            ...trip,
+            title: trip.tripName,
+            destination: trip.destination,
+            budgetId: trip.budgetId,
+            expenses: (trip.expenses || []).map(e => ({
+                id: e.id,
+                title: e.description,
+                category: e.category === "TRANSPORTATION" ? "Transport" :
+                          e.category === "HOTEL" ? "Lodging" :
+                          e.category === "FOOD" ? "Food" : "Activities",
+                amount: e.amount,
+                date: e.expenseDate
+            })),
+            itinerary:
+                (trip.itinerary || []).map(day => ({
+                    day: day.dayNumber,
+                    dayNumber: day.dayNumber,
+                    date: day.date,
+                    activities: (day.activities || []).map(a => ({
+                        id: a.id,
+                        title: a.title,
+                        description: a.description,
+                        time: a.activityTime,
+                        type: a.activityType,
+                        cost: a.cost || 0
+                    }))
+                })),
+            travelers: existing?.travelers || trip.travelers || [],
+            documents: existing?.documents || trip.documents || [],
+            estimatedCost: existing?.estimatedCost !== undefined ? existing.estimatedCost : trip.estimatedCost || 0,
+            utilizationPercentage: existing?.utilizationPercentage !== undefined ? existing.utilizationPercentage : trip.utilizationPercentage || 0
+          };
+        });
+      });
 
     } catch (error) {
       console.error("Failed to load trips:", error);
@@ -89,6 +94,8 @@ export const AppProvider = ({ children }) => {
     if (token) {
       loadProfile();
       loadTrips();
+      loadNotifications();
+      loadPendingInvitations();
     }
   }, []);
 
@@ -164,9 +171,80 @@ export const AppProvider = ({ children }) => {
     return newTrip.id;
   };
 
+  const loadTripDetails = async (tripId) => {
+    try {
+      const response = await getTripById(tripId);
+      const detailedTrip = response?.data?.data;
+      if (detailedTrip) {
+        setTrips(prev => prev.map(t => {
+          if (t.id === tripId) {
+            return {
+              ...t,
+              travelers: detailedTrip.travelers || [],
+              documents: detailedTrip.documents || [],
+              estimatedCost: detailedTrip.estimatedCost || 0,
+              utilizationPercentage: detailedTrip.utilizationPercentage || 0,
+              expenses: (detailedTrip.expenses || []).map(e => ({
+                  id: e.id,
+                  title: e.description,
+                  category: e.category === "TRANSPORTATION" ? "Transport" :
+                            e.category === "HOTEL" ? "Lodging" :
+                            e.category === "FOOD" ? "Food" : "Activities",
+                  amount: e.amount,
+                  date: e.expenseDate
+              })),
+              itinerary:
+                  (detailedTrip.itinerary || []).map(day => ({
+                      day: day.dayNumber,
+                      dayNumber: day.dayNumber,
+                      date: day.date,
+                      activities: (day.activities || []).map(a => ({
+                          id: a.id,
+                          title: a.title,
+                          description: a.description,
+                          time: a.activityTime,
+                          type: a.activityType,
+                          cost: a.cost || 0
+                      }))
+                  }))
+            };
+          }
+          return t;
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to load trip details:", error);
+    }
+  };
+
   const updateTrip = async (tripId, updatedFields) => {
     const t = trips.find(trip => trip.id === tripId);
     if (!t) return;
+
+    if ('travelers' in updatedFields) {
+      try {
+        const oldTravelers = t.travelers || [];
+        const newTravelers = updatedFields.travelers || [];
+        if (newTravelers.length > oldTravelers.length) {
+          const added = newTravelers.find(nt => !oldTravelers.some(ot => ot.email === nt.email));
+          if (added) {
+            await inviteMember(tripId, { name: added.name, email: added.email, role: added.role });
+            triggerNotification(`Invited traveler ${added.name}`, 'success');
+          }
+        } else if (newTravelers.length < oldTravelers.length) {
+          const removed = oldTravelers.find(ot => !newTravelers.some(nt => nt.email === ot.email));
+          if (removed) {
+            await removeMember(tripId, removed.id);
+            triggerNotification(`Removed traveler ${removed.name}`, 'info');
+          }
+        }
+        await loadTripDetails(tripId);
+      } catch (error) {
+        console.error("Failed to update travelers:", error);
+        triggerNotification("Failed to update group members", "error");
+      }
+      return;
+    }
 
     const hasBackendFields = 'notes' in updatedFields || 'title' in updatedFields || 'startDate' in updatedFields || 'endDate' in updatedFields || 'totalMembers' in updatedFields || 'description' in updatedFields || 'coverImage' in updatedFields || 'destination' in updatedFields || 'budget' in updatedFields;
 
@@ -189,6 +267,7 @@ export const AppProvider = ({ children }) => {
 
         await updateTripApi(tripId, payload);
         await loadTrips();
+        await loadTripDetails(tripId);
         triggerNotification("Trip updated successfully!", "success");
       } catch (error) {
         console.error("Failed to update trip on backend:", error);
@@ -233,7 +312,7 @@ export const AppProvider = ({ children }) => {
           expenseDate: expenseData.date
       });
 
-      await loadTrips();
+      await loadTripDetails(tripId);
       logActivity('budget', `Added expense "${expenseData.title}" ($${expenseData.amount}) to "${t.title}"`);
       triggerNotification(`Added expense: ${expenseData.title}`, 'success');
     } catch (error) {
@@ -245,7 +324,7 @@ export const AppProvider = ({ children }) => {
   const deleteExpense = async (tripId, expenseId) => {
     try {
       await deleteExpenseApi(expenseId);
-      await loadTrips();
+      await loadTripDetails(tripId);
       triggerNotification("Expense deleted.", "info");
     } catch (error) {
       console.error(error);
@@ -264,29 +343,140 @@ export const AppProvider = ({ children }) => {
   };
 
   // Travel Documents actions
-  const addDocument = (tripId, docData) => {
-    const newDoc = {
-      id: `doc-${Date.now()}`,
-      uploadedAt: new Date().toISOString().split('T')[0],
-      ...docData
-    };
-    const t = trips.find(trip => trip.id === tripId);
-    if (t) {
-      logActivity('document', `Uploaded document "${newDoc.name}" to "${t.title}"`);
+  const addDocument = async (tripId, file, documentType) => {
+    try {
+      await uploadDocumentApi(tripId, file, documentType);
+      await loadTripDetails(tripId);
+      triggerNotification(`Uploaded "${file.name}"`, "success");
+    } catch (error) {
+      console.error(error);
+      triggerNotification("Failed to upload document", "error");
+      throw error;
     }
-    setTrips(prev => prev.map(t => t.id === tripId ? { ...t, documents: [...(t.documents || []), newDoc] } : t));
-    triggerNotification(`Uploaded "${newDoc.name}"`, "success");
   };
 
-  const deleteDocument = (tripId, docId) => {
-    const t = trips.find(trip => trip.id === tripId);
-    if (t) {
-      const targetDoc = t.documents.find(d => d.id === docId);
-      const docLabel = targetDoc ? `"${targetDoc.name}"` : 'document';
-      logActivity('document', `Removed document ${docLabel} from "${t.title}"`);
+  const deleteDocument = async (tripId, docId) => {
+    try {
+      await deleteDocumentApi(docId);
+      await loadTripDetails(tripId);
+      triggerNotification("Document deleted.", "info");
+    } catch (error) {
+      console.error(error);
+      triggerNotification("Failed to delete document", "error");
     }
-    setTrips(prev => prev.map(t => t.id === tripId ? { ...t, documents: t.documents.filter(d => d.id !== docId) } : t));
-    triggerNotification("Document deleted.", "info");
+  };
+
+  // Download travel documents
+  const downloadTripDocument = async (docId, fileName) => {
+    try {
+      const response = await downloadDocumentApi(docId);
+      const blob = response.data;
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName || 'document.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      triggerNotification("Downloading document...", "info");
+    } catch (error) {
+      console.error("Failed to download document:", error);
+      triggerNotification("Failed to download document", "error");
+    }
+  };
+
+  // System notifications actions
+  const [systemNotifications, setSystemNotifications] = useState([]);
+
+  const loadNotifications = async () => {
+    try {
+      const response = await getNotificationsApi();
+      const list = Array.isArray(response?.data?.data) ? response.data.data : [];
+      setSystemNotifications(list);
+    } catch (error) {
+      console.error("Failed to load notifications:", error);
+    }
+  };
+
+  const markNotificationRead = async (notificationId) => {
+    try {
+      await markAsReadApi(notificationId);
+      await loadNotifications();
+    } catch (error) {
+      console.error("Failed to mark notification read:", error);
+    }
+  };
+
+  const markAllNotificationsRead = async () => {
+    try {
+      await markAllAsReadApi();
+      await loadNotifications();
+    } catch (error) {
+      console.error("Failed to mark all notifications read:", error);
+    }
+  };
+
+  // Pending group invitations
+  const [pendingInvitations, setPendingInvitations] = useState([]);
+
+  const loadPendingInvitations = async () => {
+    try {
+      const response = await getPendingInvitations();
+      const list = Array.isArray(response?.data?.data) ? response.data.data : [];
+      setPendingInvitations(list);
+    } catch (error) {
+      console.error("Failed to load pending invitations:", error);
+    }
+  };
+
+  const acceptTripInvitation = async (memberId) => {
+    try {
+      await acceptInvitation(memberId);
+      triggerNotification("Accepted trip invitation!", "success");
+      await loadPendingInvitations();
+      await loadTrips();
+      await loadNotifications();
+    } catch (error) {
+      console.error("Failed to accept invitation:", error);
+      triggerNotification("Failed to accept invitation", "error");
+    }
+  };
+
+  const declineTripInvitation = async (memberId) => {
+    try {
+      await declineInvitation(memberId);
+      triggerNotification("Declined trip invitation", "info");
+      await loadPendingInvitations();
+      await loadNotifications();
+    } catch (error) {
+      console.error("Failed to decline invitation:", error);
+      triggerNotification("Failed to decline invitation", "error");
+    }
+  };
+
+  const inviteTripMember = async (tripId, memberData) => {
+    try {
+      await inviteMember(tripId, memberData);
+      await loadTripDetails(tripId);
+      triggerNotification(`Invitation sent to ${memberData.email}`, "success");
+    } catch (error) {
+      console.error("Failed to invite member:", error);
+      triggerNotification("Failed to invite member", "error");
+      throw error;
+    }
+  };
+
+  const removeTripMember = async (tripId, memberId) => {
+    try {
+      await removeMember(tripId, memberId);
+      await loadTripDetails(tripId);
+      triggerNotification("Member removed", "info");
+    } catch (error) {
+      console.error("Failed to remove member:", error);
+      triggerNotification("Failed to remove member", "error");
+      throw error;
+    }
   };
 
   // Profile actions
@@ -298,6 +488,9 @@ export const AppProvider = ({ children }) => {
       photo: null
     });
     await loadProfile();
+    await loadTrips();
+    await loadNotifications();
+    await loadPendingInvitations();
   };
 
   const updateProfile = async (updatedProfile) => {
@@ -381,8 +574,19 @@ export const AppProvider = ({ children }) => {
       updateProfile,
       updateSettings,
       logoutUser,
-      triggerNotification,
-      dismissNotification
+      dismissNotification,
+      loadTripDetails,
+      systemNotifications,
+      loadNotifications,
+      markNotificationRead,
+      markAllNotificationsRead,
+      pendingInvitations,
+      loadPendingInvitations,
+      acceptTripInvitation,
+      declineTripInvitation,
+      downloadTripDocument,
+      inviteTripMember,
+      removeTripMember
     }}>
       {children}
     </AppContext.Provider>

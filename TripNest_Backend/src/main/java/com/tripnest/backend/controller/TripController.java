@@ -35,14 +35,17 @@ public class TripController {
 
     }
     @GetMapping
-    public ApiResponse<List<TripResponse>> getMyTrips() {
+    public ApiResponse<List<TripResponse>> getMyTrips(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String search,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String status,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String sort) {
 
-        return tripService.getMyTrips();
+        return tripService.getMyTrips(search, status, sort);
 
     }
     
     @GetMapping("/{id}")
-    public ApiResponse<TripResponse> getTripById(
+    public ApiResponse<com.tripnest.backend.dto.response.TripDetailsResponse> getTripById(
             @PathVariable Long id) {
 
         return tripService.getTripById(id);

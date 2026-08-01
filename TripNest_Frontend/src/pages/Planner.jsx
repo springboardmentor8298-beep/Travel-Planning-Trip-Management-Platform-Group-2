@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 const Planner = () => {
-    const { trips, loadTrips } = useAppContext();
+    const { trips, loadTrips, loadTripDetails } = useAppContext();
 
   // Selected Trip ID
   const [selectedTripId, setSelectedTripId] = useState("");
@@ -140,7 +140,8 @@ const convertType = (type) => {
             title: activityForm.title,
             description: activityForm.description,
             activityTime: convertTime(activityForm.time),
-            activityType: convertType(activityForm.type)
+            activityType: convertType(activityForm.type),
+            cost: parseFloat(activityForm.cost) || 0
         };
 
         if (editingActivityId) {
@@ -150,6 +151,9 @@ const convertType = (type) => {
         }
 
         await loadTrips();
+        if (loadTripDetails) {
+            await loadTripDetails(trip.id);
+        }
 
         setEditingActivityId(null);
         setActivityForm({
@@ -170,6 +174,9 @@ const convertType = (type) => {
     try {
       await deleteActivity(actId);
       await loadTrips();
+      if (loadTripDetails) {
+          await loadTripDetails(trip.id);
+      }
     } catch (err) {
       console.error("Failed to delete activity:", err);
     }
@@ -205,7 +212,7 @@ const convertType = (type) => {
       time: formatTimeForForm(activity.time),
       title: activity.title,
       description: activity.description || "",
-      cost: "",
+      cost: activity.cost !== undefined ? activity.cost.toString() : "",
       type: convertTypeToForm(activity.type)
     });
   };

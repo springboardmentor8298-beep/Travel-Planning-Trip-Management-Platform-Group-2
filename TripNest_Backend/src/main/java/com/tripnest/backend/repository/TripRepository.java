@@ -8,7 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.tripnest.backend.entity.Trip;
 import com.tripnest.backend.entity.User;
 
-public interface TripRepository extends JpaRepository<Trip, Long> {
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+public interface TripRepository extends JpaRepository<Trip, Long>, JpaSpecificationExecutor<Trip> {
 
     List<Trip> findByUser(User user);
 

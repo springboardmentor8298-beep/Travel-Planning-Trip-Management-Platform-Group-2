@@ -20,18 +20,30 @@ import {
 
 const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeCreateInitially }) => {
 
-  const { addTrip: addTripToContext, updateTrip: updateTripInContext } = useAppContext();
+  const { addTrip: addTripToContext, updateTrip: updateTripInContext, loadTrips: loadTripsGlobal } = useAppContext();
 
   const [trips, setTrips] = useState([]);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Local Search / Filter / Sort state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All'); // All, Active, Upcoming, Completed
+  const [sortBy, setSortBy] = useState('startDate-asc'); // startDate-asc, startDate-desc, budget-desc, title-asc
+
   useEffect(() => {
-    loadTrips();
-  }, []);
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
-  async function loadTrips() {
+  useEffect(() => {
+    loadTrips(debouncedSearch, statusFilter, sortBy);
+  }, [debouncedSearch, statusFilter, sortBy]);
 
+  async function loadTrips(search, status, sort) {
     try {
-
-      const response = await getMyTrips();
+      const response = await getMyTrips(search, status, sort);
       const tripList = Array.isArray(response?.data?.data) ? response.data.data : [];
 
       setTrips(tripList.map((trip) => ({
@@ -41,19 +53,10 @@ const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeC
         destination: trip.destination ?? trip.destinationName ?? '',
         destinationName: trip.destinationName ?? trip.destination ?? ''
       })));
-
     } catch (error) {
-
       console.error(error);
-
     }
-
   }
-
-  // Local Search / Filter / Sort state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All'); // All, Active, Upcoming, Completed
-  const [sortBy, setSortBy] = useState('startDate-asc'); // startDate-asc, startDate-desc, budget-desc, title-asc
 
   // Modal control state
   const [isCreateOpen, setIsCreateOpen] = useState(isCreateOpenInitially || false);
@@ -62,6 +65,7 @@ const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeC
 
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [deletingTripId, setDeletingTripId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form Fields
   const [formFields, setFormFields] = useState({
@@ -139,6 +143,7 @@ const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeC
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const tripPayload = {
         title: formFields.title,
@@ -156,18 +161,19 @@ const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeC
       };
 
       await createTrip(tripPayload);
-      await loadTrips();
-      await loadTrips();
+      await loadTrips(debouncedSearch, statusFilter, sortBy);
+      if (loadTripsGlobal) {
+        await loadTripsGlobal();
+      }
       alert("Trip Created Successfully");
 
       handleCloseCreate();
 
     } catch (error) {
-
       console.error(error);
-
       alert("Failed to create trip");
-
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -184,6 +190,7 @@ const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeC
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const tripPayload = {
         title: formFields.title,
@@ -196,9 +203,8 @@ const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeC
         notes: formFields.notes
       };
 
-      await updateTripApi(editingTrip.id, tripPayload);
-      updateTripInContext(editingTrip.id, tripPayload);
-      await loadTrips();
+      await updateTripInContext(editingTrip.id, tripPayload);
+      await loadTrips(debouncedSearch, statusFilter, sortBy);
 
       setIsEditOpen(false);
       setEditingTrip(null);
@@ -206,6 +212,8 @@ const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeC
     } catch (error) {
       console.error(error);
       alert("Failed to update trip");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -224,7 +232,10 @@ const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeC
 
       await deleteTripApi(deletingTripId);
 
-      await loadTrips();   // Refresh trips from backend
+      await loadTrips(debouncedSearch, statusFilter, sortBy);   // Refresh trips locally
+      if (loadTripsGlobal) {
+        await loadTripsGlobal(); // Refresh trips globally
+      }
 
       setIsDeleteConfirmOpen(false);
       setDeletingTripId(null);
@@ -245,34 +256,9 @@ const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeC
     setActivePage('trip-details');
   };
 
-  // Filter & Sort Logic
-  const filteredTrips = trips.filter(trip => {
-    const status = getTripStatus(trip.startDate, trip.endDate);
-
-    // Search filter
-    const matchesSearch =
-      (trip.tripName ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (trip.destination ?? "").toLowerCase().includes(searchQuery.toLowerCase());
-    // Status filter
-    const matchesStatus = statusFilter === 'All' || status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const sortedTrips = [...filteredTrips].sort((a, b) => {
-    switch (sortBy) {
-      case 'startDate-asc':
-        return new Date(a.startDate) - new Date(b.startDate);
-      case 'startDate-desc':
-        return new Date(b.startDate) - new Date(a.startDate);
-      case 'budget-desc':
-        return b.budget - a.budget;
-      case "title-asc":
-        return (a.tripName ?? "").localeCompare(b.tripName ?? "");
-      default:
-        return 0;
-    }
-  });
+  // Filter & Sort Logic (controlled directly by backend Specification queries)
+  const filteredTrips = trips;
+  const sortedTrips = trips;
 
   return (
     <div className="space-y-6 p-1 sm:p-2">
@@ -630,9 +616,10 @@ const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeC
               </button>
               <button
                 type="submit"
-                className="rounded-full bg-gradient-to-r from-indigo-600 to-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-600/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-600/30 active:scale-95"
+                disabled={isSubmitting}
+                className="rounded-full bg-gradient-to-r from-indigo-600 to-sky-500 disabled:from-slate-200 disabled:to-slate-200 px-4 py-2 text-sm font-semibold text-white disabled:text-slate-400 shadow-lg shadow-indigo-600/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-600/30 active:scale-95"
               >
-                Create Journey
+                {isSubmitting ? "Creating..." : "Create Journey"}
               </button>
             </div>
           </form>
@@ -745,9 +732,10 @@ const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeC
               </button>
               <button
                 type="submit"
-                className="rounded-full bg-gradient-to-r from-indigo-600 to-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-600/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-600/30 active:scale-95"
+                disabled={isSubmitting}
+                className="rounded-full bg-gradient-to-r from-indigo-600 to-sky-500 disabled:from-slate-200 disabled:to-slate-200 px-4 py-2 text-sm font-semibold text-white disabled:text-slate-400 shadow-lg shadow-indigo-600/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-600/30 active:scale-95"
               >
-                Save Changes
+                {isSubmitting ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>

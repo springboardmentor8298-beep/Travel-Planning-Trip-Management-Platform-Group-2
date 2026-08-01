@@ -1,6 +1,7 @@
 package com.tripnest.backend.dto.response;
 
 import java.time.LocalTime;
+import java.math.BigDecimal;
 
 import com.tripnest.backend.entity.enums.ActivityType;
 
@@ -20,5 +21,7 @@ public class ActivityResponse {
     private LocalTime activityTime;
 
     private ActivityType activityType;
+
+    private BigDecimal cost;
 
 }
