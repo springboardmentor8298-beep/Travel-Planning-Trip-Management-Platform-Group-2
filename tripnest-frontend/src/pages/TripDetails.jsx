@@ -8,6 +8,14 @@ import { getTripById } from "../services/tripService";
 
 import { getTripImage } from "../utils/tripImage";
 
+import BudgetSummary from "../components/BudgetSummary";
+
+import ExpenseCard from "../components/ExpenseCard";
+
+import ExpenseModal from "../components/ExpenseModal";
+
+import { toast } from "react-toastify";
+
 import {
     getItinerariesByTrip,
     createItinerary
@@ -19,6 +27,13 @@ import {
     updateActivity,
     deleteActivity
 } from "../services/activityService";
+
+import {
+    getExpensesByTrip,
+    createExpense,
+    updateExpense,
+    deleteExpense
+} from "../services/expenseService";
 
 function TripDetails() {
 
@@ -47,6 +62,176 @@ function TripDetails() {
 
     const [showDayForm, setShowDayForm] = useState(false);
 
+    const [expenses, setExpenses] = useState([]);
+
+    const [editingExpense, setEditingExpense] = useState(null);
+
+    const [expenseForm, setExpenseForm] = useState({
+        title: "",
+        amount: "",
+        category: "FOOD",
+        expenseDate: "",
+        notes: ""
+    });
+
+    const handleExpenseChange = (event) => {
+
+        const { name, value } = event.target;
+
+        setExpenseForm({
+
+            ...expenseForm,
+
+            [name]: value
+
+        });
+
+    };
+
+    const handleEditExpense = (expense) => {
+
+        setEditingExpense(expense);
+
+        setExpenseForm({
+
+            title: expense.title,
+            amount: expense.amount,
+            category: expense.category,
+            expenseDate: expense.expenseDate,
+            notes: expense.notes
+
+        });
+
+        setShowExpenseForm(true);
+
+    };
+
+    const handleDeleteExpense = async (expenseId) => {
+
+        const confirmDelete = window.confirm(
+            "Are you sure you want to delete this expense?"
+        );
+
+        if (!confirmDelete) return;
+
+        try {
+
+            await deleteExpense(expenseId);
+
+            const updatedExpenses = await getExpensesByTrip(id);
+
+            setExpenses(updatedExpenses);
+
+            toast.success("Expense deleted successfully!");
+
+        } catch (error) {
+
+            console.error(error);
+
+            toast.error("Failed to delete expense.");
+
+        }
+
+    };
+
+    const handleExpenseSubmit = async (event) => {
+
+    event.preventDefault();
+
+    try {
+
+        try {
+
+          const expenseData = {
+
+              ...expenseForm,
+
+              trip: {
+
+                  id: Number(id)
+
+              }
+
+          };
+
+          if (editingExpense) {
+
+              await updateExpense(
+                  editingExpense.id,
+                  expenseData
+              );
+
+          } else {
+
+              await createExpense(expenseData);
+
+          }
+
+          const updatedExpenses = await getExpensesByTrip(id);
+
+          setExpenses(updatedExpenses);
+
+          setExpenseForm({
+
+              title: "",
+
+              amount: "",
+
+              category: "FOOD",
+
+              expenseDate: "",
+
+              notes: ""
+
+          });
+
+          setEditingExpense(null);
+
+          setShowExpenseForm(false);
+
+      } catch (error) {
+
+          console.error(error);
+
+          toast.error("Failed to save expense.");
+
+      }
+
+        const expenseData = await getExpensesByTrip(id);
+
+        setExpenses(expenseData);
+
+        setExpenseForm({
+
+            title: "",
+
+            amount: "",
+
+            category: "FOOD",
+
+            expenseDate: "",
+
+            notes: ""
+
+        });
+
+        setShowExpenseForm(false);
+
+    } catch (error) {
+
+        console.error(error);
+
+        toast.error("Failed to add expense.");
+
+    }
+
+};
+
+    const [showExpenseForm, setShowExpenseForm] = useState(false);
+
+   // const [editingExpenseId, setEditingExpenseId] = useState(null);
+
+
     useEffect(() => {
 
         const fetchTrip = async () => {
@@ -56,6 +241,10 @@ function TripDetails() {
                 const data = await getTripById(id);
 
                 setTrip(data);
+
+                const expenseData = await getExpensesByTrip(id);
+
+                setExpenses(expenseData);
 
                 const itineraryData = await getItinerariesByTrip(id);
 
@@ -80,7 +269,7 @@ function TripDetails() {
 
                 console.error(error);
 
-                alert("Failed to load trip.");
+                toast.error("Failed to load trip.");
 
             }
 
@@ -132,13 +321,13 @@ function TripDetails() {
 
             setShowDayForm(false);
 
-            alert("Itinerary added successfully!");
+            toast.success("Itinerary added successfully!");
 
         } catch (error) {
 
             console.error(error);
 
-            alert("Failed to create itinerary.");
+            toast.error("Failed to create itinerary.");
 
         }
 
@@ -198,7 +387,7 @@ function TripDetails() {
 
         setSelectedItineraryId(null);
 
-        alert("Activity added successfully!");
+        toast.success("Activity added successfully!");
 
         
 
@@ -206,7 +395,7 @@ function TripDetails() {
 
         console.error(error);
 
-        alert("Failed to create activity.");
+        toast.error("Failed to create activity.");
 
     }
   };
@@ -269,7 +458,7 @@ function TripDetails() {
 
         console.error(error);
 
-        alert("Failed to update activity.");
+        toast.error("Failed to update activity.");
 
     }
 
@@ -303,13 +492,13 @@ function TripDetails() {
 
         );
 
-        alert("Activity deleted successfully!");
+        toast.success("Activity deleted successfully!");
 
     } catch (error) {
 
         console.error(error);
 
-        alert("Failed to delete activity.");
+        toast.error("Failed to delete activity.");
 
     }
 
@@ -332,6 +521,19 @@ function TripDetails() {
         return <h2>Loading...</h2>;
 
     }
+
+    const totalSpent = expenses.reduce(
+        (sum, expense) => sum + Number(expense.amount),
+        0
+    );
+
+    const remainingBudget = trip
+        ? trip.budget - totalSpent
+        : 0;
+
+    const budgetPercentage = trip && trip.budget > 0
+        ? (totalSpent / trip.budget) * 100
+        : 0;
 
     return (
       <div className="trip-details">
@@ -403,6 +605,75 @@ function TripDetails() {
 
           <p>{trip.description}</p>
         </div>
+
+        <BudgetSummary
+
+            budget={trip.budget}
+
+            totalSpent={totalSpent}
+
+            remainingBudget={remainingBudget}
+
+            budgetPercentage={budgetPercentage}
+
+        />
+
+        <div className="expense-section">
+          <div className="expense-header">
+
+            <h2>💰 Expenses</h2>
+
+            <button
+                className="add-expense-btn"
+                onClick={() => setShowExpenseForm(true)}
+            >
+                + Add Expense
+            </button>
+
+        </div>
+
+          {expenses.length === 0 ? (
+            <div className="no-expense">
+
+              <div className="empty-expense">
+
+                  <h3>💸 No Expenses Yet</h3>
+
+                  <p>
+
+                      Start tracking your trip expenses.
+
+                  </p>
+
+              </div>
+              
+
+          </div>
+          ) : (
+            expenses.map((expense) => (
+
+              <ExpenseCard
+                  key={expense.id}
+                  expense={expense}
+                  onEdit={handleEditExpense}
+                  onDelete={handleDeleteExpense}
+              />
+
+          ))
+          )}
+        </div>
+
+        <ExpenseModal
+            showExpenseForm={showExpenseForm}
+            setShowExpenseForm={setShowExpenseForm}
+            expenseForm={expenseForm}
+            handleExpenseChange={handleExpenseChange}
+            handleExpenseSubmit={handleExpenseSubmit}
+            editingExpense={editingExpense}
+            editingExpense={editingExpense}
+
+            setEditingExpense={setEditingExpense}
+        />
 
         {!showDayForm ? (
           <div
