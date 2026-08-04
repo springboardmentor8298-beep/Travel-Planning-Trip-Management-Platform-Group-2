@@ -10,5 +10,11 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
+
+# Milestone 3: Create the uploads directory inside the container.
+# Docker will mount the named volume (uploads_data) here at runtime,
+# preserving uploaded travel documents across container restarts.
+RUN mkdir -p /uploads
+
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import NotificationBell from './NotificationBell';
 
 /**
  * Top navigation bar — shown on all authenticated pages.
@@ -33,8 +34,9 @@ const Navbar = () => {
           <Link to="/destinations" className={isActive('/destinations')}>Destinations</Link>
         </div>
 
-        {/* User Info + Logout */}
+        {/* User Info + Notifications + Logout */}
         <div className="nav-user">
+          <NotificationBell />
           <span className="nav-username">
             👤 {currentUser?.firstName || currentUser?.username}
           </span>

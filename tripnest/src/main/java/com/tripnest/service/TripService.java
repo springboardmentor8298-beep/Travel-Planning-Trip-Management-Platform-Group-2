@@ -3,9 +3,11 @@ package com.tripnest.service;
 import com.tripnest.dto.TripRequest;
 import com.tripnest.dto.TripResponse;
 import com.tripnest.dto.TripStatsResponse;
+import com.tripnest.entity.MemberStatus;
 import com.tripnest.entity.Trip;
 import com.tripnest.entity.TripStatus;
 import com.tripnest.entity.User;
+import com.tripnest.repository.TripMemberRepository;
 import com.tripnest.repository.TripRepository;
 import com.tripnest.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class TripService {
 
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
+    private final TripMemberRepository tripMemberRepository;
 
     // -------------------------------------------------------------------------
     // Create
@@ -58,8 +61,20 @@ public class TripService {
 
     @Transactional(readOnly = true)
     public TripResponse getTripById(Long tripId, Long userId) {
-        Trip trip = tripRepository.findByIdAndUserId(tripId, userId)
+        Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
+
+        // Allow access if the user is the trip owner OR an accepted member
+        boolean isOwner = trip.getUser().getId().equals(userId);
+        boolean isMember = tripMemberRepository
+                .findByTripIdAndUserId(tripId, userId)
+                .map(m -> m.getStatus() == MemberStatus.ACCEPTED)
+                .orElse(false);
+
+        if (!isOwner && !isMember) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access to this trip");
+        }
+
         return toResponse(trip, true);
     }
 

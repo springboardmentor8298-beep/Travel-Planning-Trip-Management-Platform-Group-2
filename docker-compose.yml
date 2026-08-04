@@ -30,8 +30,15 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/tripnest_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: VSSSM@2006
-      # Auto-run table creation if needed (matches application.properties default)
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      # ── Milestone 3: File Upload Directory ──────────────────────
+      # Uploaded travel documents are stored here inside the container.
+      # Mapped to the named volume below so files survive container restarts.
+      TRIPNEST_UPLOAD_DIR: /uploads
+      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 10MB
+      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 15MB
+    volumes:
+      - uploads_data:/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -50,3 +57,5 @@ services:
 
 volumes:
   db_data:
+  # ── Milestone 3: Persistent volume for uploaded travel documents ──
+  uploads_data:

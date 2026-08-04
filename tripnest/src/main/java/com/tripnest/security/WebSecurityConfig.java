@@ -72,7 +72,7 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8081"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
         configuration.setExposedHeaders(List.of("x-auth-token"));
@@ -96,14 +96,16 @@ public class WebSecurityConfig {
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/test/all").permitAll()
                     .requestMatchers("/api/destinations/**").permitAll()
+                    .requestMatchers("/uploads/**").permitAll()
                     .requestMatchers("/error").permitAll()
                     // Role-protected endpoints
                     .requestMatchers("/api/test/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/test/agent/**").hasRole("AGENT")
                     .requestMatchers("/api/test/traveler/**").hasRole("TRAVELER")
-                    // Trip, itinerary, activity management — requires authentication
+                    // Trip, itinerary, activity, expense, collaboration — requires authentication
                     .requestMatchers("/api/trips/**").authenticated()
                     .requestMatchers("/api/itineraries/**").authenticated()
+                    .requestMatchers("/api/notifications/**").authenticated()
                     // Everything else requires authentication
                     .anyRequest().authenticated());
 

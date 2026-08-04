@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TripNest - Milestone 2 Documentation</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- html2pdf.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Mermaid.js Library -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+  </script>
+
+  <style>
+    :root {
+      --color-primary: #1e3a8a;
+      --color-primary-dark: #1e40af;
+      --color-secondary: #0d9488;
+      --color-bg: #f8fafc;
+      --color-surface: #ffffff;
+      --color-text: #0f172a;
+      --color-text-muted: #475569;
+      --color-border: #e2e8f0;
+      --color-success: #10b981;
+      --color-error: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    /* Action bar */
+    .action-bar {
+      max-width: 800px;
+      margin: 0 auto 1.5rem auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .action-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+      color: #ffffff;
+      border: none;
+      padding: 0.6rem 1.25rem;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .btn-download:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3);
+    }
+
+    /* Document container */
+    .document-page {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 3rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+
+    header {
+      border-bottom: 2px solid var(--color-primary);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .doc-category {
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--color-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .doc-title {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      line-height: 1.2;
+    }
+
+    .doc-meta {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin: 2rem 0 1rem 0;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 0.5rem;
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--color-text);
+      margin: 1.5rem 0 0.65rem 0;
+    }
+
+    p {
+      margin-bottom: 1.25rem;
+      font-size: 0.975rem;
+      color: var(--color-text);
+    }
+
+    ul {
+      margin-bottom: 1.5rem;
+      padding-left: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    /* Diagrams */
+    .diagram-container {
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 1.5rem;
+      background: #f8fafc;
+      margin: 1.5rem 0;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .diagram-container svg {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+    }
+
+    th, td {
+      border: 1px solid var(--color-border);
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f1f5f9;
+      font-weight: 700;
+      color: var(--color-primary);
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 1rem 1.25rem;
+      border-radius: 6px;
+      margin: 1.5rem 0;
+      background-color: #eff6ff;
+      border-left: 4px solid var(--color-primary);
+      font-size: 0.9rem;
+    }
+
+    .alert-title {
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      color: var(--color-primary);
+    }
+
+    /* Code blocks */
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      background: #f1f5f9;
+      padding: 0.15rem 0.35rem;
+      border-radius: 3px;
+      font-size: 0.85em;
+    }
+
+    pre {
+      background: #f1f5f9;
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 1.25rem 1.5rem;
+      margin: 1.25rem 0;
+      overflow-x: auto;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      font-size: 0.82rem;
+      line-height: 1.65;
+    }
+
+    /* API endpoint badges */
+    .api-list {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 1.5rem;
+    }
+
+    .api-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.9rem;
+    }
+
+    .api-list li:last-child {
+      border-bottom: none;
+    }
+
+    .method-badge {
+      display: inline-block;
+      font-family: 'Courier New', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      flex-shrink: 0;
+      min-width: 46px;
+      text-align: center;
+    }
+
+    .badge-get    { background: #dcfce7; color: #166534; }
+    .badge-post   { background: #dbeafe; color: #1e40af; }
+    .badge-put    { background: #fef9c3; color: #854d0e; }
+    .badge-delete { background: #fee2e2; color: #991b1b; }
+
+    .api-path {
+      font-family: 'Courier New', monospace;
+      font-size: 0.83rem;
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    .api-desc {
+      color: var(--color-text-muted);
+    }
+
+    /* Horizontal rule */
+    hr {
+      border: none;
+      border-top: 1px solid var(--color-border);
+      margin: 2rem 0;
+    }
+
+    /* Print styling */
+    @media print {
+      body {
+        background-color: #ffffff;
+        padding: 0;
+      }
+      .action-bar {
+        display: none;
+      }
+      .document-page {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+      }
+      h2, h3, header, .alert, table, .diagram-container, pre {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Action Bar -->
+  <div class="action-bar">
+    <span class="action-title">TripNest Milestone 2 Documentation</span>
+    <button id="download-btn" class="btn-download">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+      </svg>
+      Download PDF
+    </button>
+  </div>
+
+  <!-- Document Page -->
+  <div id="document-content" class="document-page">
+    <header>
+      <div class="doc-category">Project Milestone Documentation</div>
+      <h1 class="doc-title">Milestone 2: Trip &amp; Itinerary Management</h1>
+      <div class="doc-meta">
+        <span><strong>Project:</strong> TripNest Travel Platform</span>
+        <span><strong>Scope:</strong> Core Travel Features &amp; Itinerary Planning</span>
+      </div>
+    </header>
+
+    <p>This document covers the implementation, architecture, database schemas, APIs, and design of the core travel features introduced in Milestone 2. The architecture builds on the Milestone 1 JWT-gated security system.</p>
+
+    <!-- ─── SECTION 1 ─── -->
+    <h2>1. System Architecture</h2>
+    <p>The architecture builds on the Milestone 1 JWT-gated security system. Below is a structural model of the newly implemented features:</p>
+
+    <div class="diagram-container">
+      <div class="mermaid">
+graph TD
+    subgraph Frontend [React Frontend]
+        Navbar[Navbar]
+        Dashboard[Dashboard Component]
+        TripList[Trip List Component]
+        TripForm[Trip Form Component]
+        TripDetail[Trip Detail Component]
+        ItineraryDay[Itinerary Day Component]
+        Destinations[Destinations Browser]
+        TripService[trip.service.js]
+    end
+
+    subgraph Backend [Spring Boot REST API]
+        TC[TripController]
+        IC[ItineraryController]
+        AC[ActivityController]
+        DC[DestinationController]
+        TS[TripService]
+        IS[ItineraryService]
+        AS[ActivityService]
+        DS[DestinationService]
+        TR[TripRepository]
+        IR[ItineraryRepository]
+        AR[ActivityRepository]
+        DR[DestinationRepository]
+        DI[DataInitializer]
+    end
+
+    subgraph Database [MySQL Database]
+        T_T[(trips)]
+        T_I[(itineraries)]
+        T_A[(activities)]
+        T_D[(destinations)]
+    end
+
+    Dashboard --> TripList
+    Dashboard --> Destinations
+    TripList --> TripForm
+    TripList --> TripDetail
+    TripDetail --> ItineraryDay
+
+    TripService -->|HTTP Requests with JWT| TC
+    TripService -->|HTTP Requests with JWT| IC
+    TripService -->|HTTP Requests with JWT| AC
+    TripService -->|HTTP Requests| DC
+
+    TC --> TS --> TR --> T_T
+    IC --> IS --> IR --> T_I
+    AC --> AS --> AR --> T_A
+    DC --> DS --> DR --> T_D
+    DI -->|JPA Seed| T_D
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- ─── SECTION 2 ─── -->
+    <h2>2. Database Schema Model</h2>
+    <p>Hibernate automatically builds and configures the following tables based on the JPA entities:</p>
+
+    <pre><code>-- trips Table (Scoped to User)
+CREATE TABLE trips (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(100) NOT NULL,
+  destination VARCHAR(100) NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  budget DECIMAL(15, 2),
+  status VARCHAR(20) NOT NULL DEFAULT 'PLANNED', -- PLANNED, ONGOING, COMPLETED, CANCELLED
+  description TEXT,
+  number_of_travelers INT NOT NULL DEFAULT 1,
+  user_id BIGINT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- itineraries Table (A specific Day plan of a Trip)
+CREATE TABLE itineraries (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  day_number INT NOT NULL,
+  date DATE,
+  notes TEXT,
+  trip_id BIGINT NOT NULL,
+  FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
+);
+
+-- activities Table (Specific events/actions within an Itinerary Day)
+CREATE TABLE activities (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(150) NOT NULL,
+  description TEXT,
+  activity_type VARCHAR(30) NOT NULL, -- SIGHTSEEING, TRANSPORT, ACCOMMODATION, DINING, ADVENTURE, SHOPPING
+  start_time TIME,
+  end_time TIME,
+  location VARCHAR(200),
+  cost DECIMAL(15, 2),
+  itinerary_id BIGINT NOT NULL,
+  FOREIGN KEY (itinerary_id) REFERENCES itineraries(id) ON DELETE CASCADE
+);
+
+-- destinations Table (Browse-only read-only directory)
+CREATE TABLE destinations (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  country VARCHAR(100) NOT NULL,
+  description TEXT,
+  climate VARCHAR(100),
+  best_time_to_visit VARCHAR(150),
+  popular_attractions TEXT
+);</code></pre>
+
+    <hr>
+
+    <!-- ─── SECTION 3 ─── -->
+    <h2>3. API Reference</h2>
+    <p>All requests to <code>/api/trips/**</code> and <code>/api/itineraries/**</code> require a valid JWT token in the <code>Authorization: Bearer &lt;token&gt;</code> header. Destinations endpoints (<code>/api/destinations/**</code>) are accessible without authentication.</p>
+
+    <h3>Trips</h3>
+    <ul class="api-list">
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/trips</span><br>
+          <span class="api-desc">Lists all trips created by the logged-in user.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/trips/{id}</span><br>
+          <span class="api-desc">Gets details of a specific trip (verifies user ownership).</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/trips/stats</span><br>
+          <span class="api-desc">Retrieves summary counts (<code>totalTrips</code>, <code>plannedTrips</code>, <code>ongoingTrips</code>, <code>completedTrips</code>) for the user's dashboard.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-post">POST</span>
+        <span>
+          <span class="api-path">/api/trips</span><br>
+          <span class="api-desc">Creates a new trip.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-put">PUT</span>
+        <span>
+          <span class="api-path">/api/trips/{id}</span><br>
+          <span class="api-desc">Updates an existing trip (verifies user ownership).</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-delete">DELETE</span>
+        <span>
+          <span class="api-path">/api/trips/{id}</span><br>
+          <span class="api-desc">Deletes a trip and cascades delete to all associated itineraries and activities.</span>
+        </span>
+      </li>
+    </ul>
+
+    <h3>Itinerary Days</h3>
+    <ul class="api-list">
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/itineraries</span><br>
+          <span class="api-desc">Gets list of days scheduled for a trip.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-post">POST</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/itineraries</span><br>
+          <span class="api-desc">Adds a new day (e.g. Day 1, Day 2) to the trip.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-put">PUT</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/itineraries/{id}</span><br>
+          <span class="api-desc">Edits day parameters (notes, dates).</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-delete">DELETE</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/itineraries/{id}</span><br>
+          <span class="api-desc">Deletes a day and cascades delete to its activities.</span>
+        </span>
+      </li>
+    </ul>
+
+    <h3>Activities</h3>
+    <ul class="api-list">
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/itineraries/{itineraryId}/activities</span><br>
+          <span class="api-desc">Gets all activities planned for that specific day.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-post">POST</span>
+        <span>
+          <span class="api-path">/api/itineraries/{itineraryId}/activities</span><br>
+          <span class="api-desc">Creates an activity (Sightseeing, Dining, Transport, etc.) on that day.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-put">PUT</span>
+        <span>
+          <span class="api-path">/api/itineraries/{itineraryId}/activities/{id}</span><br>
+          <span class="api-desc">Edits activity details.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-delete">DELETE</span>
+        <span>
+          <span class="api-path">/api/itineraries/{itineraryId}/activities/{id}</span><br>
+          <span class="api-desc">Deletes the activity.</span>
+        </span>
+      </li>
+    </ul>
+
+    <h3>Destinations</h3>
+    <ul class="api-list">
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/destinations</span><br>
+          <span class="api-desc">Fetches the default list of global seeded travel destinations.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/destinations/search?q={query}</span><br>
+          <span class="api-desc">Searches destinations by country or city name.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/destinations/{id}</span><br>
+          <span class="api-desc">Returns a full breakdown of climate, best season to visit, and main attractions.</span>
+        </span>
+      </li>
+    </ul>
+
+    <hr>
+
+    <!-- ─── SECTION 4 ─── -->
+    <h2>4. Frontend Component Breakdown</h2>
+    <p>The React client implements the following user interfaces using the consistent clean stylesheet layout defined in <code>App.css</code>:</p>
+
+    <h3>A. Dashboard View (<code>/dashboard</code>)</h3>
+    <p>Displays cards summarizing total trips and status breakdowns. It features a list of the user's upcoming trips and quick actions (Plan a Trip, View Trips, Explore Destinations).</p>
+
+    <h3>B. Trips Overview Page (<code>/trips</code>)</h3>
+    <p>Presents a grid of custom card components showing trip details. Includes a text search and tabbed filtering system based on statuses (<code>PLANNED</code>, <code>ONGOING</code>, <code>COMPLETED</code>, <code>CANCELLED</code>).</p>
+
+    <h3>C. Planner &amp; Itinerary Builder (<code>/trips/:id</code>)</h3>
+    <p>Acts as the central planning interface. It pulls details of the trip, shows dates, duration, budget, and displays day cards (<code>ItineraryDay.js</code>).</p>
+    <ul>
+      <li>Allows adding days via a simple collapsible form.</li>
+      <li>Contains an inline activity creation and edit panel for adding items directly under any specific day card.</li>
+      <li>Features distinct icons corresponding to activity types (e.g., 🏛️ for Sightseeing, 🍽️ for Dining, 🚗 for Transport).</li>
+    </ul>
+
+    <h3>D. Destination Browser (<code>/destinations</code>)</h3>
+    <p>Allows users to explore pre-seeded cities. Includes a live debounced search system. Clicking "View Details" opens a modal overlay displaying rich travel details (climate conditions, top travel seasons, and a tagged list of popular attractions).</p>
+
+    <hr>
+
+    <!-- ─── SECTION 5 ─── -->
+    <h2>5. Setup &amp; Seeding Details</h2>
+
+    <h3>Automatic Seeding</h3>
+    <ul>
+      <li><strong>Roles:</strong> Handled idempotently by <code>TripnestApplication</code>'s <code>CommandLineRunner</code> on startup (<code>ROLE_TRAVELER</code>, <code>ROLE_AGENT</code>, <code>ROLE_ADMIN</code>).</li>
+      <li><strong>Destinations:</strong> Handled by <code>DataInitializer</code> upon startup using Spring Data JPA. Checks if records exist and seeds 10 popular destinations (Paris, Tokyo, Bali, Santorini, etc.) if empty.</li>
+    </ul>
+
+    <div class="alert">
+      <div class="alert-title">Implementation Note</div>
+      <p>All new endpoints seamlessly extend the existing JWT security filter chain established in Milestone 1. Trip and Itinerary resources are strictly scoped to the authenticated user — any cross-user access attempt returns a <code>403 Forbidden</code> response. Destination data is seeded once on first startup and remains read-only to all clients.</p>
+    </div>
+
+  </div><!-- /.document-page -->
+
+  <script>
+    // Action handler to download PDF
+    document.getElementById('download-btn').addEventListener('click', () => {
+      const element = document.getElementById('document-content');
+
+      // Configure PDF options
+      const opt = {
+        margin:       [0.4, 0.4, 0.4, 0.4],
+        filename:     'TripNest_Milestone_2_Documentation.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      // Generate the PDF
+      html2pdf().set(opt).from(element).save();
+    });
+  </script>
+</body>
+</html>

@@ -1,20 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Navbar from './Navbar';
 import ItineraryDay from './ItineraryDay';
+import BudgetOverview from './BudgetOverview';
+import ExpenseList from './ExpenseList';
+import ExpenseForm from './ExpenseForm';
+import TripMembers from './TripMembers';
+import GroupChat from './GroupChat';
+import DocumentManager from './DocumentManager';
 import { getTripById, deleteTrip, getItineraries, addItinerary, deleteItinerary } from '../services/trip.service';
 
-/**
- * TripDetail — full trip view with itinerary days and activities.
- */
+const TABS = [
+  { id: 'overview',   label: '📋 Overview' },
+  { id: 'itinerary',  label: '🗓️ Itinerary' },
+  { id: 'budget',     label: '💰 Budget & Expenses' },
+  { id: 'members',    label: '👥 Members' },
+  { id: 'documents',  label: '📁 Documents' },
+  { id: 'chat',       label: '💬 Group Chat' },
+];
+
 const TripDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   const [trip, setTrip] = useState(null);
   const [itineraries, setItineraries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // Expense form state
+  const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [editingExpense, setEditingExpense] = useState(null);
+  const [expenseRefresh, setExpenseRefresh] = useState(0);
 
   // Add day form
   const [showAddDay, setShowAddDay] = useState(false);
@@ -22,10 +42,7 @@ const TripDetail = () => {
   const [addingDay, setAddingDay] = useState(false);
   const [dayError, setDayError] = useState('');
 
-  useEffect(() => {
-    fetchAll();
-    // eslint-disable-next-line
-  }, [id]);
+  useEffect(() => { fetchAll(); }, [id]); // eslint-disable-line
 
   const fetchAll = async () => {
     setLoading(true);
@@ -55,11 +72,7 @@ const TripDetail = () => {
     setDayError('');
     setAddingDay(true);
     try {
-      const payload = {
-        dayNumber: parseInt(dayForm.dayNumber, 10),
-        date: dayForm.date || null,
-        notes: dayForm.notes || null,
-      };
+      const payload = { dayNumber: parseInt(dayForm.dayNumber, 10), date: dayForm.date || null, notes: dayForm.notes || null };
       const newDay = await addItinerary(id, payload);
       setItineraries((prev) => [...prev, newDay].sort((a, b) => a.dayNumber - b.dayNumber));
       setDayForm({ dayNumber: '', date: '', notes: '' });
@@ -86,6 +99,12 @@ const TripDetail = () => {
     return `badge ${map[status] || ''}`;
   };
 
+  const handleExpenseSaved = () => {
+    setShowExpenseForm(false);
+    setEditingExpense(null);
+    setExpenseRefresh((r) => r + 1);
+  };
+
   if (loading) return (
     <div className="page-root">
       <Navbar />
@@ -103,6 +122,8 @@ const TripDetail = () => {
     </div>
   );
 
+  const isOwner = currentUser?.id === trip.userId;
+
   return (
     <div className="page-root">
       <Navbar />
@@ -118,10 +139,12 @@ const TripDetail = () => {
             </div>
             <p className="page-subtitle">📍 {trip.destination}</p>
           </div>
-          <div className="trip-detail-actions">
-            <Link to={`/trips/${id}/edit`} className="btn btn-outline btn-auto" id="edit-trip-btn">Edit</Link>
-            <button className="btn btn-danger btn-auto" onClick={handleDeleteTrip} id="delete-trip-detail-btn">Delete</button>
-          </div>
+          {isOwner && (
+            <div className="trip-detail-actions">
+              <Link to={`/trips/${id}/edit`} className="btn btn-outline btn-auto" id="edit-trip-btn">Edit</Link>
+              <button className="btn btn-danger btn-auto" onClick={handleDeleteTrip} id="delete-trip-detail-btn">Delete</button>
+            </div>
+          )}
         </div>
 
         {/* Trip Info Cards */}
@@ -146,93 +169,145 @@ const TripDetail = () => {
           )}
         </div>
 
-        {trip.description && (
-          <div className="section-card">
-            <h2 className="section-title">Description</h2>
-            <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.7 }}>{trip.description}</p>
-          </div>
-        )}
-
-        {/* Itinerary Section */}
-        <div className="section-card">
-          <div className="section-header">
-            <h2 className="section-title">Itinerary ({itineraries.length} day{itineraries.length !== 1 ? 's' : ''})</h2>
+        {/* Tab Navigation */}
+        <div className="trip-tabs">
+          {TABS.map((tab) => (
             <button
-              className="btn btn-primary btn-auto"
-              onClick={() => setShowAddDay(true)}
-              id="add-day-btn"
+              key={tab.id}
+              className={`trip-tab ${activeTab === tab.id ? 'trip-tab--active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+              id={`tab-${tab.id}`}
             >
-              + Add Day
+              {tab.label}
             </button>
-          </div>
+          ))}
+        </div>
 
-          {/* Add Day Form */}
-          {showAddDay && (
-            <div className="activity-form-box" style={{ marginBottom: '1.5rem' }}>
-              <h4 style={{ marginBottom: '0.75rem' }}>Add Itinerary Day</h4>
-              {dayError && <div className="alert alert-error">{dayError}</div>}
-              <form onSubmit={handleAddDay} id="add-day-form">
-                <div className="form-row form-row-3">
-                  <div className="form-group">
-                    <label htmlFor="day-number">Day Number *</label>
-                    <input
-                      id="day-number"
-                      type="number"
-                      min="1"
-                      className="form-input"
-                      value={dayForm.dayNumber}
-                      onChange={(e) => setDayForm((p) => ({ ...p, dayNumber: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="day-date">Date</label>
-                    <input
-                      id="day-date"
-                      type="date"
-                      className="form-input"
-                      value={dayForm.date}
-                      onChange={(e) => setDayForm((p) => ({ ...p, date: e.target.value }))}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="day-notes">Notes</label>
-                    <input
-                      id="day-notes"
-                      type="text"
-                      className="form-input"
-                      placeholder="Optional notes for the day"
-                      value={dayForm.notes}
-                      onChange={(e) => setDayForm((p) => ({ ...p, notes: e.target.value }))}
-                    />
-                  </div>
+        {/* Tab Content */}
+        <div className="trip-tab-content">
+
+          {/* Overview */}
+          {activeTab === 'overview' && (
+            <div className="section-card">
+              <h2 className="section-title">Trip Overview</h2>
+              {trip.description && (
+                <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.7, marginBottom: '1.5rem' }}>{trip.description}</p>
+              )}
+              <div className="overview-quick-stats">
+                <div className="quick-stat">
+                  <div className="quick-stat__label">Status</div>
+                  <span className={getStatusClass(trip.status)}>{trip.status}</span>
                 </div>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  <button type="submit" className="btn btn-primary btn-auto" disabled={addingDay} id="save-day-btn">
-                    {addingDay ? <span className="spinner" /> : 'Add Day'}
-                  </button>
-                  <button type="button" className="btn btn-outline btn-auto" onClick={() => setShowAddDay(false)}>Cancel</button>
+                <div className="quick-stat">
+                  <div className="quick-stat__label">Itinerary Days</div>
+                  <div className="quick-stat__value">{itineraries.length}</div>
                 </div>
-              </form>
+                <div className="quick-stat">
+                  <div className="quick-stat__label">Owner</div>
+                  <div className="quick-stat__value">@{trip.username}</div>
+                </div>
+              </div>
             </div>
           )}
 
-          {itineraries.length === 0 ? (
-            <div className="empty-state">
-              <p>No days planned yet. Click "+ Add Day" to build your itinerary.</p>
+          {/* Itinerary */}
+          {activeTab === 'itinerary' && (
+            <div className="section-card">
+              <div className="section-header">
+                <h2 className="section-title">Itinerary ({itineraries.length} day{itineraries.length !== 1 ? 's' : ''})</h2>
+                <button className="btn btn-primary btn-auto" onClick={() => setShowAddDay(true)} id="add-day-btn">+ Add Day</button>
+              </div>
+              {showAddDay && (
+                <div className="activity-form-box" style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{ marginBottom: '0.75rem' }}>Add Itinerary Day</h4>
+                  {dayError && <div className="alert alert-error">{dayError}</div>}
+                  <form onSubmit={handleAddDay} id="add-day-form">
+                    <div className="form-row form-row-3">
+                      <div className="form-group">
+                        <label htmlFor="day-number">Day Number *</label>
+                        <input id="day-number" type="number" min="1" className="form-input" value={dayForm.dayNumber}
+                          onChange={(e) => setDayForm((p) => ({ ...p, dayNumber: e.target.value }))} required />
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="day-date">Date</label>
+                        <input id="day-date" type="date" className="form-input" value={dayForm.date}
+                          onChange={(e) => setDayForm((p) => ({ ...p, date: e.target.value }))} />
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="day-notes">Notes</label>
+                        <input id="day-notes" type="text" className="form-input" placeholder="Optional notes"
+                          value={dayForm.notes} onChange={(e) => setDayForm((p) => ({ ...p, notes: e.target.value }))} />
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <button type="submit" className="btn btn-primary btn-auto" disabled={addingDay} id="save-day-btn">
+                        {addingDay ? <span className="spinner" /> : 'Add Day'}
+                      </button>
+                      <button type="button" className="btn btn-outline btn-auto" onClick={() => setShowAddDay(false)}>Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              )}
+              {itineraries.length === 0 ? (
+                <div className="empty-state"><p>No days planned yet. Click "+ Add Day" to build your itinerary.</p></div>
+              ) : (
+                <div className="itinerary-list">
+                  {itineraries.map((day) => (
+                    <ItineraryDay key={day.id} day={day} tripId={id} onDelete={handleDeleteDay} />
+                  ))}
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="itinerary-list">
-              {itineraries.map((day) => (
-                <ItineraryDay
-                  key={day.id}
-                  day={day}
+          )}
+
+          {/* Budget & Expenses */}
+          {activeTab === 'budget' && (
+            <div className="section-card">
+              <h2 className="section-title">Budget & Expenses</h2>
+              <BudgetOverview tripId={id} key={expenseRefresh} />
+              <div style={{ marginTop: '2rem' }}>
+                <ExpenseList
                   tripId={id}
-                  onDelete={handleDeleteDay}
+                  onEdit={(expense) => { setEditingExpense(expense); setShowExpenseForm(true); }}
+                  onAdd={() => { setEditingExpense(null); setShowExpenseForm(true); }}
+                  refresh={expenseRefresh}
                 />
-              ))}
+              </div>
+              {showExpenseForm && (
+                <ExpenseForm
+                  tripId={id}
+                  expense={editingExpense}
+                  onSave={handleExpenseSaved}
+                  onCancel={() => { setShowExpenseForm(false); setEditingExpense(null); }}
+                />
+              )}
             </div>
           )}
+
+          {/* Members */}
+          {activeTab === 'members' && (
+            <div className="section-card">
+              <h2 className="section-title">Trip Collaborators</h2>
+              <TripMembers tripId={id} tripOwnerId={trip.userId} />
+            </div>
+          )}
+
+          {/* Documents */}
+          {activeTab === 'documents' && (
+            <div className="section-card">
+              <h2 className="section-title">Travel Documents</h2>
+              <DocumentManager tripId={id} />
+            </div>
+          )}
+
+          {/* Group Chat */}
+          {activeTab === 'chat' && (
+            <div className="section-card">
+              <h2 className="section-title">Group Chat</h2>
+              <GroupChat tripId={id} />
+            </div>
+          )}
+
         </div>
       </div>
     </div>

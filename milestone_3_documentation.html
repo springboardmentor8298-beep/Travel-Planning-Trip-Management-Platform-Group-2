@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TripNest - Milestone 3 Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'default' });</script>
+  <style>
+    :root {
+      --color-primary: #1e3a8a;
+      --color-primary-dark: #1e40af;
+      --color-secondary: #0d9488;
+      --color-bg: #f8fafc;
+      --color-surface: #ffffff;
+      --color-text: #0f172a;
+      --color-text-muted: #475569;
+      --color-border: #e2e8f0;
+      --color-success: #10b981;
+      --color-error: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--color-bg); color: var(--color-text); line-height: 1.6; padding: 2rem 1rem; }
+    .action-bar { max-width: 800px; margin: 0 auto 1.5rem auto; display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 1rem 1.5rem; border-radius: 8px; border: 1px solid var(--color-border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .action-title { font-size: 0.95rem; font-weight: 700; color: var(--color-text-muted); }
+    .btn-download { background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); color: #ffffff; border: none; padding: 0.6rem 1.25rem; border-radius: 6px; font-family: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(30,58,138,0.2); transition: all 0.2s ease; }
+    .btn-download:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(30,58,138,0.3); }
+    .document-page { max-width: 800px; margin: 0 auto; background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 3rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+    header { border-bottom: 2px solid var(--color-primary); padding-bottom: 1.5rem; margin-bottom: 2.5rem; }
+    .doc-category { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--color-secondary); margin-bottom: 0.5rem; }
+    .doc-title { font-size: 2.25rem; font-weight: 800; color: var(--color-primary); line-height: 1.2; }
+    .doc-meta { margin-top: 0.75rem; font-size: 0.85rem; color: var(--color-text-muted); display: flex; gap: 1.5rem; }
+    h2 { font-size: 1.35rem; font-weight: 700; color: var(--color-primary); margin: 2rem 0 1rem 0; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem; }
+    h3 { font-size: 1.05rem; font-weight: 700; color: var(--color-text); margin: 1.5rem 0 0.65rem 0; }
+    p { margin-bottom: 1.25rem; font-size: 0.975rem; color: var(--color-text); }
+    ul { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+    li { margin-bottom: 0.5rem; font-size: 0.95rem; }
+    .diagram-container { border: 1px solid var(--color-border); border-radius: 6px; padding: 1.5rem; background: #f8fafc; margin: 1.5rem 0; display: flex; justify-content: center; overflow: hidden; }
+    .diagram-container svg { max-width: 100% !important; height: auto !important; }
+    table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+    th, td { border: 1px solid var(--color-border); padding: 0.75rem 1rem; font-size: 0.9rem; text-align: left; }
+    th { background-color: #f1f5f9; font-weight: 700; color: var(--color-primary); }
+    .alert { padding: 1rem 1.25rem; border-radius: 6px; margin: 1.5rem 0; background-color: #eff6ff; border-left: 4px solid var(--color-primary); font-size: 0.9rem; }
+    .alert-title { font-weight: 700; margin-bottom: 0.25rem; color: var(--color-primary); }
+    code { font-family: 'Courier New', Courier, monospace; background: #f1f5f9; padding: 0.15rem 0.35rem; border-radius: 3px; font-size: 0.85em; }
+    pre { background: #f1f5f9; border: 1px solid var(--color-border); border-radius: 6px; padding: 1.25rem 1.5rem; margin: 1.25rem 0; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; font-size: 0.82rem; line-height: 1.65; }
+    .api-list { list-style: none; padding-left: 0; margin-bottom: 1.5rem; }
+    .api-list li { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.55rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+    .api-list li:last-child { border-bottom: none; }
+    .method-badge { display: inline-block; font-family: 'Courier New', monospace; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; flex-shrink: 0; min-width: 46px; text-align: center; }
+    .badge-get    { background: #dcfce7; color: #166534; }
+    .badge-post   { background: #dbeafe; color: #1e40af; }
+    .badge-put    { background: #fef9c3; color: #854d0e; }
+    .badge-delete { background: #fee2e2; color: #991b1b; }
+    .api-path { font-family: 'Courier New', monospace; font-size: 0.83rem; color: var(--color-primary); font-weight: 600; }
+    .api-desc { color: var(--color-text-muted); }
+    hr { border: none; border-top: 1px solid var(--color-border); margin: 2rem 0; }
+    @media print {
+      body { background-color: #ffffff; padding: 0; }
+      .action-bar { display: none; }
+      .document-page { border: none; box-shadow: none; padding: 0; }
+      h2, h3, header, .alert, table, .diagram-container, pre { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="action-bar">
+    <span class="action-title">TripNest Milestone 3 Documentation</span>
+    <button id="download-btn" class="btn-download">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+      </svg>
+      Download PDF
+    </button>
+  </div>
+
+  <div id="document-content" class="document-page">
+    <header>
+      <div class="doc-category">Project Milestone Documentation</div>
+      <h1 class="doc-title">Milestone 3: Budget, Expenses &amp; Collaboration</h1>
+      <div class="doc-meta">
+        <span><strong>Project:</strong> TripNest Travel Platform</span>
+        <span><strong>Scope:</strong> Budget Management, Group Collaboration &amp; Deployment</span>
+      </div>
+    </header>
+
+    <p>This document covers the implementation, architecture, database schemas, APIs, and design of the collaboration and financial management features introduced in Milestone 3. The system builds on the Milestone 2 trip and itinerary core, adding expense tracking, group member management, group chat, travel document storage, and in-app notifications — all containerized with Docker Compose for full-stack deployment.</p>
+
+    <!-- SECTION 1 -->
+    <h2>1. System Architecture</h2>
+    <p>The architecture extends the Milestone 2 travel planning system with five new feature pillars — each backed by a dedicated Spring Boot service layer, repository, and React frontend component.</p>
+
+    <div class="diagram-container">
+      <div class="mermaid">
+graph TD
+    subgraph Frontend [React Frontend]
+        NB[NotificationBell]
+        TM[TripMembers Component]
+        GC[GroupChat Component]
+        BO[BudgetOverview Component]
+        EL[ExpenseList Component]
+        EF[ExpenseForm Component]
+        DM[DocumentManager Component]
+        CS[collaboration.service.js]
+        ES[expense.service.js]
+        DS[document.service.js]
+        NS[notification.service.js]
+    end
+
+    subgraph Backend [Spring Boot REST API]
+        CC[CollaborationController]
+        EC[ExpenseController]
+        DC[DocumentController]
+        GCC[GroupChatController]
+        NC[NotificationController]
+        CollabS[CollaborationService]
+        ExpS[ExpenseService]
+        DocS[DocumentService]
+        ChatS[GroupChatService]
+        NotifS[NotificationService]
+        TMR[TripMemberRepository]
+        ER[ExpenseRepository]
+        DR[TravelDocumentRepository]
+        GMR[GroupMessageRepository]
+        NR[NotificationRepository]
+    end
+
+    subgraph Database [MySQL Database]
+        TM_DB[(trip_members)]
+        EX_DB[(expenses)]
+        TD_DB[(travel_documents)]
+        GM_DB[(group_messages)]
+        NO_DB[(notifications)]
+    end
+
+    subgraph Docker [Docker Compose Stack]
+        FE_C[tripnest-frontend port 8081]
+        BE_C[tripnest-backend port 8082]
+        DB_C[tripnest-db port 3307]
+    end
+
+    TM --> CS
+    GC --> CS
+    BO --> ES
+    EL --> ES
+    EF --> ES
+    DM --> DS
+    NB --> NS
+
+    CS -->|JWT| CC
+    CS -->|JWT| GCC
+    ES -->|JWT| EC
+    DS -->|JWT| DC
+    NS -->|JWT| NC
+
+    CC --> CollabS --> TMR --> TM_DB
+    EC --> ExpS --> ER --> EX_DB
+    DC --> DocS --> DR --> TD_DB
+    GCC --> ChatS --> GMR --> GM_DB
+    NC --> NotifS --> NR --> NO_DB
+
+    CollabS -->|creates| NotifS
+
+    FE_C --- BE_C --- DB_C
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- SECTION 2 -->
+    <h2>2. Database Schema Model</h2>
+    <p>Hibernate automatically builds and configures the following five new tables based on the JPA entities introduced in Milestone 3. All tables cascade correctly from the <code>trips</code> table established in Milestone 2.</p>
+
+    <pre><code>-- trip_members: Links users to trips as collaborators
+CREATE TABLE trip_members (
+  id         BIGINT PRIMARY KEY AUTO_INCREMENT,
+  trip_id    BIGINT NOT NULL,
+  user_id    BIGINT NOT NULL,
+  role       VARCHAR(20) NOT NULL DEFAULT 'MEMBER',   -- MEMBER, OWNER
+  status     VARCHAR(20) NOT NULL DEFAULT 'PENDING',  -- PENDING, ACCEPTED, DECLINED
+  invited_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  joined_at  DATETIME,
+  UNIQUE KEY uq_trip_user (trip_id, user_id),
+  FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- expenses: Tracks per-trip financial transactions
+CREATE TABLE expenses (
+  id           BIGINT PRIMARY KEY AUTO_INCREMENT,
+  trip_id      BIGINT NOT NULL,
+  user_id      BIGINT NOT NULL,
+  category     VARCHAR(30) NOT NULL,
+  -- TRANSPORTATION, HOTEL, FOOD, SHOPPING, ENTERTAINMENT, MISCELLANEOUS
+  amount       DECIMAL(12, 2) NOT NULL,
+  description  VARCHAR(255),
+  expense_date DATE NOT NULL,
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- travel_documents: Stores uploaded file metadata per trip
+CREATE TABLE travel_documents (
+  id                BIGINT PRIMARY KEY AUTO_INCREMENT,
+  trip_id           BIGINT NOT NULL,
+  uploader_id       BIGINT NOT NULL,
+  file_name         VARCHAR(255) NOT NULL,
+  stored_file_name  VARCHAR(255) NOT NULL UNIQUE,
+  doc_type          VARCHAR(30) NOT NULL,
+  -- TICKET, HOTEL_BOOKING, PASSPORT, VISA, PHOTO, OTHER
+  uploaded_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
+  FOREIGN KEY (uploader_id) REFERENCES users(id)
+);
+
+-- group_messages: Stores per-trip group chat messages
+CREATE TABLE group_messages (
+  id         BIGINT PRIMARY KEY AUTO_INCREMENT,
+  trip_id    BIGINT NOT NULL,
+  sender_id  BIGINT NOT NULL,
+  message    TEXT NOT NULL,
+  sent_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
+  FOREIGN KEY (sender_id) REFERENCES users(id)
+);
+
+-- notifications: Stores in-app notifications per user
+CREATE TABLE notifications (
+  id           BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id      BIGINT NOT NULL,
+  type         VARCHAR(30) NOT NULL,
+  -- TRIP_REMINDER, BUDGET_ALERT, GROUP_INVITE, ACTIVITY_REMINDER, GENERAL
+  title        VARCHAR(150) NOT NULL,
+  message      TEXT NOT NULL,
+  is_read      BOOLEAN NOT NULL DEFAULT FALSE,
+  reference_id BIGINT,
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);</code></pre>
+
+    <hr>
+
+    <!-- SECTION 3 -->
+    <h2>3. API Reference</h2>
+    <p>All Milestone 3 endpoints require a valid JWT token in the <code>Authorization: Bearer &lt;token&gt;</code> header. Document download URLs are served directly by the backend from the configured upload directory.</p>
+
+    <h3>Trip Members &amp; Collaboration</h3>
+    <ul class="api-list">
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/members</span><br>
+          <span class="api-desc">Returns all member records for a trip including their status (PENDING, ACCEPTED, DECLINED) and role.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-post">POST</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/members/invite</span><br>
+          <span class="api-desc">Invites a user by username or email. Only the trip owner may invite. Creates a PENDING member record and sends a GROUP_INVITE notification to the invitee.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-put">PUT</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/members/{id}/accept</span><br>
+          <span class="api-desc">Accepts a pending invitation. Updates member status to ACCEPTED and records the joined timestamp.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-put">PUT</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/members/{id}/decline</span><br>
+          <span class="api-desc">Declines a pending invitation. Updates member status to DECLINED.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-delete">DELETE</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/members/{id}</span><br>
+          <span class="api-desc">Removes a member from the trip. Allowed for the trip owner (remove anyone) or the member themselves (leave trip).</span>
+        </span>
+      </li>
+    </ul>
+
+    <h3>Budget &amp; Expenses</h3>
+    <ul class="api-list">
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/expenses</span><br>
+          <span class="api-desc">Returns all expenses for a trip ordered by date descending.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/expenses/summary</span><br>
+          <span class="api-desc">Returns a budget summary: total budget, total spent, remaining balance, over-budget flag, and a per-category breakdown map.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-post">POST</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/expenses</span><br>
+          <span class="api-desc">Records a new expense. Body requires <code>category</code>, <code>amount</code>, and <code>expenseDate</code>.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-put">PUT</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/expenses/{id}</span><br>
+          <span class="api-desc">Updates an existing expense. Only the expense creator may edit.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-delete">DELETE</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/expenses/{id}</span><br>
+          <span class="api-desc">Deletes an expense record. Only the expense creator may delete.</span>
+        </span>
+      </li>
+    </ul>
+
+    <h3>Travel Documents</h3>
+    <ul class="api-list">
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/documents</span><br>
+          <span class="api-desc">Lists all documents uploaded for a trip with metadata (file name, type, uploader, upload date, download URL).</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-post">POST</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/documents</span><br>
+          <span class="api-desc">Uploads a file via <code>multipart/form-data</code>. Accepted types: TICKET, HOTEL_BOOKING, PASSPORT, VISA, PHOTO, OTHER. Max size: 10 MB.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/documents/{id}/download</span><br>
+          <span class="api-desc">Streams file bytes for download with correct <code>Content-Disposition</code> and <code>Content-Type</code> headers.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-delete">DELETE</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/documents/{id}</span><br>
+          <span class="api-desc">Deletes the metadata record and removes the physical file from the server. Only the uploader may delete.</span>
+        </span>
+      </li>
+    </ul>
+
+    <h3>Group Chat</h3>
+    <ul class="api-list">
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/messages</span><br>
+          <span class="api-desc">Returns all group chat messages for the trip ordered chronologically, including sender username and timestamp.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-post">POST</span>
+        <span>
+          <span class="api-path">/api/trips/{tripId}/messages</span><br>
+          <span class="api-desc">Posts a new message to the trip group chat. Body requires a non-empty <code>message</code> string.</span>
+        </span>
+      </li>
+    </ul>
+
+    <h3>Notifications</h3>
+    <ul class="api-list">
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/notifications</span><br>
+          <span class="api-desc">Returns all in-app notifications for the authenticated user ordered by creation date descending.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-get">GET</span>
+        <span>
+          <span class="api-path">/api/notifications/unread-count</span><br>
+          <span class="api-desc">Returns the count of unread notifications as <code>{ "count": N }</code> — used by the notification bell badge.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-put">PUT</span>
+        <span>
+          <span class="api-path">/api/notifications/{id}/read</span><br>
+          <span class="api-desc">Marks a single notification as read. Only the notification owner may perform this action.</span>
+        </span>
+      </li>
+      <li>
+        <span class="method-badge badge-put">PUT</span>
+        <span>
+          <span class="api-path">/api/notifications/read-all</span><br>
+          <span class="api-desc">Marks all notifications for the authenticated user as read in a single bulk operation.</span>
+        </span>
+      </li>
+    </ul>
+
+    <hr>
+
+    <!-- SECTION 4 -->
+    <h2>4. Frontend Component Breakdown</h2>
+    <p>All Milestone 3 features are accessed through a tabbed interface inside the existing <code>TripDetail.js</code> page, extended with four new tabs: <strong>Budget &amp; Expenses</strong>, <strong>Members</strong>, <strong>Documents</strong>, and <strong>Group Chat</strong>. The notification bell is mounted globally in the Navbar component.</p>
+
+    <h3>A. Budget &amp; Expenses Tab (<code>BudgetOverview.js</code> + <code>ExpenseList.js</code> + <code>ExpenseForm.js</code>)</h3>
+    <p>Presents a three-card header row showing Total Budget, Total Spent, and Remaining / Over Budget. A progress bar with a percentage indicator visually represents budget utilisation. A colour-coded category breakdown grid shows spending per category with individual progress bars.</p>
+    <ul>
+      <li>The expense table supports category filtering via toggle buttons and shows who recorded each expense.</li>
+      <li>Each row displays category icon, description, date, amount (&#8377; formatted), and the recorder's username.</li>
+      <li>Expense creators can edit or delete their own entries via an inline slide-up form.</li>
+    </ul>
+
+    <h3>B. Members Tab (<code>TripMembers.js</code>)</h3>
+    <p>Provides the complete trip collaboration workflow. The trip owner sees an Invite Collaborator panel with a helper hint reminding that the invitee must be a registered TripNest user.</p>
+    <ul>
+      <li>Status-aware error messages distinguish between "user not found", "already invited", and "cannot invite yourself" cases.</li>
+      <li>Accepted members are displayed as avatar cards with username, email, role, and a coloured status badge (Active / Pending / Declined).</li>
+      <li>The trip owner can remove any member; members can leave using the same action.</li>
+      <li><code>TripService.getTripById()</code> was updated to allow accepted collaborators to access trip details alongside the owner.</li>
+    </ul>
+
+    <h3>C. Documents Tab (<code>DocumentManager.js</code>)</h3>
+    <p>A drag-and-drop file upload interface where users select a document type before uploading. Files are stored with a UUID prefix to prevent naming collisions.</p>
+    <ul>
+      <li>Documents are grouped by type with distinct icons: &#127915; Ticket, &#127944; Hotel Booking, &#128280; Passport, &#128203; Visa, &#128247; Photo, &#128196; Other.</li>
+      <li>Each card shows the filename, uploader username, upload date, a download button, and a delete button (uploader only). Max file size: 10 MB.</li>
+    </ul>
+
+    <h3>D. Group Chat Tab (<code>GroupChat.js</code>)</h3>
+    <p>A scrollable message thread grouped by calendar date. Messages appear as chat bubbles — right-aligned for the current user and left-aligned for others, each with a sender avatar initial.</p>
+    <ul>
+      <li>Polls for new messages every 5 seconds using <code>setInterval</code>, only triggering a re-render when the message list changes.</li>
+      <li>New messages auto-scroll the view to the bottom.</li>
+    </ul>
+
+    <h3>E. Notification Bell (<code>NotificationBell.js</code>)</h3>
+    <p>Mounted in the Navbar and visible across all authenticated pages. Polls every 30 seconds and displays a numeric badge for unread notifications.</p>
+    <ul>
+      <li>Opens a dropdown listing the 15 most recent notifications with type icons (&#128197; Trip Reminder, &#128184; Budget Alert, &#128101; Group Invite, &#9200; Activity Reminder, &#128276; General) and relative timestamps.</li>
+      <li>Clicking an unread notification marks it read inline. "Mark all read" handles bulk dismissal.</li>
+    </ul>
+
+    <hr>
+
+    <!-- SECTION 5 -->
+    <h2>5. Entity Relationship Overview</h2>
+    <p>The ER diagram below shows the five new Milestone 3 entities and how they relate to the existing <code>users</code> and <code>trips</code> tables from Milestones 1 and 2.</p>
+
+    <div class="diagram-container">
+      <div class="mermaid">
+erDiagram
+    USERS {
+        BIGINT id PK
+        VARCHAR username
+        VARCHAR email
+    }
+    TRIPS {
+        BIGINT id PK
+        BIGINT user_id FK
+        VARCHAR title
+        DECIMAL budget
+    }
+    TRIP_MEMBERS {
+        BIGINT id PK
+        BIGINT trip_id FK
+        BIGINT user_id FK
+        VARCHAR role
+        VARCHAR status
+        DATETIME invited_at
+        DATETIME joined_at
+    }
+    EXPENSES {
+        BIGINT id PK
+        BIGINT trip_id FK
+        BIGINT user_id FK
+        VARCHAR category
+        DECIMAL amount
+        DATE expense_date
+    }
+    TRAVEL_DOCUMENTS {
+        BIGINT id PK
+        BIGINT trip_id FK
+        BIGINT uploader_id FK
+        VARCHAR file_name
+        VARCHAR doc_type
+        DATETIME uploaded_at
+    }
+    GROUP_MESSAGES {
+        BIGINT id PK
+        BIGINT trip_id FK
+        BIGINT sender_id FK
+        TEXT message
+        DATETIME sent_at
+    }
+    NOTIFICATIONS {
+        BIGINT id PK
+        BIGINT user_id FK
+        VARCHAR type
+        VARCHAR title
+        BOOLEAN is_read
+        BIGINT reference_id
+    }
+    USERS ||--o{ TRIPS : owns
+    TRIPS ||--o{ TRIP_MEMBERS : has
+    USERS ||--o{ TRIP_MEMBERS : joins
+    TRIPS ||--o{ EXPENSES : tracks
+    USERS ||--o{ EXPENSES : records
+    TRIPS ||--o{ TRAVEL_DOCUMENTS : stores
+    USERS ||--o{ TRAVEL_DOCUMENTS : uploads
+    TRIPS ||--o{ GROUP_MESSAGES : contains
+    USERS ||--o{ GROUP_MESSAGES : sends
+    USERS ||--o{ NOTIFICATIONS : receives
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- SECTION 6 -->
+    <h2>6. Docker Deployment Architecture</h2>
+    <p>Milestone 3 introduces full Docker Compose containerisation, enabling a single-command deployment of the complete three-tier application stack.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Container</th>
+          <th>Image</th>
+          <th>Host Port</th>
+          <th>Container Port</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>tripnest-db</code></td>
+          <td>mysql:8</td>
+          <td>3307</td>
+          <td>3306</td>
+          <td>MySQL database with persistent named volume <code>db_data</code></td>
+        </tr>
+        <tr>
+          <td><code>tripnest-backend</code></td>
+          <td>Built from <code>./tripnest/Dockerfile</code></td>
+          <td>8082</td>
+          <td>8080</td>
+          <td>Spring Boot API — depends on DB health check before starting</td>
+        </tr>
+        <tr>
+          <td><code>tripnest-frontend</code></td>
+          <td>Built from <code>./tripnest-frontend/Dockerfile</code></td>
+          <td>8081</td>
+          <td>80</td>
+          <td>React app served by Nginx; proxies <code>/api/**</code> to backend</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The backend Dockerfile uses a two-stage build: Stage 1 compiles the Spring Boot JAR inside a Maven container; Stage 2 copies only the JAR into a lightweight JRE Alpine image. A named Docker volume (<code>uploads_data</code>) is mounted at <code>/uploads</code> inside the backend container to persist travel documents across restarts.</p>
+
+    <pre><code># Run the full stack (first time or after source changes):
+docker compose up --build
+
+# Rebuild only backend and frontend (no DB reset):
+docker compose build --no-cache backend frontend
+docker compose up -d --no-deps backend frontend
+
+# View running containers:
+docker compose ps
+
+# Access the application:
+#   Frontend  -> http://localhost:8081
+#   Backend   -> http://localhost:8082/api/...
+#   Database  -> localhost:3307</code></pre>
+
+    <hr>
+
+    <!-- SECTION 7 -->
+    <h2>7. Summary of Completed Operations</h2>
+
+    <h3>Backend (Spring Boot)</h3>
+    <ul>
+      <li><strong>CollaborationService:</strong> Implemented invite-by-username-or-email with duplicate and self-invite guards. Auto-creates a <code>GROUP_INVITE</code> notification on successful invite.</li>
+      <li><strong>ExpenseService:</strong> Full CRUD with per-category aggregation query for the budget summary. Budget remaining and over-budget flag computed server-side.</li>
+      <li><strong>DocumentService:</strong> File upload via Spring <code>MultipartFile</code>. Files stored on disk with UUID prefix; metadata persisted in <code>travel_documents</code>. Download streams bytes with correct headers.</li>
+      <li><strong>GroupChatService:</strong> Append-only message persistence fetched in chronological order per trip.</li>
+      <li><strong>NotificationService:</strong> Internal creation API consumed by other services. Supports per-user read/unread state and bulk mark-all-read via a custom JPQL update query.</li>
+      <li><strong>GlobalExceptionHandler:</strong> Extended to handle <code>ResponseStatusException</code> — returns a structured <code>{ "message": "..." }</code> JSON body for all 4xx/5xx errors so frontend messages are always actionable.</li>
+      <li><strong>TripService (fix):</strong> <code>getTripById()</code> updated to grant access to both trip owners and accepted collaborators, unblocking the collaboration workflow.</li>
+    </ul>
+
+    <h3>Frontend (React)</h3>
+    <ul>
+      <li><strong>TripDetail.js:</strong> Extended with four new tabs — Budget &amp; Expenses, Members, Documents, Group Chat — all lazy-rendered on tab activation.</li>
+      <li><strong>BudgetOverview.js:</strong> Real-time budget progress bar and category breakdown grid with colour-coded bars per expense category.</li>
+      <li><strong>ExpenseList.js + ExpenseForm.js:</strong> Filterable expense table with inline add/edit/delete and owner-scoped permissions.</li>
+      <li><strong>TripMembers.js:</strong> Full invite lifecycle UI with status badge display and context-aware error messages.</li>
+      <li><strong>DocumentManager.js:</strong> Drag-and-drop upload zone with document type selector, grouped file listing, and per-file download/delete actions.</li>
+      <li><strong>GroupChat.js:</strong> Date-grouped chat bubble UI with 5-second polling and auto-scroll-to-bottom behaviour.</li>
+      <li><strong>NotificationBell.js:</strong> Navbar-mounted dropdown with unread badge, 30-second polling, relative timestamps, and mark-read interactions.</li>
+    </ul>
+
+    <div class="alert">
+      <div class="alert-title">Evaluation Validation Note</div>
+      <p>All three Milestone 3 evaluation criteria are satisfied: <strong>Budget management</strong> is operational with full CRUD and live summary; <strong>Expense tracking</strong> is functional with category filtering and per-user ownership; <strong>Collaboration workflow</strong> is complete with invite, accept/decline, group chat, document management, and notifications — all containerized and running at <code>localhost:8081</code> via Docker Compose.</p>
+    </div>
+
+  </div>
+
+  <script>
+    document.getElementById('download-btn').addEventListener('click', () => {
+      const element = document.getElementById('document-content');
+      const opt = {
+        margin:       [0.4, 0.4, 0.4, 0.4],
+        filename:     'TripNest_Milestone_3_Documentation.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    });
+  </script>
+</body>
+</html>
