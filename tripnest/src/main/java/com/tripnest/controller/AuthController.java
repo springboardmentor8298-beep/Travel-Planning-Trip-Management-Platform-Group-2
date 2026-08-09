@@ -1,5 +1,4 @@
 package com.tripnest.controller;
-
 import com.tripnest.dto.*;
 import com.tripnest.entity.ERole;
 import com.tripnest.entity.Role;
@@ -18,7 +17,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
