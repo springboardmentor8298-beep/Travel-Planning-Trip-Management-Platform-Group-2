@@ -27,6 +27,7 @@
 
 ---
 
+<a id="objective"></a>
 ## 🎯 Objective
 
 Build a full-stack web application (React.js frontend + Spring Boot backend) that enables travelers to:
@@ -40,6 +41,7 @@ Build a full-stack web application (React.js frontend + Spring Boot backend) tha
 
 ---
 
+<a id="features-by-milestone"></a>
 ## ✨ Features by Milestone
 
 ### ✅ Milestone 1 — Authentication & Backend Setup (Week 1-2)
@@ -116,6 +118,7 @@ Complete schema with 12 tables auto-created by Hibernate:
 
 ---
 
+<a id="tech-stack"></a>
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
@@ -133,6 +136,7 @@ Complete schema with 12 tables auto-created by Hibernate:
 
 ---
 
+<a id="architecture"></a>
 ## 🏗️ Architecture
 
 ```
@@ -159,6 +163,7 @@ Nginx proxies all `/api/**` requests from the frontend to the backend container 
 
 ---
 
+<a id="project-structure"></a>
 ## 📁 Project Structure
 
 ```
@@ -217,6 +222,7 @@ TripNest/
 
 ---
 
+<a id="database-schema"></a>
 ## 🗄️ Database Schema
 
 All 12 tables auto-created by Hibernate (`ddl-auto=update`):
@@ -238,6 +244,7 @@ All 12 tables auto-created by Hibernate (`ddl-auto=update`):
 
 ---
 
+<a id="api-reference"></a>
 ## 📡 API Reference
 
 All endpoints except Auth and Destinations require `Authorization: Bearer <token>`.
@@ -326,6 +333,7 @@ All endpoints except Auth and Destinations require `Authorization: Bearer <token
 
 ---
 
+<a id="user-roles"></a>
 ## 👤 User Roles
 
 | Role | Description |
@@ -336,6 +344,7 @@ All endpoints except Auth and Destinations require `Authorization: Bearer <token
 
 ---
 
+<a id="how-to-run"></a>
 ## 🚀 How to Run
 
 ### Method A: Docker Compose *(Recommended)*
@@ -383,6 +392,7 @@ npm install && npm start
 
 ---
 
+<a id="milestone-progress--evaluation"></a>
 ## 📊 Milestone Progress & Evaluation
 
 | Milestone | Week | Scope | Status |
@@ -425,3 +435,4 @@ npm install && npm start
 ---
 
 <p align="center">Built with ☕ Java 21 + ⚛️ React 18 | TripNest © 2026</p>
+
