@@ -10,6 +10,7 @@ import TripMembers from './TripMembers';
 import GroupChat from './GroupChat';
 import DocumentManager from './DocumentManager';
 import { getTripById, deleteTrip, getItineraries, addItinerary, deleteItinerary } from '../services/trip.service';
+import authService from '../services/auth.service';
 
 const TABS = [
   { id: 'overview',   label: '📋 Overview' },
