@@ -54,6 +54,7 @@ const Navbar = () => {
           <Link to="/dashboard" className={isActive('/dashboard')}>Dashboard</Link>
           <Link to="/trips" className={isActive('/trips')}>My Trips</Link>
           <Link to="/destinations" className={isActive('/destinations')}>Destinations</Link>
+          <Link to="/analytics" className={isActive('/analytics')}>Analytics</Link>
         </div>
 
         {/* User Info + Notifications */}

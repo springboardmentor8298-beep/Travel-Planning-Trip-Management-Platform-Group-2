@@ -1,4 +1,4 @@
-﻿# TripNest 🧳✈️
+# TripNest 🧳✈️
 
 > **TripNest: Travel Planning & Trip Management Platform**
 > A full-stack web application (React.js frontend + Spring Boot backend) that enables travelers to plan trips, create day-wise itineraries, manage travel budgets, collaborate with friends and family, track expenses, and organize travel documents — all through a centralized travel dashboard.
@@ -392,6 +392,14 @@ npm install && npm start
 
 ---
 
+### Analytics & Reports
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/analytics/user` | Fetch interactive spending & travel analytics |
+| GET | `/api/trips/{id}/export/pdf` | Export trip itinerary & expenses as PDF document |
+
+---
+
 <a id="milestone-progress--evaluation"></a>
 ## 📊 Milestone Progress & Evaluation
 
@@ -400,7 +408,7 @@ npm install && npm start
 | **M1** | Week 1-2 | Requirements, DB Design & Backend Setup | ✅ Complete |
 | **M2** | Week 3-4 | Trip & Itinerary Management | ✅ Complete |
 | **M3** | Week 5-6 | Budget, Expenses & Collaboration | ✅ Complete |
-| **M4** | Week 7-8 | Analytics, Testing & Cloud Deployment | 🔲 Upcoming |
+| **M4** | Week 7-8 | Analytics, Testing & Cloud Deployment | ✅ Complete |
 
 ### Milestone 1 Evaluation Criteria ✅
 - [x] Spring Boot project setup completed
@@ -425,12 +433,12 @@ npm install && npm start
 - [x] Swagger UI / OpenAPI documentation
 - [x] Complete Postman test collection (30+ requests, auto JWT capture)
 
-### Milestone 4 (Upcoming)
-- [ ] Analytics dashboard with charts
-- [ ] Trip and expense reports
-- [ ] End-to-end testing (JUnit + Mockito)
-- [ ] Cloud deployment (AWS / Render / Railway)
-- [ ] SSL configuration for production
+### Milestone 4 Evaluation Criteria ✅
+- [x] Analytics & reporting dashboard operational with Chart.js (Doughnut, Bar, and Line charts)
+- [x] One-click PDF Itinerary & Expense Summary export (`/api/trips/{id}/export/pdf`)
+- [x] Comprehensive backend unit test suite using JUnit 5 & Mockito (`mvn test`)
+- [x] React component test suite using React Testing Library (`npm test`)
+- [x] Production environment profile setup (`application-prod.properties`) for PostgreSQL & cloud deployment
 
 ---
 

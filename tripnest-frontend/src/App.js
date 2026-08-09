@@ -8,6 +8,7 @@ import TripList from './components/TripList';
 import TripForm from './components/TripForm';
 import TripDetail from './components/TripDetail';
 import Destinations from './components/Destinations';
+import AnalyticsDashboard from './components/AnalyticsDashboard';
 import './App.css';
 
 /**
@@ -105,6 +106,16 @@ function App() {
             element={
               <PrivateRoute>
                 <Destinations />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Analytics */}
+          <Route
+            path="/analytics"
+            element={
+              <PrivateRoute>
+                <AnalyticsDashboard />
               </PrivateRoute>
             }
           />

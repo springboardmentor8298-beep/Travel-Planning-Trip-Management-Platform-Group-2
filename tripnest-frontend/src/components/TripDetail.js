@@ -131,6 +131,27 @@ const TripDetail = () => {
 
   const isOwner = currentUser?.id === trip.userId;
 
+  const handleExportPdf = async () => {
+    try {
+      const token = authService.getToken();
+      const response = await fetch(`/api/trips/${id}/export/pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('PDF generation failed');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `tripnest_${trip.title.replace(/\s+/g, '_')}_summary.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      setError('Failed to export PDF.');
+    }
+  };
+
   return (
     <div className="page-root">
       <Navbar />
@@ -146,12 +167,17 @@ const TripDetail = () => {
             </div>
             <p className="page-subtitle">📍 {trip.destination}</p>
           </div>
-          {isOwner && (
-            <div className="trip-detail-actions">
-              <Link to={`/trips/${id}/edit`} className="btn btn-outline btn-auto" id="edit-trip-btn">Edit</Link>
-              <button className="btn btn-danger btn-auto" onClick={handleDeleteTrip} id="delete-trip-detail-btn">Delete</button>
-            </div>
-          )}
+          <div className="trip-detail-actions">
+            <button className="btn btn-outline btn-auto" onClick={handleExportPdf} id="export-pdf-btn">
+              📄 Export PDF
+            </button>
+            {isOwner && (
+              <>
+                <Link to={`/trips/${id}/edit`} className="btn btn-outline btn-auto" id="edit-trip-btn">Edit</Link>
+                <button className="btn btn-danger btn-auto" onClick={handleDeleteTrip} id="delete-trip-detail-btn">Delete</button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Trip Info Cards */}
