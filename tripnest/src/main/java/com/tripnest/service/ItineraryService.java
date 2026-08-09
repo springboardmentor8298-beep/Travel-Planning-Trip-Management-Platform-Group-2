@@ -5,8 +5,10 @@ import com.tripnest.dto.ItineraryRequest;
 import com.tripnest.dto.ItineraryResponse;
 import com.tripnest.entity.Itinerary;
 import com.tripnest.entity.Trip;
+import com.tripnest.entity.MemberStatus;
 import com.tripnest.repository.ItineraryRepository;
 import com.tripnest.repository.TripRepository;
+import com.tripnest.repository.TripMemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,11 +29,27 @@ public class ItineraryService {
 
     private final ItineraryRepository itineraryRepository;
     private final TripRepository tripRepository;
+    private final TripMemberRepository tripMemberRepository;
     private final ActivityService activityService;
 
-    public ItineraryResponse addItinerary(Long tripId, Long userId, ItineraryRequest request) {
-        Trip trip = tripRepository.findByIdAndUserId(tripId, userId)
+    private Trip findTripWithAccess(Long tripId, Long userId) {
+        Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
+        
+        boolean isOwner = trip.getUser().getId().equals(userId);
+        boolean isMember = tripMemberRepository
+                .findByTripIdAndUserId(tripId, userId)
+                .map(m -> m.getStatus() == MemberStatus.ACCEPTED)
+                .orElse(false);
+
+        if (!isOwner && !isMember) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access to this trip");
+        }
+        return trip;
+    }
+
+    public ItineraryResponse addItinerary(Long tripId, Long userId, ItineraryRequest request) {
+        Trip trip = findTripWithAccess(tripId, userId);
 
         Itinerary itinerary = new Itinerary();
         itinerary.setTrip(trip);
@@ -44,9 +62,7 @@ public class ItineraryService {
 
     @Transactional(readOnly = true)
     public List<ItineraryResponse> getTripItineraries(Long tripId, Long userId) {
-        // Validate trip ownership
-        tripRepository.findByIdAndUserId(tripId, userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
+        findTripWithAccess(tripId, userId);
 
         return itineraryRepository.findByTripIdOrderByDayNumberAsc(tripId)
                 .stream()
@@ -55,9 +71,7 @@ public class ItineraryService {
     }
 
     public ItineraryResponse updateItinerary(Long itineraryId, Long tripId, Long userId, ItineraryRequest request) {
-        // Validate trip ownership
-        tripRepository.findByIdAndUserId(tripId, userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
+        findTripWithAccess(tripId, userId);
 
         Itinerary itinerary = itineraryRepository.findByIdAndTripId(itineraryId, tripId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Itinerary not found"));
@@ -70,8 +84,7 @@ public class ItineraryService {
     }
 
     public void deleteItinerary(Long itineraryId, Long tripId, Long userId) {
-        tripRepository.findByIdAndUserId(tripId, userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
+        findTripWithAccess(tripId, userId);
 
         Itinerary itinerary = itineraryRepository.findByIdAndTripId(itineraryId, tripId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Itinerary not found"));

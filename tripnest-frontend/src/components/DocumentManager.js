@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { getDocuments, uploadDocument, deleteDocument } from '../services/document.service';
 import { useAuth } from '../context/AuthContext';
+import authService from '../services/auth.service';
 
 const DOC_TYPES = ['TICKET', 'HOTEL_BOOKING', 'PASSPORT', 'VISA', 'PHOTO', 'OTHER'];
 
@@ -18,6 +19,7 @@ export default function DocumentManager({ tripId }) {
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [viewLoading, setViewLoading] = useState({});
 
   const load = useCallback(() => {
     setLoading(true);
@@ -59,6 +61,50 @@ export default function DocumentManager({ tripId }) {
     if (!window.confirm(`Delete "${fileName}"?`)) return;
     await deleteDocument(tripId, docId);
     load();
+  };
+
+  // Fetches the document with auth header, creates a temporary blob URL,
+  // then opens it in a new tab (view) or triggers a download.
+  const fetchBlob = async (url, fileName, inline) => {
+    const token = authService.getToken();
+    const res = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      setError(`Failed to load document (${res.status}). Please try again.`);
+      return;
+    }
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    if (inline) {
+      window.open(blobUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = fileName;
+      a.click();
+    }
+    // Revoke after a short delay to allow the browser to start reading it
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+  };
+
+  const handleView = async (doc) => {
+    const viewUrl = doc.downloadUrl.replace('/download', '/view');
+    setViewLoading((prev) => ({ ...prev, [`view-${doc.id}`]: true }));
+    try {
+      await fetchBlob(viewUrl, doc.fileName, true);
+    } finally {
+      setViewLoading((prev) => ({ ...prev, [`view-${doc.id}`]: false }));
+    }
+  };
+
+  const handleDownload = async (doc) => {
+    setViewLoading((prev) => ({ ...prev, [`dl-${doc.id}`]: true }));
+    try {
+      await fetchBlob(doc.downloadUrl, doc.fileName, false);
+    } finally {
+      setViewLoading((prev) => ({ ...prev, [`dl-${doc.id}`]: false }));
+    }
   };
 
   const groupedDocs = DOC_TYPES.reduce((acc, type) => {
@@ -138,14 +184,22 @@ export default function DocumentManager({ tripId }) {
                       </div>
                     </div>
                     <div className="doc-card__actions">
-                      <a
-                        href={doc.downloadUrl}
+                      <button
+                        className="btn-icon btn-icon--view"
+                        title="View inline"
+                        onClick={() => handleView(doc)}
+                        disabled={viewLoading[`view-${doc.id}`]}
+                      >
+                        {viewLoading[`view-${doc.id}`] ? <span className="spinner" style={{ width: 14, height: 14 }} /> : '👁️'}
+                      </button>
+                      <button
                         className="btn-icon btn-icon--download"
                         title="Download"
-                        download
+                        onClick={() => handleDownload(doc)}
+                        disabled={viewLoading[`dl-${doc.id}`]}
                       >
-                        ⬇️
-                      </a>
+                        {viewLoading[`dl-${doc.id}`] ? <span className="spinner" style={{ width: 14, height: 14 }} /> : '⬇️'}
+                      </button>
                       {currentUser?.username === doc.uploaderUsername && (
                         <button
                           className="btn-icon btn-icon--delete"

@@ -56,8 +56,13 @@ export default function TripMembers({ tripId, tripOwnerId }) {
 
   const handleRemove = async (memberId, username) => {
     if (!window.confirm(`Remove ${username} from this trip?`)) return;
-    await removeMember(tripId, memberId);
-    load();
+    try {
+      await removeMember(tripId, memberId);
+      load();
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Failed to remove member. Please try again.';
+      setError(msg);
+    }
   };
 
   return (

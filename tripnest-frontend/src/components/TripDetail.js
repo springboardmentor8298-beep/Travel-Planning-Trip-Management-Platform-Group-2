@@ -50,8 +50,15 @@ const TripDetail = () => {
       const [tripData, itnData] = await Promise.all([getTripById(id), getItineraries(id)]);
       setTrip(tripData);
       setItineraries(itnData);
-    } catch {
-      setError('Failed to load trip.');
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 403) {
+        setError('You do not have permission to view this trip.');
+      } else if (status === 404) {
+        setError('Trip not found.');
+      } else {
+        setError('Failed to load trip. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

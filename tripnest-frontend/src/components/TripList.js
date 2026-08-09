@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
+import { useAuth } from '../context/AuthContext';
 import { getTrips, deleteTrip } from '../services/trip.service';
 
 /**
@@ -10,6 +11,7 @@ const STATUS_OPTIONS = ['ALL', 'PLANNED', 'ONGOING', 'COMPLETED', 'CANCELLED'];
 
 const TripList = () => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [trips, setTrips] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -146,21 +148,25 @@ const TripList = () => {
                   >
                     View
                   </button>
-                  <button
-                    id={`edit-trip-${trip.id}`}
-                    className="btn btn-sm btn-outline btn-auto"
-                    onClick={() => navigate(`/trips/${trip.id}/edit`)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    id={`delete-trip-${trip.id}`}
-                    className="btn btn-sm btn-danger btn-auto"
-                    onClick={() => handleDelete(trip.id)}
-                    disabled={deletingId === trip.id}
-                  >
-                    {deletingId === trip.id ? '...' : 'Delete'}
-                  </button>
+                  {currentUser?.id === trip.userId && (
+                    <>
+                      <button
+                        id={`edit-trip-${trip.id}`}
+                        className="btn btn-sm btn-outline btn-auto"
+                        onClick={() => navigate(`/trips/${trip.id}/edit`)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        id={`delete-trip-${trip.id}`}
+                        className="btn btn-sm btn-danger btn-auto"
+                        onClick={() => handleDelete(trip.id)}
+                        disabled={deletingId === trip.id}
+                      >
+                        {deletingId === trip.id ? '...' : 'Delete'}
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}

@@ -33,13 +33,17 @@ public class ExpenseController {
     private final ExpenseService expenseService;
 
     @GetMapping
-    public ResponseEntity<List<ExpenseResponse>> getExpenses(@PathVariable Long tripId) {
-        return ResponseEntity.ok(expenseService.getExpensesByTrip(tripId));
+    public ResponseEntity<List<ExpenseResponse>> getExpenses(
+            @PathVariable Long tripId,
+            @AuthenticationPrincipal UserDetailsImpl currentUser) {
+        return ResponseEntity.ok(expenseService.getExpensesByTrip(tripId, currentUser.getId()));
     }
 
     @GetMapping("/summary")
-    public ResponseEntity<BudgetSummaryResponse> getSummary(@PathVariable Long tripId) {
-        return ResponseEntity.ok(expenseService.getBudgetSummary(tripId));
+    public ResponseEntity<BudgetSummaryResponse> getSummary(
+            @PathVariable Long tripId,
+            @AuthenticationPrincipal UserDetailsImpl currentUser) {
+        return ResponseEntity.ok(expenseService.getBudgetSummary(tripId, currentUser.getId()));
     }
 
     @PostMapping

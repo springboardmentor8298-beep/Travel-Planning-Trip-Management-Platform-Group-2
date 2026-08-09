@@ -3,9 +3,11 @@ package com.tripnest.service;
 import com.tripnest.dto.GroupMessageRequest;
 import com.tripnest.dto.GroupMessageResponse;
 import com.tripnest.entity.GroupMessage;
+import com.tripnest.entity.MemberStatus;
 import com.tripnest.entity.Trip;
 import com.tripnest.entity.User;
 import com.tripnest.repository.GroupMessageRepository;
+import com.tripnest.repository.TripMemberRepository;
 import com.tripnest.repository.TripRepository;
 import com.tripnest.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,11 +30,26 @@ public class GroupChatService {
     private final GroupMessageRepository groupMessageRepository;
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
+    private final TripMemberRepository tripMemberRepository;
+
+    private void checkTripAccess(Long tripId, Long userId) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
+        boolean isOwner = trip.getUser().getId().equals(userId);
+        boolean isMember = tripMemberRepository
+                .findByTripIdAndUserId(tripId, userId)
+                .map(m -> m.getStatus() == MemberStatus.ACCEPTED)
+                .orElse(false);
+        if (!isOwner && !isMember) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access to this trip");
+        }
+    }
 
     public GroupMessageResponse sendMessage(Long tripId, Long senderId, GroupMessageRequest request) {
         if (request.getMessage() == null || request.getMessage().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Message cannot be empty");
         }
+        checkTripAccess(tripId, senderId);
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
         User sender = userRepository.findById(senderId)
@@ -47,7 +64,8 @@ public class GroupChatService {
     }
 
     @Transactional(readOnly = true)
-    public List<GroupMessageResponse> getMessages(Long tripId) {
+    public List<GroupMessageResponse> getMessages(Long tripId, Long userId) {
+        checkTripAccess(tripId, userId);
         return groupMessageRepository.findByTripIdOrderBySentAtAsc(tripId)
                 .stream()
                 .map(this::toResponse)

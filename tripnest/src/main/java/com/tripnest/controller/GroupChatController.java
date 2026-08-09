@@ -28,8 +28,10 @@ public class GroupChatController {
     private final GroupChatService groupChatService;
 
     @GetMapping
-    public ResponseEntity<List<GroupMessageResponse>> getMessages(@PathVariable Long tripId) {
-        return ResponseEntity.ok(groupChatService.getMessages(tripId));
+    public ResponseEntity<List<GroupMessageResponse>> getMessages(
+            @PathVariable Long tripId,
+            @AuthenticationPrincipal UserDetailsImpl currentUser) {
+        return ResponseEntity.ok(groupChatService.getMessages(tripId, currentUser.getId()));
     }
 
     @PostMapping

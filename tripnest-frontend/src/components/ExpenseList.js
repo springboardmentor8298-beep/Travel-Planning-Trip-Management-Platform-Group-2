@@ -12,6 +12,7 @@ export default function ExpenseList({ tripId, onEdit, onAdd, refresh }) {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL');
+  const [deleteError, setDeleteError] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -22,8 +23,14 @@ export default function ExpenseList({ tripId, onEdit, onAdd, refresh }) {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this expense?')) return;
-    await deleteExpense(tripId, id);
-    load();
+    setDeleteError('');
+    try {
+      await deleteExpense(tripId, id);
+      load();
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Failed to delete expense. Please try again.';
+      setDeleteError(msg);
+    }
   };
 
   const categories = ['ALL', 'TRANSPORTATION', 'HOTEL', 'FOOD', 'SHOPPING', 'ENTERTAINMENT', 'MISCELLANEOUS'];
@@ -35,6 +42,7 @@ export default function ExpenseList({ tripId, onEdit, onAdd, refresh }) {
         <h4>Expenses</h4>
         <button className="btn btn-primary btn-sm" onClick={onAdd}>+ Add Expense</button>
       </div>
+      {deleteError && <div className="alert alert-error" style={{ marginBottom: '0.75rem' }}>{deleteError}</div>}
 
       {/* Category filter */}
       <div className="expense-filters">

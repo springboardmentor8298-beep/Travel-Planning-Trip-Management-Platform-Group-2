@@ -16,7 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -53,10 +56,20 @@ public class TripService {
 
     @Transactional(readOnly = true)
     public List<TripResponse> getUserTrips(Long userId) {
-        return tripRepository.findByUserIdOrderByStartDateDesc(userId)
+        // Collect owned trips first (preserves order)
+        Map<Long, TripResponse> tripMap = new LinkedHashMap<>();
+        tripRepository.findByUserIdOrderByStartDateDesc(userId)
+                .forEach(t -> tripMap.put(t.getId(), toResponse(t, false)));
+
+        // Also include trips where this user is an accepted collaborator
+        tripMemberRepository.findByUserIdAndStatus(userId, MemberStatus.ACCEPTED)
                 .stream()
+                .map(m -> m.getTrip())
+                .filter(t -> !tripMap.containsKey(t.getId()))
                 .map(t -> toResponse(t, false))
-                .collect(Collectors.toList());
+                .forEach(r -> tripMap.put(r.getId(), r));
+
+        return new ArrayList<>(tripMap.values());
     }
 
     @Transactional(readOnly = true)
@@ -80,11 +93,30 @@ public class TripService {
 
     @Transactional(readOnly = true)
     public TripStatsResponse getStats(Long userId) {
-        long total     = tripRepository.countByUserId(userId);
+        // Count owned trips per status
         long planned   = tripRepository.countByUserIdAndStatus(userId, TripStatus.PLANNED);
         long ongoing   = tripRepository.countByUserIdAndStatus(userId, TripStatus.ONGOING);
         long completed = tripRepository.countByUserIdAndStatus(userId, TripStatus.COMPLETED);
         long cancelled = tripRepository.countByUserIdAndStatus(userId, TripStatus.CANCELLED);
+
+        // Add accepted collaborator trips to each status bucket
+        List<Trip> memberTrips = tripMemberRepository
+                .findByUserIdAndStatus(userId, MemberStatus.ACCEPTED)
+                .stream()
+                .map(m -> m.getTrip())
+                .filter(t -> !t.getUser().getId().equals(userId)) // not already counted as owner
+                .collect(Collectors.toList());
+
+        for (Trip t : memberTrips) {
+            switch (t.getStatus()) {
+                case PLANNED   -> planned++;
+                case ONGOING   -> ongoing++;
+                case COMPLETED -> completed++;
+                case CANCELLED -> cancelled++;
+            }
+        }
+
+        long total = tripRepository.countByUserId(userId) + memberTrips.size();
         return new TripStatsResponse(total, planned, ongoing, completed, cancelled);
     }
 

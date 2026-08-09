@@ -67,4 +67,17 @@ public class DocumentController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
                 .body(resource);
     }
+
+    @GetMapping("/{id}/view")
+    public ResponseEntity<Resource> viewDocument(
+            @PathVariable Long tripId,
+            @PathVariable Long id) {
+        Resource resource = documentService.loadFileAsResource(tripId, id);
+        String fileName = documentService.getFileName(tripId, id);
+        String contentType = documentService.getContentType(tripId, id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
+                .body(resource);
+    }
 }

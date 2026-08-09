@@ -1,88 +1,118 @@
-# TripNest 🧳
+﻿# TripNest 🧳✈️
 
-> **A full-stack travel planning & trip management platform** built with React.js + Spring Boot.  
-> Plan trips, build day-wise itineraries, track budgets, collaborate with friends, manage travel documents, and chat with your group — all in one place.
+> **TripNest: Travel Planning & Trip Management Platform**
+> A full-stack web application (React.js frontend + Spring Boot backend) that enables travelers to plan trips, create day-wise itineraries, manage travel budgets, collaborate with friends and family, track expenses, and organize travel documents — all through a centralized travel dashboard.
 
-![Java](https://img.shields.io/badge/Java_21-ED8B00?style=flat&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.2-6DB33F?style=flat&logo=spring&logoColor=white)
-![React](https://img.shields.io/badge/React_18-20232A?style=flat&logo=react&logoColor=61DAFB)
-![MySQL](https://img.shields.io/badge/MySQL_8-4479A1?style=flat&logo=mysql&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
+[![Java](https://img.shields.io/badge/Java_21-ED8B00?style=flat&logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.2-6DB33F?style=flat&logo=spring&logoColor=white)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React_18-20232A?style=flat&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![MySQL](https://img.shields.io/badge/MySQL_8-4479A1?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=flat&logo=springsecurity&logoColor=white)](https://spring.io/projects/spring-security)
 
 ---
 
 ## 📋 Table of Contents
 
-1. [Features](#features)
-2. [Tech Stack](#tech-stack)
-3. [Architecture](#architecture)
-4. [Project Structure](#project-structure)
-5. [Database Schema](#database-schema)
-6. [API Reference](#api-reference)
-7. [User Roles](#user-roles)
-8. [How to Run](#how-to-run)
-9. [Milestone Progress](#milestone-progress)
+1. [Objective](#objective)
+2. [Features by Milestone](#features-by-milestone)
+3. [Tech Stack](#tech-stack)
+4. [Architecture](#architecture)
+5. [Project Structure](#project-structure)
+6. [Database Schema](#database-schema)
+7. [API Reference](#api-reference)
+8. [User Roles](#user-roles)
+9. [How to Run](#how-to-run)
+10. [Milestone Progress & Evaluation](#milestone-progress--evaluation)
 
 ---
 
-## ✨ Features
+## 🎯 Objective
 
-### 🔐 Authentication & Security
-- JWT-based stateless authentication
-- Role-based access control (Traveler / Agent / Admin)
+Build a full-stack web application (React.js frontend + Spring Boot backend) that enables travelers to:
+
+- 🗺️ **Plan trips** with day-wise itineraries and activity scheduling
+- 💰 **Manage budgets** and track expenses across categories
+- 👥 **Collaborate** with friends and family on shared trip plans
+- 📁 **Organize travel documents** (tickets, visas, hotel bookings, photos)
+- 🔔 **Stay notified** with trip reminders, budget alerts, and group invitations
+- 🌍 **Discover destinations** with curated travel guides and attraction listings
+
+---
+
+## ✨ Features by Milestone
+
+### ✅ Milestone 1 — Authentication & Backend Setup (Week 1-2)
+
+#### 🔐 User Authentication & Role-Based Access
+- JWT-based stateless authentication (no server-side session)
 - BCrypt password hashing
-- Spring Security filter chain on all protected endpoints
+- Role-based access control: **Traveler**, **Agent**, **Administrator**
+- Spring Security filter chain protecting all private endpoints
+- Automatic role and destination seeding on first startup
 
-### 🗺️ Trip Management
-- Create, edit, delete, and view trips
-- Trip fields: title, destination, dates, budget, status, number of travelers, description
+#### 🗄️ Database Design
+Complete schema with 12 tables auto-created by Hibernate:
+`users` · `roles` · `user_roles` · `trips` · `itineraries` · `activities` · `destinations` · `trip_members` · `expenses` · `travel_documents` · `group_messages` · `notifications`
+
+---
+
+### ✅ Milestone 2 — Trip & Itinerary Management (Week 3-4)
+
+#### ✈️ Trip Management System
+- Create, edit, view, and delete trips
+- Trip fields: title, destination, start/end dates, budget, number of travelers, description
 - Trip status lifecycle: `PLANNED` → `ONGOING` → `COMPLETED` / `CANCELLED`
-- Dashboard with trip stats (total, planned, ongoing, completed)
+- Dashboard with trip statistics (total, planned, ongoing, completed)
 
-### 📅 Itinerary Planning
+#### 📅 Itinerary Planning System
 - Day-wise itinerary creation linked to trips
-- Activity scheduling per day with 6 types:
-  - 🏛️ Sightseeing &nbsp;|&nbsp; 🚗 Transport &nbsp;|&nbsp; 🏨 Accommodation
-  - 🍽️ Dining &nbsp;|&nbsp; 🏄 Adventure &nbsp;|&nbsp; 🛍️ Shopping
+- Activity scheduling with 6 types: Sightseeing, Transportation, Accommodation, Dining, Adventure, Shopping
 - Activity details: name, description, location, start/end time, cost
 
-### 🌍 Destination Discovery
-- Pre-seeded directory of global travel destinations
+#### 🌍 Destination Discovery
+- Pre-seeded directory of 20+ global travel destinations
 - Browse and search by city or country name
-- Destination detail modal: climate, best season, popular attractions
+- Destination detail modal with climate, best season, and popular attractions
 
-### 💰 Budget & Expense Tracking
-- Per-trip budget allocation
+---
+
+### ✅ Milestone 3 — Budget, Expenses, Collaboration & Deployment (Week 5-6)
+
+#### 💰 Budget & Expense Management
+- Per-trip budget allocation with real-time remaining balance
 - Expense recording with 6 categories: Transportation, Hotel, Food, Shopping, Entertainment, Miscellaneous
-- Live budget summary: total spent, remaining balance, over-budget indicator
+- Live budget summary with over-budget indicator
 - Category-wise spending breakdown with progress bars
 
-### 👥 Group Collaboration
-- Invite collaborators to trips by username or email
+#### 👥 Group Collaboration System
+- Invite collaborators by username or email
 - Invite lifecycle: Pending → Accepted / Declined
-- Accepted members can view trip details and itineraries
-- Remove members / leave trip actions
+- Accepted members can view trip details, itinerary, expenses, chat, and documents
+- Trip owner can remove members; members can leave trips
 
-### 💬 Group Chat
-- Per-trip message board visible to all members
+#### 💬 Group Chat (Discussion)
+- Per-trip message board visible to all accepted members
 - Date-grouped chat bubbles with sender avatars
 - Auto-polls for new messages every 5 seconds
 
-### 📁 Document Management
-- Upload travel documents per trip (drag & drop supported)
-- Supported types: Ticket, Hotel Booking, Passport, Visa, Photo, Other
-- Files persisted in a Docker volume; downloadable from the UI
+#### 📁 Media & Document Management
+- Upload travel documents per trip: Ticket, Hotel Booking, Passport, Visa, Photo, Other
+- Files stored in Docker named volume — persist across container restarts
+- Authenticated file streaming (view in browser / download) — JWT required
 - Max file size: 10 MB
 
-### 🔔 Notifications
-- In-app notification bell in the navbar
+#### 🔔 Notification System
+- In-app notification bell with unread count badge
 - Types: Group Invite, Budget Alert, Trip Reminder, Activity Reminder, General
 - Mark individual or all notifications as read
-- Unread badge count, auto-polls every 30 seconds
+- Auto-polls every 30 seconds
 
-### 🐳 Docker Deployment
-- Full 3-container Docker Compose stack (DB + Backend + Frontend)
+#### 🐳 Docker Containerization & Deployment
+- 3-container Docker Compose stack: MySQL + Spring Boot + React/Nginx
+- Named Docker volumes for MySQL data and uploaded files (persistent)
 - Single-command deployment: `docker compose up --build`
+- Swagger UI / OpenAPI docs at `/swagger-ui.html`
 
 ---
 
@@ -91,37 +121,41 @@
 | Layer | Technology |
 |---|---|
 | **Frontend** | React 18, React Router v6, Axios, Context API, Vanilla CSS |
-| **Backend** | Java 21, Spring Boot 3.2, Spring Security, Spring Data JPA |
-| **Database** | MySQL 8 (local/Docker), Hibernate ORM (ddl-auto=update) |
-| **Authentication** | JWT (JJWT library), BCrypt |
-| **File Storage** | Spring MultipartFile → local filesystem / Docker volume |
-| **Build Tool** | Maven (backend), npm (frontend) |
+| **Backend** | Java 21, Spring Boot 3.2, Spring Security, Spring Data JPA, Hibernate |
+| **Database** | MySQL 8 (development/Docker), PostgreSQL (production) |
+| **Authentication** | JWT (JJWT 0.11.5), BCrypt |
+| **API Documentation** | SpringDoc OpenAPI 2.3 (Swagger UI) |
+| **File Storage** | Spring MultipartFile → local filesystem / Docker named volume |
+| **Build Tools** | Maven 3.9 (backend), npm (frontend) |
 | **Containerization** | Docker, Docker Compose |
-| **Web Server** | Nginx (serves React build inside Docker) |
+| **Web Server** | Nginx 1.25 (serves React build, proxies /api to backend) |
+| **Testing** | Postman (30+ request collection with auto JWT capture) |
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Docker Compose Stack                     │
-│                                                             │
-│  ┌──────────────────┐      ┌──────────────────┐            │
-│  │  tripnest-frontend│      │  tripnest-backend │            │
-│  │  React + Nginx   │─────▶│  Spring Boot API  │            │
-│  │  Port: 8081      │      │  Port: 8082       │            │
-│  └──────────────────┘      └────────┬─────────┘            │
-│                                     │                       │
-│                            ┌────────▼─────────┐            │
-│                            │   tripnest-db     │            │
-│                            │   MySQL 8         │            │
-│                            │   Port: 3307      │            │
-│                            └──────────────────┘            │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                     Docker Compose Stack                     |
+|                                                             |
+|  +------------------+      +------------------+            |
+|  | tripnest-frontend|      | tripnest-backend  |            |
+|  | React + Nginx    |----->| Spring Boot API   |            |
+|  | Port: 8081       |      | Port: 8082        |            |
+|  +------------------+      +--------+---------+            |
+|                                     |                       |
+|                            +--------v---------+            |
+|                            |   tripnest-db     |            |
+|                            |   MySQL 8         |            |
+|                            |   Port: 3307      |            |
+|                            +------------------+            |
+|                                                             |
+|  Named Volumes: db_data (MySQL) + uploads_data (Files)     |
++-------------------------------------------------------------+
 ```
 
-Nginx proxies all `/api/**` requests from the frontend container to the backend container, so the browser only ever talks to port `8081`.
+Nginx proxies all `/api/**` requests from the frontend to the backend container so the browser only communicates via port `8081`.
 
 ---
 
@@ -134,23 +168,22 @@ TripNest/
 │   │   ├── controller/
 │   │   │   ├── AuthController.java             # Login & Register
 │   │   │   ├── TripController.java             # Trip CRUD & Stats
-│   │   │   ├── ItineraryController.java        # Itinerary day management
-│   │   │   ├── ActivityController.java         # Activity management
-│   │   │   ├── DestinationController.java      # Global destination directory
-│   │   │   ├── CollaborationController.java    # Trip members & invites
-│   │   │   ├── ExpenseController.java          # Budget & expense tracking
-│   │   │   ├── DocumentController.java         # Travel document upload
-│   │   │   ├── GroupChatController.java        # Per-trip group chat
-│   │   │   ├── NotificationController.java     # In-app notifications
-│   │   │   └── GlobalExceptionHandler.java     # Structured error responses
-│   │   ├── service/                            # Business logic layer
-│   │   ├── repository/                         # Spring Data JPA interfaces
-│   │   ├── entity/                             # JPA entities (11 tables)
+│   │   │   ├── ItineraryController.java        # Day management
+│   │   │   ├── ActivityController.java         # Activity scheduling
+│   │   │   ├── DestinationController.java      # Destination directory
+│   │   │   ├── CollaborationController.java    # Members & invitations
+│   │   │   ├── ExpenseController.java          # Budget & expenses
+│   │   │   ├── DocumentController.java         # Document upload/download
+│   │   │   ├── GroupChatController.java        # Group chat
+│   │   │   ├── NotificationController.java     # Notifications
+│   │   │   └── GlobalExceptionHandler.java     # Error handling
+│   │   ├── service/                            # Business logic
+│   │   ├── repository/                         # JPA repositories
+│   │   ├── entity/                             # JPA entities (12 tables)
 │   │   ├── dto/                                # Request & Response DTOs
-│   │   ├── security/                           # JWT filter chain & utilities
-│   │   └── DataInitializer.java               # Seeds destinations on startup
-│   ├── src/main/resources/
-│   │   └── application.properties
+│   │   ├── security/                           # JWT + Spring Security config
+│   │   └── DataInitializer.java               # Seeds roles & destinations
+│   ├── src/main/resources/application.properties
 │   ├── Dockerfile
 │   └── pom.xml
 │
@@ -158,37 +191,27 @@ TripNest/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Login.js / Register.js
-│   │   │   ├── Navbar.js                       # Global nav + NotificationBell
-│   │   │   ├── Dashboard.js                    # Stats overview + quick actions
-│   │   │   ├── TripList.js                     # Searchable, filterable trip cards
-│   │   │   ├── TripForm.js                     # Create / edit trip form
-│   │   │   ├── TripDetail.js                   # Trip hub with 6 feature tabs
-│   │   │   ├── ItineraryDay.js                 # Per-day activity management
-│   │   │   ├── Destinations.js                 # Destination browser & detail modal
-│   │   │   ├── TripMembers.js                  # Collaboration & invite UI
-│   │   │   ├── BudgetOverview.js               # Budget summary & progress bars
-│   │   │   ├── ExpenseList.js / ExpenseForm.js # Expense CRUD
-│   │   │   ├── DocumentManager.js              # File upload & document list
-│   │   │   ├── GroupChat.js                    # Group chat with polling
-│   │   │   └── NotificationBell.js             # Navbar notification dropdown
-│   │   ├── services/
-│   │   │   ├── auth.service.js
-│   │   │   ├── trip.service.js
-│   │   │   ├── collaboration.service.js
-│   │   │   ├── expense.service.js
-│   │   │   ├── document.service.js
-│   │   │   └── notification.service.js
-│   │   ├── context/AuthContext.js
-│   │   ├── App.js                              # React Router configuration
-│   │   └── App.css
-│   ├── nginx.conf                              # Nginx proxy config for Docker
+│   │   │   ├── Navbar.js                       # Profile dropdown + notifications
+│   │   │   ├── Dashboard.js                    # Stats overview
+│   │   │   ├── TripList.js / TripForm.js / TripDetail.js
+│   │   │   ├── ItineraryDay.js                 # Per-day activities
+│   │   │   ├── Destinations.js                 # Destination browser
+│   │   │   ├── TripMembers.js                  # Collaboration UI
+│   │   │   ├── BudgetOverview.js               # Budget summary
+│   │   │   ├── ExpenseList.js / ExpenseForm.js
+│   │   │   ├── DocumentManager.js              # File upload & download
+│   │   │   ├── GroupChat.js                    # Group chat
+│   │   │   └── NotificationBell.js             # Notification dropdown
+│   │   ├── services/                           # API service layer
+│   │   ├── context/AuthContext.js              # Auth state management
+│   │   ├── App.js                              # Route configuration
+│   │   └── App.css                             # Design system
+│   ├── nginx.conf                              # Nginx proxy config
 │   ├── Dockerfile
 │   └── package.json
 │
-├── docker-compose.yml
-├── milestone_1_evaluation.html
-├── milestone_2_documentation.html
-├── milestone_3_documentation.html
+├── docker-compose.yml                 # 3-container orchestration
+├── TripNest.postman_collection.json   # Complete API test collection
 └── README.md
 ```
 
@@ -196,107 +219,110 @@ TripNest/
 
 ## 🗄️ Database Schema
 
-All tables are auto-created by Hibernate (`ddl-auto=update`):
+All 12 tables auto-created by Hibernate (`ddl-auto=update`):
 
 | Table | Description |
 |---|---|
-| `users` | User accounts with username, email, phone, hashed password |
-| `roles` | Application roles (`ROLE_TRAVELER`, `ROLE_AGENT`, `ROLE_ADMIN`) |
-| `user_roles` | Junction table: users ↔ roles |
-| `trips` | Trip records scoped to a user (title, destination, dates, budget, status) |
-| `itineraries` | Day-wise plans linked to a trip (day number, date, notes) |
-| `activities` | Scheduled events within a day (type, time, location, cost) |
-| `destinations` | Pre-seeded global travel directory (climate, best season, attractions) |
-| `trip_members` | Collaboration links (user → trip with PENDING / ACCEPTED / DECLINED status) |
-| `expenses` | Financial transactions per trip (category, amount, date, recorder) |
-| `travel_documents` | Uploaded file metadata per trip (type, filename, uploader, upload date) |
-| `group_messages` | Per-trip chat messages (sender, message text, timestamp) |
-| `notifications` | In-app notifications per user (type, title, message, read status) |
+| `users` | Accounts: username, email, phone, hashed password, firstName, lastName |
+| `roles` | Roles: ROLE_TRAVELER, ROLE_AGENT, ROLE_ADMIN |
+| `user_roles` | Junction: users ↔ roles |
+| `trips` | Trip records: title, destination, dates, budget, status, travelers |
+| `itineraries` | Day-wise plans: day number, date, notes |
+| `activities` | Scheduled events: type, time, location, cost, description |
+| `destinations` | Pre-seeded global directory: climate, best season, attractions |
+| `trip_members` | Collaboration: user→trip with PENDING/ACCEPTED/DECLINED status |
+| `expenses` | Financial records: category, amount, date, recorder |
+| `travel_documents` | File metadata: type, filename, path, uploader, upload date |
+| `group_messages` | Chat messages: sender, text, timestamp |
+| `notifications` | Alerts: type, title, message, read status, timestamp |
 
 ---
 
 ## 📡 API Reference
 
-All endpoints except Auth and Destinations require a valid JWT in the `Authorization: Bearer <token>` header.
+All endpoints except Auth and Destinations require `Authorization: Bearer <token>`.
+
+> Interactive docs: **`http://localhost:8082/swagger-ui.html`**
 
 ### Authentication (Public)
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/auth/signup` | Register a new user account |
-| `POST` | `/api/auth/signin` | Login and receive a JWT token |
+| POST | `/api/auth/signup` | Register new user |
+| POST | `/api/auth/signin` | Login, receive JWT |
 
 ### Trips
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/trips` | List all trips for the logged-in user |
-| `POST` | `/api/trips` | Create a new trip |
-| `GET` | `/api/trips/stats` | Dashboard stats (total, planned, ongoing, completed) |
-| `GET` | `/api/trips/{id}` | Get trip details (owner + accepted members) |
-| `PUT` | `/api/trips/{id}` | Edit a trip (owner only) |
-| `DELETE` | `/api/trips/{id}` | Delete a trip and all its data |
+| GET | `/api/trips` | List all trips (owned + collaborations) |
+| POST | `/api/trips` | Create trip |
+| GET | `/api/trips/stats` | Dashboard statistics |
+| GET | `/api/trips/{id}` | Get trip details |
+| PUT | `/api/trips/{id}` | Edit trip (owner only) |
+| DELETE | `/api/trips/{id}` | Delete trip |
 
 ### Itinerary Days
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/trips/{tid}/itineraries` | List all days for a trip |
-| `POST` | `/api/trips/{tid}/itineraries` | Add a new day |
-| `PUT` | `/api/trips/{tid}/itineraries/{id}` | Edit day notes or date |
-| `DELETE` | `/api/trips/{tid}/itineraries/{id}` | Remove a day and its activities |
+| GET | `/api/trips/{tid}/itineraries` | List all days |
+| POST | `/api/trips/{tid}/itineraries` | Add a day |
+| PUT | `/api/trips/{tid}/itineraries/{id}` | Edit a day |
+| DELETE | `/api/trips/{tid}/itineraries/{id}` | Delete a day |
 
 ### Activities
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/itineraries/{iid}/activities` | List activities for a day |
-| `POST` | `/api/itineraries/{iid}/activities` | Add an activity to a day |
-| `PUT` | `/api/itineraries/{iid}/activities/{id}` | Edit activity details |
-| `DELETE` | `/api/itineraries/{iid}/activities/{id}` | Remove an activity |
+| GET | `/api/itineraries/{iid}/activities` | List activities |
+| POST | `/api/itineraries/{iid}/activities` | Add activity |
+| PUT | `/api/itineraries/{iid}/activities/{id}` | Edit activity |
+| DELETE | `/api/itineraries/{iid}/activities/{id}` | Delete activity |
 
 ### Destinations (Public)
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/destinations` | List all seeded destinations |
-| `GET` | `/api/destinations/search?q={query}` | Search destinations by name or country |
-| `GET` | `/api/destinations/{id}` | Full destination travel guide |
+| GET | `/api/destinations` | List all destinations |
+| GET | `/api/destinations/search?q={query}` | Search destinations |
+| GET | `/api/destinations/{id}` | Get destination guide |
 
-### Trip Members & Collaboration
+### Group Collaboration
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/trips/{tid}/members` | List all members and their status |
-| `POST` | `/api/trips/{tid}/members/invite` | Invite a user by username or email |
-| `PUT` | `/api/trips/{tid}/members/{id}/accept` | Accept an invitation |
-| `PUT` | `/api/trips/{tid}/members/{id}/decline` | Decline an invitation |
-| `DELETE` | `/api/trips/{tid}/members/{id}` | Remove a member / leave a trip |
+| GET | `/api/trips/{tid}/members` | List all members |
+| POST | `/api/trips/{tid}/members/invite` | Invite user |
+| PUT | `/api/trips/{tid}/members/{id}/accept` | Accept invitation |
+| PUT | `/api/trips/{tid}/members/{id}/decline` | Decline invitation |
+| DELETE | `/api/trips/{tid}/members/{id}` | Remove / leave |
 
 ### Budget & Expenses
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/trips/{tid}/expenses` | List all expenses for a trip |
-| `GET` | `/api/trips/{tid}/expenses/summary` | Budget summary with category breakdown |
-| `POST` | `/api/trips/{tid}/expenses` | Record a new expense |
-| `PUT` | `/api/trips/{tid}/expenses/{id}` | Edit an expense (creator only) |
-| `DELETE` | `/api/trips/{tid}/expenses/{id}` | Delete an expense (creator only) |
+| GET | `/api/trips/{tid}/expenses` | List expenses |
+| GET | `/api/trips/{tid}/expenses/summary` | Budget summary |
+| POST | `/api/trips/{tid}/expenses` | Record expense |
+| PUT | `/api/trips/{tid}/expenses/{id}` | Edit expense |
+| DELETE | `/api/trips/{tid}/expenses/{id}` | Delete expense |
 
 ### Travel Documents
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/trips/{tid}/documents` | List all uploaded documents |
-| `POST` | `/api/trips/{tid}/documents` | Upload a document (multipart, max 10 MB) |
-| `GET` | `/api/trips/{tid}/documents/{id}/download` | Download a document file |
-| `DELETE` | `/api/trips/{tid}/documents/{id}` | Delete a document (uploader only) |
+| GET | `/api/trips/{tid}/documents` | List documents |
+| POST | `/api/trips/{tid}/documents/upload` | Upload document (max 10MB) |
+| GET | `/api/trips/{tid}/documents/{id}/view` | View document (authenticated) |
+| GET | `/api/trips/{tid}/documents/{id}/download` | Download document |
+| DELETE | `/api/trips/{tid}/documents/{id}` | Delete document |
 
 ### Group Chat
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/trips/{tid}/messages` | Fetch all chat messages for a trip |
-| `POST` | `/api/trips/{tid}/messages` | Send a message to the group |
+| GET | `/api/trips/{tid}/messages` | Get all messages |
+| POST | `/api/trips/{tid}/messages` | Send message |
 
 ### Notifications
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/notifications` | List all notifications for the user |
-| `GET` | `/api/notifications/unread-count` | Get unread notification count |
-| `PUT` | `/api/notifications/{id}/read` | Mark a notification as read |
-| `PUT` | `/api/notifications/read-all` | Mark all notifications as read |
+| GET | `/api/notifications` | List notifications |
+| GET | `/api/notifications/unread-count` | Unread count |
+| PUT | `/api/notifications/{id}/read` | Mark as read |
+| PUT | `/api/notifications/read-all` | Mark all as read |
 
 ---
 
@@ -304,7 +330,7 @@ All endpoints except Auth and Destinations require a valid JWT in the `Authoriza
 
 | Role | Description |
 |---|---|
-| `ROLE_TRAVELER` | Default role for all registered users |
+| `ROLE_TRAVELER` | Default — registered users who plan and manage trips |
 | `ROLE_AGENT` | Travel agents who manage trip packages |
 | `ROLE_ADMIN` | Platform administrators with full access |
 
@@ -314,232 +340,88 @@ All endpoints except Auth and Destinations require a valid JWT in the `Authoriza
 
 ### Method A: Docker Compose *(Recommended)*
 
-> Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) to be running.
+> Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) running.
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/TripNest.git
+git clone https://github.com/vadagammanikanta/TripNest.git
 cd TripNest
-
-# Build and start all containers
 docker compose up --build
 ```
 
 | Service | URL |
 |---|---|
-| 🌐 Frontend | http://localhost:8081 |
-| ⚙️ Backend API | http://localhost:8082/api |
-| 🗄️ MySQL | localhost:3307 |
+| Frontend App | http://localhost:8081 |
+| Backend API | http://localhost:8082/api |
+| Swagger UI | http://localhost:8082/swagger-ui.html |
+| MySQL | localhost:3307 |
 
-> Ports are offset from defaults (8080→8082, 3306→3307) to avoid conflicts with local dev servers.
-
-**Subsequent rebuilds after code changes:**
+**Rebuild after changes:**
 ```bash
-docker compose build --no-cache backend frontend
-docker compose up -d --no-deps backend frontend
+docker compose up --build -d
 ```
 
----
+### Method B: Manual Local Development
 
-### Method B: Manual Local Setup
+**Prerequisites:** Java 21+, MySQL 8, Node.js 18+, Maven 3.9+
 
-#### Prerequisites
-- Java 21+
-- MySQL 8
-- Node 18+
-- Maven 3.9+
-
-#### 1. Database
 ```sql
+-- 1. Create database
 CREATE DATABASE tripnest_db;
 ```
-Update credentials in `tripnest/src/main/resources/application.properties`.
 
-#### 2. Backend
 ```bash
+# 2. Start backend (http://localhost:8080)
 cd tripnest
 ./mvnw spring-boot:run
-```
-Starts on `http://localhost:8080`. Roles and destinations are seeded automatically on first startup.
 
-#### 3. Frontend
-```bash
+# 3. Start frontend (http://localhost:3000)
 cd tripnest-frontend
-npm install
-npm start
-```
-Starts on `http://localhost:3000`. Axios is pre-configured to proxy API requests to `localhost:8080`.
-
----
-
-## 📊 Milestone Progress
-
-| Milestone | Scope | Status |
-|---|---|---|
-| **M1** — Week 1–2 | JWT Auth, DB schema, RBAC, React skeleton | ✅ Complete |
-| **M2** — Week 3–4 | Trip CRUD, itinerary planning, destinations, dashboard | ✅ Complete |
-| **M3** — Week 5–6 | Budget & expenses, collaboration, group chat, documents, notifications, Docker | ✅ Complete |
-| **M4** — Week 7–8 | Analytics dashboard, reports & charts, testing, cloud deployment | 🔲 Upcoming |
-
----
-
-## 📄 Documentation
-
-| Document | Description |
-|---|---|
-| [`milestone_1_evaluation.html`](milestone_1_evaluation.html) | M1 evaluation report — Auth & Security |
-| [`milestone_2_documentation.html`](milestone_2_documentation.html) | M2 technical documentation — Trip & Itinerary |
-| [`milestone_3_documentation.html`](milestone_3_documentation.html) | M3 technical documentation — Budget, Collaboration & Docker |
-
----
-
-<p align="center">Built with ☕ Java + ⚛️ React</p>
-
-
-```
-TripNest/
-├── tripnest/               # Spring Boot backend
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/tripnest/
-│   │   │   │   ├── controller/      # REST controllers
-│   │   │   │   │   ├── AuthController.java      (Authentication APIs)
-│   │   │   │   │   ├── TripController.java      (Trip CRUD & Stats)
-│   │   │   │   │   ├── ItineraryController.java (Itinerary Days CRUD)
-│   │   │   │   │   ├── ActivityController.java  (Activities CRUD)
-│   │   │   │   │   └── DestinationController.js (Global seeded destinations)
-│   │   │   │   ├── dto/             # Request/Response DTOs
-│   │   │   │   ├── entity/          # JPA Entities (User, Role, Trip, Itinerary, Activity, Destination)
-│   │   │   │   ├── repository/      # Spring Data JPA interfaces
-│   │   │   │   ├── security/        # JWT security filter chain configuration
-│   │   │   │   └── DataInitializer.java (Seeding destinations on startup)
-│   │   │   └── resources/
-│   │   │       ├── application.properties
-│   │   │       └── data.sql         (Seeding roles)
-│   └── pom.xml
-│
-├── tripnest-frontend/      # React frontend
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Login.js
-│   │   │   ├── Register.js
-│   │   │   ├── Navbar.js
-│   │   │   ├── Dashboard.js         (Stats & Actions overview)
-│   │   │   ├── TripList.js          (Search, filter & view trips)
-│   │   │   ├── TripForm.js          (Plan/Edit trips)
-│   │   │   ├── TripDetail.js        (View trip & manage days)
-│   │   │   ├── ItineraryDay.js      (Manage activities per day)
-│   │   │   └── Destinations.js      (Search & view seeded destinations)
-│   │   ├── services/
-│   │   │   ├── auth.service.js
-│   │   │   └── trip.service.js      (All travel planning API integrations)
-│   │   ├── context/
-│   │   │   └── AuthContext.js
-│   │   ├── App.js                   (React routes configuration)
-│   │   ├── App.css                  (Clean layout custom styles)
-│   │   └── index.js
-│   └── package.json
-│
-├── Milestone_2_Documentation.md  (Detailed documentation of Milestone 2 architecture)
-├── docker-compose.yml       (Docker Compose full-stack file)
-└── README.md
+npm install && npm start
 ```
 
----
-
-## 2. User Roles
-
-| Role           | Description                              |
-|----------------|------------------------------------------|
-| ROLE_TRAVELER  | Default — registered users/travelers     |
-| ROLE_AGENT     | Travel agents who manage packages        |
-| ROLE_ADMIN     | Platform administrators (full access)    |
+**Test with Postman:** Import `TripNest.postman_collection.json` — Login auto-captures JWT into `{{token}}`.
 
 ---
 
-## 3. Database Schema
+## 📊 Milestone Progress & Evaluation
 
-Tables auto-created by Hibernate (`ddl-auto=update`):
+| Milestone | Week | Scope | Status |
+|---|---|---|---|
+| **M1** | Week 1-2 | Requirements, DB Design & Backend Setup | ✅ Complete |
+| **M2** | Week 3-4 | Trip & Itinerary Management | ✅ Complete |
+| **M3** | Week 5-6 | Budget, Expenses & Collaboration | ✅ Complete |
+| **M4** | Week 7-8 | Analytics, Testing & Cloud Deployment | 🔲 Upcoming |
 
-- **users**: Main user table containing username, email, phone, and hashed password.
-- **roles**: Stores application roles (`ROLE_TRAVELER`, `ROLE_AGENT`, `ROLE_ADMIN`).
-- **user_roles**: Junction table mapping users to roles.
-- **trips**: Stores trip title, destination, dates, budget, status, and number of travelers (linked to `users`).
-- **itineraries**: Represents distinct daily plans within a trip (linked to `trips`).
-- **activities**: Specific events (sightseeing, dining, transport, shopping, adventure, accommodation) within a day (linked to `itineraries`).
-- **destinations**: Pre-seeded database of global travel spots with climate, best season, and attractions.
+### Milestone 1 Evaluation Criteria ✅
+- [x] Spring Boot project setup completed
+- [x] JWT authentication implemented and functional
+- [x] Database schema finalized (12 tables)
+- [x] React frontend authentication flow working
+- [x] Role-based access configured (Traveler / Agent / Admin)
 
----
+### Milestone 2 Evaluation Criteria ✅
+- [x] Trip management operational (full CRUD + status lifecycle)
+- [x] Itinerary planning functional (day-wise + activity scheduling)
+- [x] Destination pages implemented (20+ seeded destinations, search)
 
-## 4. API Endpoints
+### Milestone 3 Evaluation Criteria ✅
+- [x] Budget management operational (allocation + real-time balance)
+- [x] Expense tracking functional (6 categories + category breakdown)
+- [x] Group collaboration workflow complete (invite → accept → collaborate)
+- [x] Group chat per trip (real-time polling)
+- [x] Document upload/view/download (authenticated streaming, Docker volume persistence)
+- [x] In-app notification system (bell, unread badge, mark read)
+- [x] Full Docker Compose deployment with persistent named volumes
+- [x] Swagger UI / OpenAPI documentation
+- [x] Complete Postman test collection (30+ requests, auto JWT capture)
 
-### Authentication (Public)
-| Method | Endpoint              | Description            |
-|--------|-----------------------|------------------------|
-| POST   | /api/auth/signup      | Register new user      |
-| POST   | /api/auth/signin      | Login, receive JWT     |
-
-### Travel Planning (JWT Protected)
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | /api/trips | List logged-in user's trips |
-| POST | /api/trips | Create a new trip |
-| GET | /api/trips/stats | Retrieve stats count for dashboard |
-| GET | /api/trips/{id} | Get detailed trip profile |
-| PUT | /api/trips/{id} | Edit a trip |
-| DELETE | /api/trips/{id} | Delete a trip, itinerary, and activities |
-| POST | /api/trips/{tid}/itineraries | Add an itinerary day |
-| DELETE | /api/trips/{tid}/itineraries/{id} | Delete a day |
-| POST | /api/itineraries/{iid}/activities | Add an activity to a day |
-| DELETE | /api/itineraries/{iid}/activities/{id} | Remove an activity |
-
-### Destinations (Public)
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | /api/destinations | List pre-seeded destinations |
-| GET | /api/destinations/search?q={query} | Search by name or country |
-| GET | /api/destinations/{id} | Fetch destination travel guide details |
+### Milestone 4 (Upcoming)
+- [ ] Analytics dashboard with charts
+- [ ] Trip and expense reports
+- [ ] End-to-end testing (JUnit + Mockito)
+- [ ] Cloud deployment (AWS / Render / Railway)
+- [ ] SSL configuration for production
 
 ---
 
-## 5. How to Setup & Run
-
-### Method A: Docker Compose (Quickest)
-Requires Docker Desktop to be running.
-1. Run:
-   ```bash
-   docker-compose up --build
-   ```
-2. View the application at: **`http://localhost:8081`**
-   *(Note: Host ports are configured as: DB: `3307`, Backend: `8082`, Frontend: `8081` to prevent port conflicts with local dev servers).*
-
----
-
-### Method B: Manual Startup
-
-#### Prerequisites
-- Java 21
-- MySQL 8
-- Node 18+
-
-#### 1. Database Setup
-Create MySQL database:
-```sql
-CREATE DATABASE tripnest_db;
-```
-Configure your database connection credentials in `tripnest/src/main/resources/application.properties`.
-
-#### 2. Backend Startup
-```bash
-cd tripnest
-./mvnw spring-boot:run
-```
-The server will start on `http://localhost:8080` (seeds roles and destinations automatically on first startup).
-
-#### 3. Frontend Startup
-```bash
-cd tripnest-frontend
-npm install
-npm start
-```
-The development server will start on `http://localhost:3000` (automatically proxies requests to `8080`).
+<p align="center">Built with ☕ Java 21 + ⚛️ React 18 | TripNest © 2026</p>

@@ -98,6 +98,9 @@ public class WebSecurityConfig {
                     .requestMatchers("/api/destinations/**").permitAll()
                     .requestMatchers("/uploads/**").permitAll()
                     .requestMatchers("/error").permitAll()
+                    // Swagger UI & OpenAPI spec (no auth required)
+                    .requestMatchers("/swagger-ui/**", "/swagger-ui.html",
+                                     "/v3/api-docs/**", "/v3/api-docs").permitAll()
                     // Role-protected endpoints
                     .requestMatchers("/api/test/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/test/agent/**").hasRole("AGENT")

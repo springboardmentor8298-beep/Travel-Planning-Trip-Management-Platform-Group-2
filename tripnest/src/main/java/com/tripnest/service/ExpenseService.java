@@ -5,6 +5,7 @@ import com.tripnest.dto.ExpenseRequest;
 import com.tripnest.dto.ExpenseResponse;
 import com.tripnest.entity.*;
 import com.tripnest.repository.ExpenseRepository;
+import com.tripnest.repository.TripMemberRepository;
 import com.tripnest.repository.TripRepository;
 import com.tripnest.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -30,12 +32,27 @@ public class ExpenseService {
     private final ExpenseRepository expenseRepository;
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
+    private final TripMemberRepository tripMemberRepository;
+
+    private void checkTripAccess(Long tripId, Long userId) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
+        boolean isOwner = trip.getUser().getId().equals(userId);
+        boolean isMember = tripMemberRepository
+                .findByTripIdAndUserId(tripId, userId)
+                .map(m -> m.getStatus() == MemberStatus.ACCEPTED)
+                .orElse(false);
+        if (!isOwner && !isMember) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access to this trip");
+        }
+    }
 
     // -------------------------------------------------------------------------
     // Create
     // -------------------------------------------------------------------------
 
     public ExpenseResponse addExpense(Long tripId, Long userId, ExpenseRequest request) {
+        checkTripAccess(tripId, userId);
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
         User user = userRepository.findById(userId)
@@ -54,7 +71,8 @@ public class ExpenseService {
     // -------------------------------------------------------------------------
 
     @Transactional(readOnly = true)
-    public List<ExpenseResponse> getExpensesByTrip(Long tripId) {
+    public List<ExpenseResponse> getExpensesByTrip(Long tripId, Long userId) {
+        checkTripAccess(tripId, userId);
         return expenseRepository.findByTripIdOrderByExpenseDateDesc(tripId)
                 .stream()
                 .map(this::toResponse)
@@ -62,12 +80,15 @@ public class ExpenseService {
     }
 
     @Transactional(readOnly = true)
-    public BudgetSummaryResponse getBudgetSummary(Long tripId) {
+    public BudgetSummaryResponse getBudgetSummary(Long tripId, Long userId) {
+        checkTripAccess(tripId, userId);
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
 
         BigDecimal totalBudget = trip.getBudget() != null ? trip.getBudget() : BigDecimal.ZERO;
-        BigDecimal totalSpent = expenseRepository.sumAmountByTripId(tripId);
+        // BUG 4 fix: SUM() returns NULL when there are no expenses — null-coalesce to ZERO
+        BigDecimal totalSpent = Optional.ofNullable(expenseRepository.sumAmountByTripId(tripId))
+                .orElse(BigDecimal.ZERO);
 
         // Build category breakdown
         Map<ExpenseCategory, BigDecimal> breakdown = new EnumMap<>(ExpenseCategory.class);

@@ -111,6 +111,18 @@ public class DocumentService {
         return doc.getFileName();
     }
 
+    public String getContentType(Long tripId, Long docId) {
+        TravelDocument doc = documentRepository.findByIdAndTripId(docId, tripId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found"));
+        try {
+            Path path = Paths.get(doc.getFilePath());
+            String contentType = Files.probeContentType(path);
+            return contentType != null ? contentType : "application/octet-stream";
+        } catch (IOException e) {
+            return "application/octet-stream";
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Delete
     // -------------------------------------------------------------------------
