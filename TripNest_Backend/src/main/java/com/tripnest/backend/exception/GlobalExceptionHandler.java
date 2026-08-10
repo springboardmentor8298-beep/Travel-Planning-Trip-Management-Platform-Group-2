@@ -80,4 +80,16 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Object>> handleGenericException(
+            Exception ex) {
+        ex.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.builder()
+                        .success(false)
+                        .message("Internal server error: " + ex.getMessage())
+                        .data(null)
+                        .build());
+    }
+
 }

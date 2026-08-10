@@ -1,8 +1,10 @@
 import React from 'react';
 import { X, MapPin, Sparkles, Navigation, Info, Landmark, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const DestinationDetailsModal = ({ destination, onClose }) => {
+  const { t } = useTranslation();
   if (!destination) return null;
 
   const {
@@ -82,7 +84,7 @@ const DestinationDetailsModal = ({ destination, onClose }) => {
                 <div className="bg-white dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/60 rounded-2xl p-5 space-y-2">
                   <div className="flex items-center gap-2 text-amber-500 font-bold text-xs uppercase tracking-wider">
                     <Sparkles className="w-4 h-4" />
-                    <span>Famous For</span>
+                    <span>{t('destinations.famousForModal', { defaultValue: 'Famous For' })}</span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-655 dark:text-slate-400 font-medium leading-relaxed">
                     {famousFor || 'N/A'}
@@ -93,10 +95,10 @@ const DestinationDetailsModal = ({ destination, onClose }) => {
                 <div className="bg-white dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/60 rounded-2xl p-5 space-y-2">
                   <div className="flex items-center gap-2 text-[#0e87da] font-bold text-xs uppercase tracking-wider">
                     <Navigation className="w-4 h-4" />
-                    <span>Coordinates</span>
+                    <span>{t('destinations.coordinates', { defaultValue: 'Coordinates' })}</span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-655 dark:text-slate-400 font-medium leading-relaxed">
-                    {latitude !== null && longitude !== null ? `${latitude}, ${longitude}` : 'Not Available'}
+                    {latitude !== null && longitude !== null ? `${latitude}, ${longitude}` : t('destinations.notAvailable', { defaultValue: 'Not Available' })}
                   </p>
                 </div>
               </div>
@@ -105,10 +107,10 @@ const DestinationDetailsModal = ({ destination, onClose }) => {
               <div className="space-y-2.5">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
                   <Info className="w-4 h-4" />
-                  <span>Overview</span>
+                  <span>{t('destinations.overview', { defaultValue: 'Overview' })}</span>
                 </h4>
                 <p className="text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
-                  {shortDescription || 'Information coming soon.'}
+                  {shortDescription || t('destinations.infoComingSoon', { defaultValue: 'Information coming soon.' })}
                 </p>
               </div>
 
@@ -116,10 +118,10 @@ const DestinationDetailsModal = ({ destination, onClose }) => {
               <div className="border-t border-[#e5e2dd] dark:border-slate-800/60 pt-6 space-y-6">
                 <div className="space-y-2">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Detailed History & Info
+                    {t('destinations.detailedHistory', { defaultValue: 'Detailed History & Info' })}
                   </h4>
                   <p className="text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
-                    {fullDescription || 'Information coming soon.'}
+                    {fullDescription || t('destinations.infoComingSoon', { defaultValue: 'Information coming soon.' })}
                   </p>
                 </div>
 
@@ -133,7 +135,7 @@ const DestinationDetailsModal = ({ destination, onClose }) => {
                       className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold shadow-sm hover:opacity-90 transition-opacity"
                     >
                       <Landmark className="w-4 h-4" />
-                      <span>Read More on Wikipedia</span>
+                      <span>{t('destinations.readMoreWiki', { defaultValue: 'Read More on Wikipedia' })}</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                   </div>

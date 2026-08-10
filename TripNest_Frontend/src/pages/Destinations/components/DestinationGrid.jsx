@@ -2,17 +2,20 @@ import React from 'react';
 import DestinationCard from './DestinationCard';
 import { Compass } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const DestinationGrid = ({ destinations = [], onViewDetails, isLoading, error, hasSearched }) => {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white dark:bg-slate-900/20 border border-dashed border-[#e5e2dd] dark:border-slate-800/80 rounded-3xl">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0e87da] mb-4"></div>
         <h3 className="text-base font-bold text-slate-800 dark:text-white">
-          Curating Destinations...
+          {t('destinations.curating', { defaultValue: 'Curating Destinations...' })}
         </h3>
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-sm leading-relaxed">
-          Retrieving sights from Gemini and historical summaries from Wikipedia.
+          {t('destinations.curatingDesc', { defaultValue: 'Retrieving sights from Gemini and historical summaries from Wikipedia.' })}
         </p>
       </div>
     );
@@ -25,9 +28,9 @@ const DestinationGrid = ({ destinations = [], onViewDetails, isLoading, error, h
           <Compass className="h-7 w-7 stroke-[1.8]" />
         </div>
         <h3 className="text-base font-bold text-red-600 dark:text-red-400">
-          Something went wrong
+          {t('destinations.errorTitle', { defaultValue: 'Something went wrong' })}
         </h3>
-        <p className="text-xs text-red-450 dark:text-red-500 mt-1 max-w-sm leading-relaxed">
+        <p className="text-xs text-red-455 dark:text-red-500 mt-1 max-w-sm leading-relaxed">
           {error}
         </p>
       </div>
@@ -46,10 +49,10 @@ const DestinationGrid = ({ destinations = [], onViewDetails, isLoading, error, h
           <Compass className="h-7 w-7 stroke-[1.8]" />
         </div>
         <h3 className="text-base font-bold text-slate-850 dark:text-white">
-          No Destinations Found
+          {t('destinations.noDestinationsTitle', { defaultValue: 'No Destinations Found' })}
         </h3>
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-sm leading-relaxed">
-          No destinations were generated for the specified state. Please try another one.
+          {t('destinations.noDestinationsDesc', { defaultValue: 'No destinations were generated for the specified state. Please try another one.' })}
         </p>
       </motion.div>
     );
@@ -67,10 +70,10 @@ const DestinationGrid = ({ destinations = [], onViewDetails, isLoading, error, h
           <Compass className="h-7 w-7 stroke-[1.8] animate-pulse" />
         </div>
         <h3 className="text-base font-bold text-slate-800 dark:text-white">
-          Explore Destinations
+          {t('destinations.exploreDestinationsTitle', { defaultValue: 'Explore Destinations' })}
         </h3>
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-sm leading-relaxed">
-          Search for destinations to explore India.
+          {t('destinations.exploreDestinationsDesc', { defaultValue: 'Search for destinations to explore India.' })}
         </p>
       </motion.div>
     );

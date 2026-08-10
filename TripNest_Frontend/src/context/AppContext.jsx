@@ -550,7 +550,7 @@ export const AppProvider = ({ children }) => {
     });
 
     setTrips([]);
-    setSettings({});
+    setSettings(initialSettings);
     setRecentActivity([]);
   };
 

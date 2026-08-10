@@ -1,20 +1,20 @@
 import React, { useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Moon, Sun, Globe, Bell, Check, Save } from 'lucide-react';
+import { Moon, Sun, Globe, Bell, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const Settings = () => {
-  const { settings, updateSettings } = useAppContext();
+  const { settings = {}, updateSettings } = useAppContext();
   const { t, i18n } = useTranslation();
 
   // Dark Mode Class Syncing
   useEffect(() => {
-    if (settings.appearance === 'dark') {
+    if (settings?.appearance === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [settings.appearance]);
+  }, [settings?.appearance]);
 
   const handleAppearanceToggle = (mode) => {
     updateSettings({ ...settings, appearance: mode });
@@ -27,9 +27,10 @@ const Settings = () => {
   };
 
   const handleNotificationToggle = (field) => {
+    const currentNotifications = settings?.notifications || {};
     const updatedNotifications = {
-      ...settings.notifications,
-      [field]: !settings.notifications[field]
+      ...currentNotifications,
+      [field]: !currentNotifications[field]
     };
     updateSettings({ ...settings, notifications: updatedNotifications });
   };
@@ -52,14 +53,14 @@ const Settings = () => {
             type="button"
             onClick={() => handleAppearanceToggle('light')}
             className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${
-              settings.appearance === 'light'
+              settings?.appearance === 'light'
                 ? 'border-slate-400 bg-slate-100 text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200'
                 : 'border-slate-100 bg-slate-50/50 hover:bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-850/25 dark:text-slate-400 dark:hover:bg-slate-850/50'
             }`}
           >
             <Sun className="w-6 h-6" />
             <span className="text-xs font-bold">{t('settings.lightMode', { defaultValue: 'Light Mode' })}</span>
-            {settings.appearance === 'light' && <Check className="w-4 h-4 mt-1 text-slate-600 dark:text-slate-300" />}
+            {settings?.appearance === 'light' && <Check className="w-4 h-4 mt-1 text-slate-600 dark:text-slate-300" />}
           </button>
 
           {/* Dark Theme Trigger */}
@@ -67,14 +68,14 @@ const Settings = () => {
             type="button"
             onClick={() => handleAppearanceToggle('dark')}
             className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${
-              settings.appearance === 'dark'
+              settings?.appearance === 'dark'
                 ? 'border-slate-400 bg-slate-100 text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200'
                 : 'border-slate-100 bg-slate-50/50 hover:bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-850/25 dark:text-slate-400 dark:hover:bg-slate-850/50'
             }`}
           >
             <Moon className="w-6 h-6" />
             <span className="text-xs font-bold">{t('settings.darkMode', { defaultValue: 'Dark Mode' })}</span>
-            {settings.appearance === 'dark' && <Check className="w-4 h-4 mt-1 text-slate-600 dark:text-slate-300" />}
+            {settings?.appearance === 'dark' && <Check className="w-4 h-4 mt-1 text-slate-600 dark:text-slate-300" />}
           </button>
         </div>
       </div>
@@ -93,7 +94,7 @@ const Settings = () => {
             {t('settings.systemLanguage', { defaultValue: 'System Language' })}
           </label>
           <select
-            value={i18n.language || 'en'}
+            value={i18n.language || settings?.language || 'en'}
             onChange={(e) => handleLanguageChange(e.target.value)}
             className="w-full sm:w-72 px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-400/20 focus:border-slate-500 focus:outline-none dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 font-semibold"
           >
@@ -124,19 +125,19 @@ const Settings = () => {
               <h4 className="text-sm font-bold text-slate-800 dark:text-white">
                 {t('settings.emailDigests', { defaultValue: 'Email Digests' })}
               </h4>
-              <p className="text-xs text-slate-450 dark:text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-455 dark:text-slate-500 mt-0.5">
                 {t('settings.emailDigestsDesc', { defaultValue: 'Receive weekly travel itineraries and cost reports via email.' })}
               </p>
             </div>
             <button
               onClick={() => handleNotificationToggle('emailAlerts')}
               className={`w-11 h-6 rounded-full transition-colors flex items-center p-0.5 ${
-                settings.notifications.emailAlerts ? 'bg-[#0e87da]' : 'bg-slate-200 dark:bg-slate-700'
+                settings?.notifications?.emailAlerts ? 'bg-[#0e87da]' : 'bg-slate-200 dark:bg-slate-700'
               }`}
             >
               <div 
                 className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform ${
-                  settings.notifications.emailAlerts ? 'translate-x-5' : 'translate-x-0'
+                  settings?.notifications?.emailAlerts ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
             </button>
@@ -155,12 +156,12 @@ const Settings = () => {
             <button
               onClick={() => handleNotificationToggle('tripReminders')}
               className={`w-11 h-6 rounded-full transition-colors flex items-center p-0.5 ${
-                settings.notifications.tripReminders ? 'bg-[#0e87da]' : 'bg-slate-200 dark:bg-slate-700'
+                settings?.notifications?.tripReminders ? 'bg-[#0e87da]' : 'bg-slate-200 dark:bg-slate-700'
               }`}
             >
               <div 
                 className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform ${
-                  settings.notifications.tripReminders ? 'translate-x-5' : 'translate-x-0'
+                  settings?.notifications?.tripReminders ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
             </button>
@@ -179,12 +180,12 @@ const Settings = () => {
             <button
               onClick={() => handleNotificationToggle('budgetAlerts')}
               className={`w-11 h-6 rounded-full transition-colors flex items-center p-0.5 ${
-                settings.notifications.budgetAlerts ? 'bg-[#0e87da]' : 'bg-slate-200 dark:bg-slate-700'
+                settings?.notifications?.budgetAlerts ? 'bg-[#0e87da]' : 'bg-slate-200 dark:bg-slate-700'
               }`}
             >
               <div 
                 className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform ${
-                  settings.notifications.budgetAlerts ? 'translate-x-5' : 'translate-x-0'
+                  settings?.notifications?.budgetAlerts ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
             </button>

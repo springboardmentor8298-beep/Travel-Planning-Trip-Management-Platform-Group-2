@@ -334,7 +334,7 @@ const Trips = ({ setActivePage, setSelectedTripId, isCreateOpenInitially, closeC
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {sortedTrips.map((trip) => {
-            const status = getTripStatus(trip.startDate, trip.endDate);
+            const status = trip.status ? (trip.status.charAt(0).toUpperCase() + trip.status.slice(1).toLowerCase()) : getTripStatus(trip.startDate, trip.endDate);
             const totalExp = trip.spent ?? 0;
             const expPercent = Math.min(Math.round((totalExp / trip.budget) * 100), 100);
 

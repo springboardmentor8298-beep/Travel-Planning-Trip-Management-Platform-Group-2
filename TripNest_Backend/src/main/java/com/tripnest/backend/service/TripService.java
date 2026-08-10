@@ -6,6 +6,7 @@ import com.tripnest.backend.common.ApiResponse;
 import com.tripnest.backend.dto.CreateTripRequest;
 import com.tripnest.backend.dto.UpdateTripRequest;
 import com.tripnest.backend.dto.response.TripResponse;
+import com.tripnest.backend.entity.Trip;
 
 public interface TripService {
 
@@ -18,5 +19,7 @@ public interface TripService {
     ApiResponse<TripResponse> updateTrip(Long id, UpdateTripRequest request);
 
     ApiResponse<String> deleteTrip(Long id);
+
+    void syncTripStatuses(List<Trip> trips);
 
 }

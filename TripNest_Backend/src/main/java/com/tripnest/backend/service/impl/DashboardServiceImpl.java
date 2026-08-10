@@ -18,6 +18,8 @@ import com.tripnest.backend.exception.ResourceNotFoundException;
 import com.tripnest.backend.repository.TripRepository;
 import com.tripnest.backend.repository.UserRepository;
 import com.tripnest.backend.service.DashboardService;
+import com.tripnest.backend.service.TripService;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +30,8 @@ public class DashboardServiceImpl implements DashboardService {
 	private final TripRepository tripRepository;
 	
 	private final UserRepository userRepository;
+
+	private final TripService tripService;
 	
 	private User getCurrentUser() {
 
@@ -42,6 +46,7 @@ public class DashboardServiceImpl implements DashboardService {
 	}
 	
 	@Override
+	@Transactional
 	public ApiResponse<DashboardResponse> getDashboard() {
 		User user = getCurrentUser();
 
@@ -56,6 +61,7 @@ public class DashboardServiceImpl implements DashboardService {
 			);
 		};
 		List<Trip> trips = tripRepository.findAll(spec).stream().distinct().collect(java.util.stream.Collectors.toList());
+		tripService.syncTripStatuses(trips);
 		long totalTrips = trips.size();
 
 		java.time.LocalDate today = java.time.LocalDate.now();

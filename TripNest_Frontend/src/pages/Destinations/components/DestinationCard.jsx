@@ -1,8 +1,10 @@
 import React from 'react';
 import { MapPin, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const DestinationCard = ({ destination, onViewDetails }) => {
+  const { t } = useTranslation();
   if (!destination) return null;
 
   const { name, famousFor, shortDescription, thumbnail, image, latitude, longitude } = destination;
@@ -40,13 +42,13 @@ const DestinationCard = ({ destination, onViewDetails }) => {
           {/* Famous For (Tagline) */}
           {famousFor && (
             <div className="text-[10px] font-bold text-[#0e87da] uppercase tracking-wide">
-              Famous For: {famousFor}
+              {t('destinations.famousFor', { defaultValue: 'Famous For: {{value}}', value: famousFor })}
             </div>
           )}
 
           {/* Short Description */}
           <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-            {shortDescription || 'Information coming soon.'}
+            {shortDescription || t('destinations.infoComingSoon', { defaultValue: 'Information coming soon.' })}
           </p>
         </div>
 
@@ -58,7 +60,7 @@ const DestinationCard = ({ destination, onViewDetails }) => {
             onClick={() => onViewDetails && onViewDetails(destination)}
             className="flex-grow py-2.5 px-3 rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:border-slate-700/50 dark:hover:bg-slate-850/50 text-xs font-bold text-slate-700 dark:text-slate-300 transition-all flex items-center justify-center gap-1.5 group"
           >
-            <span>Details</span>
+            <span>{t('destinations.details', { defaultValue: 'Details' })}</span>
             <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors" />
           </motion.button>
 
@@ -79,7 +81,7 @@ const DestinationCard = ({ destination, onViewDetails }) => {
                 : 'border-slate-100 bg-slate-50 text-slate-350 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-600 cursor-not-allowed'
             }`}
           >
-            <span>Map</span>
+            <span>{t('destinations.map', { defaultValue: 'Map' })}</span>
           </motion.a>
         </div>
       </div>

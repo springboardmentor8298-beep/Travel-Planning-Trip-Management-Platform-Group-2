@@ -78,11 +78,11 @@ const Dashboard = ({ setActivePage, setSelectedTripId, onAddTripClick }) => {
 
   // Calculate dynamic trip lists for rendering
   const upcomingTrips = trips.filter(trip =>
-    getTripStatus(trip.startDate, trip.endDate) === 'Upcoming'
+    (trip.status ? trip.status === 'UPCOMING' : getTripStatus(trip.startDate, trip.endDate) === 'Upcoming')
   );
 
   const activeTrips = trips.filter(trip =>
-    getTripStatus(trip.startDate, trip.endDate) === 'Active'
+    (trip.status ? trip.status === 'ACTIVE' : getTripStatus(trip.startDate, trip.endDate) === 'Active')
   );
 
   // Statistics derived directly from backend dashboard API
@@ -288,7 +288,7 @@ const Dashboard = ({ setActivePage, setSelectedTripId, onAddTripClick }) => {
               </div>
             ) : (
               [...activeTrips, ...upcomingTrips].slice(0, 2).map((trip) => {
-                const status = getTripStatus(trip.startDate, trip.endDate);
+                const status = trip.status ? (trip.status.charAt(0).toUpperCase() + trip.status.slice(1).toLowerCase()) : getTripStatus(trip.startDate, trip.endDate);
                 const tripTotalExpenses = trip.expenses ? trip.expenses.reduce((s, e) => s + e.amount, 0) : 0;
                 
                 const tripLength = Math.round((new Date(trip.endDate) - new Date(trip.startDate)) / (1000 * 60 * 60 * 24)) || 1;

@@ -15,7 +15,8 @@ import {
   Sun,
   Moon,
   ChevronRight,
-  Globe
+  Globe,
+  BarChart3
 } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { getTripStatus } from '../../utils/date';
@@ -50,6 +51,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen }) => {
     { id: 'planner', label: t('sidebar.itineraryPlanner', { defaultValue: 'Itinerary Planner' }), icon: Map },
     { id: 'destinations', label: t('sidebar.destinations', { defaultValue: 'Destinations' }), icon: Globe },
     { id: 'calendar', label: t('sidebar.calendar', { defaultValue: 'Calendar' }), icon: Calendar },
+    { id: 'analytics', label: t('sidebar.analytics', { defaultValue: 'Analytics' }), icon: BarChart3 },
     { id: 'profile', label: t('sidebar.travelProfile', { defaultValue: 'Travel Profile' }), icon: User },
     { id: 'settings', label: t('sidebar.settings', { defaultValue: 'Settings' }), icon: Settings },
   ];

@@ -5,8 +5,10 @@ import DestinationDetailsModal from './components/DestinationDetailsModal';
 import { Compass } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getDestinations } from '../../services/destinationService';
+import { useTranslation } from 'react-i18next';
 
 const DestinationsPage = () => {
+  const { t } = useTranslation();
   const [stateName, setStateName] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedDestination, setSelectedDestination] = useState(null);
@@ -17,7 +19,7 @@ const DestinationsPage = () => {
   const handleSearch = async () => {
     const trimmedState = stateName.trim();
     if (!trimmedState) {
-      setError('Please enter a state name to search.');
+      setError(t('destinations.enterStateError', { defaultValue: 'Please enter a state name to search.' }));
       return;
     }
 
@@ -31,11 +33,11 @@ const DestinationsPage = () => {
       if (response && response.success) {
         setSearchResults(response.data || []);
       } else {
-        setError(response?.message || 'Failed to fetch destinations.');
+        setError(response?.message || t('destinations.fetchFailedError', { defaultValue: 'Failed to fetch destinations.' }));
       }
     } catch (err) {
       console.error('Error fetching destinations:', err);
-      setError(err?.response?.data?.message || err?.message || 'Failed to connect to the server.');
+      setError(err?.response?.data?.message || err?.message || t('destinations.connectionError', { defaultValue: 'Failed to connect to the server.' }));
     } finally {
       setIsLoading(false);
     }
@@ -50,15 +52,15 @@ const DestinationsPage = () => {
             <Compass className="h-4.5 w-4.5 stroke-[1.8]" />
           </div>
           <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">
-            Discover
+            {t('destinations.discover', { defaultValue: 'Discover' })}
           </span>
         </div>
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-            Explore India
+            {t('destinations.title', { defaultValue: 'Explore India' })}
           </h2>
           <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-            Discover famous tourist destinations across India.
+            {t('destinations.subtitle', { defaultValue: 'Discover famous tourist destinations across India.' })}
           </p>
         </div>
       </div>
@@ -73,7 +75,7 @@ const DestinationsPage = () => {
       {/* Results Header (Optional context for layout separation) */}
       <div className="border-t border-[#e5e2dd]/60 dark:border-slate-800/50 pt-8">
         <h3 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">
-          Destinations
+          {t('destinations.sectionTitle', { defaultValue: 'Destinations' })}
         </h3>
 
         {/* Results / Empty state grid */}

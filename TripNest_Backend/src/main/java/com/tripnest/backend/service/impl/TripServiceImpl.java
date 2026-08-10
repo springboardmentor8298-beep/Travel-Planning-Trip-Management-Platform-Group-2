@@ -71,16 +71,18 @@ public class TripServiceImpl implements TripService {
     }
     
     private TripStatus calculateDynamicStatus(Trip trip) {
-        if (trip.getStatus() == TripStatus.CANCELLED) {
-            return TripStatus.CANCELLED;
-        }
-        LocalDate today = LocalDate.now();
-        if (today.isBefore(trip.getStartDate())) {
-            return TripStatus.UPCOMING;
-        } else if (today.isAfter(trip.getEndDate())) {
-            return TripStatus.COMPLETED;
-        } else {
-            return TripStatus.ACTIVE;
+        return TripStatus.calculateStatus(trip.getStartDate(), trip.getEndDate(), trip.getStatus());
+    }
+
+    @Override
+    @Transactional
+    public void syncTripStatuses(List<Trip> trips) {
+        for (Trip trip : trips) {
+            TripStatus expected = TripStatus.calculateStatus(trip.getStartDate(), trip.getEndDate(), trip.getStatus());
+            if (trip.getStatus() != expected) {
+                trip.setStatus(expected);
+                tripRepository.save(trip);
+            }
         }
     }
 
@@ -100,7 +102,7 @@ public class TripServiceImpl implements TripService {
                 .endDate(request.getEndDate())
                 .notes(request.getNotes())
                 .totalMembers(request.getTotalMembers())
-                .status(TripStatus.PLANNED)
+                .status(TripStatus.calculateStatus(request.getStartDate(), request.getEndDate(), null))
                 .user(user)
                 .build();
 
@@ -164,10 +166,25 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public ApiResponse<List<TripResponse>> getMyTrips(String search, String status, String sort) {
 
         User currentUser = getCurrentUser();
+
+        // Sync statuses for all trips associated with this user
+        Specification<Trip> userTripsSpec = (root, query, cb) -> {
+            Join<Trip, TripMember> membersJoin = root.join("tripMembers", JoinType.LEFT);
+            query.distinct(true);
+            return cb.or(
+                    cb.equal(root.get("user"), currentUser),
+                    cb.and(
+                            cb.equal(membersJoin.get("user"), currentUser),
+                            cb.equal(membersJoin.get("status"), "ACCEPTED")
+                    )
+            );
+        };
+        List<Trip> allUserTrips = tripRepository.findAll(userTripsSpec);
+        syncTripStatuses(allUserTrips);
 
         Specification<Trip> spec = (root, query, cb) -> {
             Join<Trip, TripMember> membersJoin = root.join("tripMembers", JoinType.LEFT);
@@ -328,7 +345,7 @@ public class TripServiceImpl implements TripService {
     }
     
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public ApiResponse<com.tripnest.backend.dto.response.TripDetailsResponse> getTripById(Long id) {
 
         Trip trip = tripRepository.findById(id)
@@ -336,6 +353,7 @@ public class TripServiceImpl implements TripService {
                         new ResourceNotFoundException("Trip not found"));
 
         validateTripAccess(trip);
+        syncTripStatuses(java.util.Collections.singletonList(trip));
 
         Destination destination = trip.getDestinations().isEmpty()
                 ? null
@@ -488,6 +506,7 @@ public class TripServiceImpl implements TripService {
                 request.getBudget().subtract(budget.getTotalSpent())
         );
 
+        trip.setStatus(TripStatus.calculateStatus(request.getStartDate(), request.getEndDate(), trip.getStatus()));
         tripRepository.save(trip);
 
         List<ItineraryResponse> itineraryResponses = trip.getItineraries()

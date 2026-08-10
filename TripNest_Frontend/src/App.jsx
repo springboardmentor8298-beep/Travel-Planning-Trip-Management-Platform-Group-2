@@ -11,6 +11,7 @@ import Settings from './pages/Settings';
 import DestinationsPage from './pages/Destinations/DestinationsPage';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AuthPage from "./pages/Auth/AuthPage";
+import Analytics from './pages/Analytics';
 
 const AppContent = () => {
   // Navigation states: 'dashboard' | 'trips' | 'planner' | 'calendar' | 'profile' | 'settings' | 'trip-details' | 'destinations'
@@ -77,6 +78,8 @@ const AppContent = () => {
         return <Settings />;
       case 'destinations':
         return <DestinationsPage />;
+      case 'analytics':
+        return <Analytics />;
       default:
         return (
           <Dashboard
