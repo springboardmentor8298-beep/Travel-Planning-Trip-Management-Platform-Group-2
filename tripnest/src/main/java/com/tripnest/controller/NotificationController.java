@@ -1,6 +1,8 @@
 package com.tripnest.controller;
 
-import com.tripnest.entity.Notification;
+import com.tripnest.dto.NotificationResponse;
+import com.tripnest.entity.User;
+import com.tripnest.repository.UserRepository;
 import com.tripnest.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,29 +19,54 @@ import java.util.List;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
+
+    private User resolveUser(Authentication authentication) {
+        String username = authentication.getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+    }
 
     @GetMapping
     @PreAuthorize("hasRole('TRAVELER') or hasRole('AGENT') or hasRole('ADMIN')")
-    public ResponseEntity<List<Notification>> getUserNotifications(Authentication authentication) {
-        Long userId = Long.parseLong(authentication.getName());
-        List<Notification> notifications = notificationService.getUserNotifications(userId);
-        return ResponseEntity.ok(notifications);
+    public ResponseEntity<List<NotificationResponse>> getUserNotifications(Authentication authentication) {
+        try {
+            User user = resolveUser(authentication);
+            List<NotificationResponse> notifications = notificationService.getUserNotifications(user.getId());
+            return ResponseEntity.ok(notifications);
+        } catch (Exception e) {
+            System.err.println("Error in getUserNotifications: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.ok(List.of());
+        }
     }
 
     @GetMapping("/unread")
     @PreAuthorize("hasRole('TRAVELER') or hasRole('AGENT') or hasRole('ADMIN')")
-    public ResponseEntity<List<Notification>> getUnreadNotifications(Authentication authentication) {
-        Long userId = Long.parseLong(authentication.getName());
-        List<Notification> notifications = notificationService.getUnreadNotifications(userId);
-        return ResponseEntity.ok(notifications);
+    public ResponseEntity<List<NotificationResponse>> getUnreadNotifications(Authentication authentication) {
+        try {
+            User user = resolveUser(authentication);
+            List<NotificationResponse> notifications = notificationService.getUnreadNotifications(user.getId());
+            return ResponseEntity.ok(notifications);
+        } catch (Exception e) {
+            System.err.println("Error in getUnreadNotifications: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.ok(List.of());
+        }
     }
 
     @GetMapping("/unread/count")
     @PreAuthorize("hasRole('TRAVELER') or hasRole('AGENT') or hasRole('ADMIN')")
     public ResponseEntity<Long> getUnreadCount(Authentication authentication) {
-        Long userId = Long.parseLong(authentication.getName());
-        long count = notificationService.getUnreadCount(userId);
-        return ResponseEntity.ok(count);
+        try {
+            User user = resolveUser(authentication);
+            long count = notificationService.getUnreadCount(user.getId());
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            System.err.println("Error in getUnreadCount: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.ok(0L);
+        }
     }
 
     @PutMapping("/{notificationId}/read")
@@ -52,9 +79,15 @@ public class NotificationController {
     @PutMapping("/read-all")
     @PreAuthorize("hasRole('TRAVELER') or hasRole('AGENT') or hasRole('ADMIN')")
     public ResponseEntity<?> markAllAsRead(Authentication authentication) {
-        Long userId = Long.parseLong(authentication.getName());
-        notificationService.markAllAsRead(userId);
-        return ResponseEntity.ok().build();
+        try {
+            User user = resolveUser(authentication);
+            notificationService.markAllAsRead(user.getId());
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.err.println("Error in markAllAsRead: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Failed to mark all as read: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/{notificationId}")

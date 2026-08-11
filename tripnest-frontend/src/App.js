@@ -10,6 +10,12 @@ import TripDetail from './components/TripDetail';
 import TripTimeline from './components/TripTimeline';
 import Destinations from './components/Destinations';
 import ExpenseTracker from './components/ExpenseTracker';
+import BudgetManager from './components/BudgetManager';
+import GroupCollaboration from './components/GroupCollaboration';
+import Notifications from './components/Notifications';
+import DocumentManager from './components/DocumentManager';
+import TripInvitations from './components/TripInvitations';
+import GroupChat from './components/GroupChat';
 import UserProfile from './components/UserProfile';
 import OAuth2Callback from './components/OAuth2Callback';
 import './App.css';
@@ -113,6 +119,30 @@ function App() {
             }
           />
           <Route
+            path="/trips/:id/budget"
+            element={
+              <PrivateRoute>
+                <BudgetManager />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/trips/:id/documents"
+            element={
+              <PrivateRoute>
+                <DocumentManager />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/trips/:id/invitations"
+            element={
+              <PrivateRoute>
+                <TripInvitations />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/trips/:id/timeline"
             element={
               <PrivateRoute>
@@ -137,6 +167,36 @@ function App() {
             element={
               <PrivateRoute>
                 <UserProfile />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Group Collaboration */}
+          <Route
+            path="/groups"
+            element={
+              <PrivateRoute>
+                <GroupCollaboration />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Group Chat */}
+          <Route
+            path="/chat"
+            element={
+              <PrivateRoute>
+                <GroupChat />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Notifications */}
+          <Route
+            path="/notifications"
+            element={
+              <PrivateRoute>
+                <Notifications />
               </PrivateRoute>
             }
           />

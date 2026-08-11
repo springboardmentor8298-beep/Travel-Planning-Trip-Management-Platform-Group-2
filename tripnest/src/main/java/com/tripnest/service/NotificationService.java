@@ -1,5 +1,6 @@
 package com.tripnest.service;
 
+import com.tripnest.dto.NotificationResponse;
 import com.tripnest.entity.Notification;
 import com.tripnest.entity.User;
 import com.tripnest.repository.NotificationRepository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,15 +55,49 @@ public class NotificationService {
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
     }
 
-    public List<Notification> getUserNotifications(Long userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
+    public List<NotificationResponse> getUserNotifications(Long userId) {
+        try {
+            return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
+                    .stream().map(this::mapToResponse).collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("Error fetching user notifications: " + e.getMessage());
+            e.printStackTrace();
+            return List.of();
+        }
     }
 
-    public List<Notification> getUnreadNotifications(Long userId) {
-        return notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
+    public List<NotificationResponse> getUnreadNotifications(Long userId) {
+        try {
+            return notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId)
+                    .stream().map(this::mapToResponse).collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("Error fetching unread notifications: " + e.getMessage());
+            e.printStackTrace();
+            return List.of();
+        }
     }
 
     public long getUnreadCount(Long userId) {
-        return notificationRepository.countByUserIdAndIsReadFalse(userId);
+        try {
+            return notificationRepository.countByUserIdAndIsReadFalse(userId);
+        } catch (Exception e) {
+            System.err.println("Error fetching unread count: " + e.getMessage());
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    public NotificationResponse mapToResponse(Notification n) {
+        return new NotificationResponse(
+                n.getId(),
+                n.getTitle(),
+                n.getMessage(),
+                n.getType(),
+                n.isRead(),
+                n.getCreatedAt(),
+                n.getRelatedTripId(),
+                n.getUser() != null ? n.getUser().getId() : null
+        );
     }
 }
+

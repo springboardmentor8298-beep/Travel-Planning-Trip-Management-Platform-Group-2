@@ -33,6 +33,9 @@ export const deleteTrip = (id) =>
 export const getTripStats = () =>
   axios.get(`${API_BASE_URL}/api/trips/stats`, { headers: getAuthHeader() }).then((r) => r.data);
 
+export const getTripExpenses = (tripId) =>
+  axios.get(`${API_BASE_URL}/api/expenses/trip/${tripId}/total`, { headers: getAuthHeader() }).then((r) => r.data);
+
 // ─── Itineraries ─────────────────────────────────────────────────────────────
 
 export const getItineraries = (tripId) =>
@@ -73,7 +76,7 @@ export const getDestinationById = (id) =>
   axios.get(`${API_BASE_URL}/api/destinations/${id}`).then((r) => r.data);
 
 const tripService = {
-  createTrip, getTrips, getTripById, updateTrip, deleteTrip, getTripStats,
+  createTrip, getTrips, getTripById, updateTrip, deleteTrip, getTripStats, getTripExpenses,
   getItineraries, addItinerary, updateItinerary, deleteItinerary,
   getActivities, addActivity, updateActivity, deleteActivity,
   getDestinations, searchDestinations, getDestinationById,

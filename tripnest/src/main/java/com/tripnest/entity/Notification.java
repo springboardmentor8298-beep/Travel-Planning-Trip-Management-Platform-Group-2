@@ -52,6 +52,9 @@ public class Notification {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "related_trip_id")
+    private Long relatedTripId;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

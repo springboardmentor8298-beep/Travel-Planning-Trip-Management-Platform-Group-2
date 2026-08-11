@@ -3,6 +3,7 @@ package com.tripnest.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "group_members")
 @Data
+@EqualsAndHashCode(exclude = {"travelGroup", "user"})
 @NoArgsConstructor
 @AllArgsConstructor
 public class GroupMember {

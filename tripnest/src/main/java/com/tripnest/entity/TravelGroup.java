@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -27,6 +28,7 @@ import java.util.Set;
 @Entity
 @Table(name = "travel_groups")
 @Data
+@EqualsAndHashCode(exclude = {"admin", "members", "discussions", "trip"})
 @NoArgsConstructor
 @AllArgsConstructor
 public class TravelGroup {
@@ -52,6 +54,13 @@ public class TravelGroup {
 
     @OneToMany(mappedBy = "travelGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<GroupMember> members = new HashSet<>();
+
+    @OneToMany(mappedBy = "travelGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<GroupDiscussion> discussions = new HashSet<>();
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trip_id")
+    private Trip trip;
 
     @PrePersist
     protected void onCreate() {

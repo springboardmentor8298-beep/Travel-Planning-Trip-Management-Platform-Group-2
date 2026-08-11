@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import ItineraryDay from './ItineraryDay';
+import BudgetShare from './BudgetShare';
 import { getTripById, deleteTrip, getItineraries, addItinerary, deleteItinerary } from '../services/trip.service';
 
 /**
@@ -15,6 +16,7 @@ const TripDetail = () => {
   const [itineraries, setItineraries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showBudgetShare, setShowBudgetShare] = useState(false);
 
   // Add day form
   const [showAddDay, setShowAddDay] = useState(false);
@@ -119,6 +121,14 @@ const TripDetail = () => {
             <p className="page-subtitle">📍 {trip.destination}</p>
           </div>
           <div className="trip-detail-actions">
+            {trip.budget && (
+              <button 
+                className="btn btn-outline btn-auto" 
+                onClick={() => setShowBudgetShare(!showBudgetShare)}
+              >
+                {showBudgetShare ? 'Hide Budget Share' : 'Budget Share'}
+              </button>
+            )}
             <Link to={`/trips/${id}/edit`} className="btn btn-outline btn-auto" id="edit-trip-btn">Edit</Link>
             <button className="btn btn-danger btn-auto" onClick={handleDeleteTrip} id="delete-trip-detail-btn">Delete</button>
           </div>
@@ -150,6 +160,13 @@ const TripDetail = () => {
           <div className="section-card">
             <h2 className="section-title">About This Adventure</h2>
             <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.7 }}>{trip.description}</p>
+          </div>
+        )}
+
+        {/* Budget Sharing Section */}
+        {showBudgetShare && trip.budget && (
+          <div className="section-card">
+            <BudgetShare tripId={id} />
           </div>
         )}
 

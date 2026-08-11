@@ -13,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,25 +28,31 @@ public class TravelGroupService {
     private final UserRepository userRepository;
 
     public TravelGroupResponse createGroup(Long adminId, TravelGroupRequest request) {
-        User admin = userRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        try {
+            User admin = userRepository.findById(adminId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-        TravelGroup group = new TravelGroup();
-        group.setName(request.getName());
-        group.setDescription(request.getDescription());
-        group.setAdmin(admin);
+            TravelGroup group = new TravelGroup();
+            group.setName(request.getName());
+            group.setDescription(request.getDescription());
+            group.setAdmin(admin);
 
-        TravelGroup savedGroup = travelGroupRepository.save(group);
+            TravelGroup savedGroup = travelGroupRepository.save(group);
 
-        // Add admin as a member with ADMIN role
-        GroupMember adminMember = new GroupMember();
-        adminMember.setTravelGroup(savedGroup);
-        adminMember.setUser(admin);
-        adminMember.setRole(GroupRole.ADMIN);
-        savedGroup.getMembers().add(adminMember);
+            // Add admin as a member with ADMIN role
+            GroupMember adminMember = new GroupMember();
+            adminMember.setTravelGroup(savedGroup);
+            adminMember.setUser(admin);
+            adminMember.setRole(GroupRole.ADMIN);
+            savedGroup.getMembers().add(adminMember);
 
-        TravelGroup finalGroup = travelGroupRepository.save(savedGroup);
-        return mapToResponse(finalGroup);
+            TravelGroup finalGroup = travelGroupRepository.save(savedGroup);
+            return mapToResponse(finalGroup);
+        } catch (Exception e) {
+            System.err.println("Error in createGroup service: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to create group: " + e.getMessage(), e);
+        }
     }
 
     public TravelGroupResponse updateGroup(Long groupId, TravelGroupRequest request) {
@@ -67,11 +76,34 @@ public class TravelGroupService {
         return mapToResponse(group);
     }
 
+    /**
+     * Returns all groups where the user is either admin OR a member.
+     * De-duplicated by group ID.
+     */
     public List<TravelGroupResponse> getUserGroups(Long userId) {
-        List<TravelGroup> groups = travelGroupRepository.findAllAccessibleGroups(userId);
-        return groups.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        try {
+            // Groups where user is admin
+            List<TravelGroup> adminGroups = travelGroupRepository.findByAdminIdOrderByCreatedAtDesc(userId);
+            // Groups where user is a member (includes admin groups too, but we dedup below)
+            List<TravelGroup> memberGroups = travelGroupRepository.findGroupsByMemberUserId(userId);
+
+            // Merge and deduplicate by group ID
+            Map<Long, TravelGroup> deduped = new LinkedHashMap<>();
+            for (TravelGroup g : adminGroups) deduped.put(g.getId(), g);
+            for (TravelGroup g : memberGroups) deduped.putIfAbsent(g.getId(), g);
+
+            List<TravelGroupResponse> responses = new ArrayList<>();
+            for (TravelGroup group : deduped.values()) {
+                if (group.getAdmin() != null) group.getAdmin().getId();
+                if (group.getMembers() != null) group.getMembers().size();
+                responses.add(mapToResponse(group));
+            }
+            return responses;
+        } catch (Exception e) {
+            System.err.println("Error fetching user groups: " + e.getMessage());
+            e.printStackTrace();
+            return List.of();
+        }
     }
 
     public void addMemberToGroup(Long groupId, Long userId) {
@@ -81,12 +113,37 @@ public class TravelGroupService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Check if user is already a member
         boolean isMember = group.getMembers().stream()
                 .anyMatch(m -> m.getUser().getId().equals(userId));
 
         if (isMember) {
             throw new RuntimeException("User is already a member of this group");
+        }
+
+        GroupMember member = new GroupMember();
+        member.setTravelGroup(group);
+        member.setUser(user);
+        member.setRole(GroupRole.MEMBER);
+
+        group.getMembers().add(member);
+        travelGroupRepository.save(group);
+    }
+
+    /**
+     * Adds a user to a group by their username (instead of numeric ID).
+     */
+    public void addMemberToGroupByUsername(Long groupId, String username) {
+        TravelGroup group = travelGroupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+
+        boolean isMember = group.getMembers().stream()
+                .anyMatch(m -> m.getUser().getId().equals(user.getId()));
+
+        if (isMember) {
+            throw new RuntimeException("User '" + username + "' is already a member of this group");
         }
 
         GroupMember member = new GroupMember();
@@ -132,13 +189,26 @@ public class TravelGroupService {
                 ))
                 .collect(Collectors.toList());
 
+        String adminName = "Unknown";
+        Long adminId = null;
+        if (group.getAdmin() != null) {
+            adminId = group.getAdmin().getId();
+            adminName = (group.getAdmin().getFirstName() != null ? group.getAdmin().getFirstName() : "") +
+                       " " +
+                       (group.getAdmin().getLastName() != null ? group.getAdmin().getLastName() : "");
+            adminName = adminName.trim();
+            if (adminName.isEmpty()) {
+                adminName = group.getAdmin().getUsername();
+            }
+        }
+
         return new TravelGroupResponse(
                 group.getId(),
                 group.getName(),
                 group.getDescription(),
                 group.getCreatedAt(),
-                group.getAdmin().getId(),
-                group.getAdmin().getFirstName() + " " + group.getAdmin().getLastName(),
+                adminId,
+                adminName,
                 group.getMembers().size(),
                 memberResponses
         );
