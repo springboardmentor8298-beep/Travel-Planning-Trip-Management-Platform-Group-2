@@ -6,8 +6,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -42,9 +45,13 @@ public class User implements UserDetails {
     @Column
     private String travelPreferences;
 
-    @Column
-    @ElementCollection
-    private Set<String> favoriteDestinations;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_favorite_destinations", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "destination_name")
+    private Set<String> favoriteDestinations = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Trip> trips = new ArrayList<>();
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -150,6 +157,14 @@ public class User implements UserDetails {
 
     public void setFavoriteDestinations(Set<String> favoriteDestinations) {
         this.favoriteDestinations = favoriteDestinations;
+    }
+
+    public List<Trip> getTrips() {
+        return trips;
+    }
+
+    public void setTrips(List<Trip> trips) {
+        this.trips = trips;
     }
 
     public LocalDateTime getCreatedAt() {

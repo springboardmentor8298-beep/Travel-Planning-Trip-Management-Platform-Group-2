@@ -28,11 +28,15 @@ public class Trip {
     private String photoUrl;
 
     @Column
-    private String status; // "planning", "upcoming", "ongoing", "completed"
+    private String status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "destination_id", nullable = true)
+    private Destination destination;
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Itinerary> itineraries;
@@ -61,6 +65,8 @@ public class Trip {
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+    public String getTitle() { return name; }
+    public void setTitle(String title) { this.name = title; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     public LocalDate getStartDate() { return startDate; }
@@ -73,6 +79,8 @@ public class Trip {
     public void setStatus(String status) { this.status = status; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public Destination getDestination() { return destination; }
+    public void setDestination(Destination destination) { this.destination = destination; }
     public List<Itinerary> getItineraries() { return itineraries; }
     public void setItineraries(List<Itinerary> itineraries) { this.itineraries = itineraries; }
     public LocalDateTime getCreatedAt() { return createdAt; }

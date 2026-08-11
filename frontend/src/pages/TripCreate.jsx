@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -7,40 +7,83 @@ const TripCreate = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [destinations, setDestinations] = useState([]);
   const [formData, setFormData] = useState({
     name: location.state?.destinationName ? `${location.state.destinationName} Trip` : '',
+    title: location.state?.destinationName ? `${location.state.destinationName} Trip` : '',
     description: location.state?.destinationName ? `Planning my trip to ${location.state.destinationName}.` : '',
     startDate: '',
     endDate: '',
     photoUrl: location.state?.photoUrl || '',
-    status: 'planning'
+    status: 'planning',
+    destinationId: location.state?.destinationId || ''
   });
   const [loading, setLoading] = useState(false);
+  const [destLoading, setDestLoading] = useState(true);
+  const [successMsg, setSuccessMsg] = useState('');
+
+  useEffect(() => {
+    fetchDestinations();
+  }, []);
+
+  const fetchDestinations = async () => {
+    try {
+      const response = await api.get('/destinations');
+      setDestinations(response.data);
+    } catch (error) {
+      console.error('Error fetching destinations:', error);
+    } finally {
+      setDestLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setSuccessMsg('');
     try {
-      const response = await api.post('/trips', formData);
-      navigate(`/trips/${response.data.id}`);
+      const payload = { ...formData };
+      if (!payload.destinationId) {
+        delete payload.destinationId;
+      } else {
+        payload.destinationId = Number(payload.destinationId);
+      }
+      const response = await api.post('/trips', payload);
+      setSuccessMsg(`Trip "${response.data.name || response.data.title}" created successfully!`);
+      setTimeout(() => {
+        navigate(`/trips/${response.data.id}`);
+      }, 1500);
     } catch (error) {
       console.error('Error creating trip:', error);
-      alert('Failed to create trip. Please try again.');
+      alert('Failed to create trip: ' + (error.response?.data?.message || error.message || 'Please try again.'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleChange = (e) => {
+    const val = e.target.name === 'destinationId' ? e.target.value : e.target.value;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: val
     });
+
+    if (e.target.name === 'destinationId' && e.target.value) {
+      const dest = destinations.find(d => d.id === Number(e.target.value));
+      if (dest) {
+        setFormData(prev => ({
+          ...prev,
+          destinationId: e.target.value,
+          photoUrl: prev.photoUrl || dest.photoUrl,
+          name: prev.name || `${dest.name} Trip`,
+          title: prev.title || `${dest.name} Trip`
+        }));
+      }
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-indigo-50">
-      {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-xl border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
@@ -54,18 +97,24 @@ const TripCreate = () => {
             </Link>
             <div className="flex items-center space-x-4">
               <Link
+                to="/destinations"
+                className="px-5 py-3 text-sm font-bold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 hover:shadow-md transition-all"
+              >
+                🗺️ Destinations
+              </Link>
+              <Link
                 to="/dashboard"
                 className="px-5 py-3 text-sm font-bold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 hover:shadow-md transition-all"
               >
                 ← Dashboard
               </Link>
               <div className="text-right">
-                <p className="text-base font-bold text-gray-800">{user.firstName} {user.lastName}</p>
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">{user.role}</p>
+                <p className="text-base font-bold text-gray-800">{user?.firstName} {user?.lastName}</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">{user?.role}</p>
               </div>
               <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center shadow-sm">
                 <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  {user.firstName?.[0]}{user.lastName?.[0]}
+                  {user?.firstName?.[0]}{user?.lastName?.[0]}
                 </span>
               </div>
               <button
@@ -82,7 +131,6 @@ const TripCreate = () => {
         </div>
       </nav>
 
-      {/* Main Content */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="bg-white rounded-3xl p-10 shadow-xl border border-slate-100">
           <div className="mb-10">
@@ -90,9 +138,23 @@ const TripCreate = () => {
             <p className="text-xl text-gray-600">Plan your next adventure</p>
           </div>
 
+          {successMsg && (
+            <div className="mb-8 p-5 bg-emerald-50 border-2 border-emerald-200 rounded-2xl flex items-center">
+              <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mr-4">
+                <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <div>
+                <p className="text-emerald-800 font-bold text-lg">{successMsg}</p>
+                <p className="text-emerald-600 text-sm">Redirecting to trip details...</p>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-8">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">Trip Name *</label>
+              <label className="block text-sm font-bold text-gray-700 mb-3">Trip Title *</label>
               <input
                 type="text"
                 name="name"
@@ -102,6 +164,27 @@ const TripCreate = () => {
                 className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-sky-500 focus:ring-4 focus:ring-sky-100 outline-none transition-all"
                 placeholder="e.g., Summer Vacation 2024"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-3">Destination *</label>
+              <select
+                name="destinationId"
+                value={formData.destinationId}
+                onChange={handleChange}
+                required
+                className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-sky-500 focus:ring-4 focus:ring-sky-100 outline-none transition-all"
+              >
+                <option value="">{destLoading ? 'Loading destinations...' : 'Select a destination'}</option>
+                {destinations.map((dest) => (
+                  <option key={dest.id} value={dest.id}>
+                    {dest.name} — {dest.city}, {dest.country}
+                  </option>
+                ))}
+              </select>
+              {!destLoading && destinations.length === 0 && (
+                <p className="mt-2 text-sm text-amber-600">No destinations loaded. Please check backend connection.</p>
+              )}
             </div>
 
             <div>
@@ -181,7 +264,7 @@ const TripCreate = () => {
                 disabled={loading}
                 className="flex-1 px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Creating...' : 'Create Trip'}
+                {loading ? 'Creating...' : '✈️ Create Trip'}
               </button>
             </div>
           </form>

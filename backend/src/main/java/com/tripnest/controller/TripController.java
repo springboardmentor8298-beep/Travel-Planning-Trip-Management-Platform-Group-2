@@ -22,31 +22,51 @@ public class TripController {
 
     @PostMapping
     public ResponseEntity<TripResponse> createTrip(@RequestBody TripRequest request, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        User user = null;
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            user = (User) authentication.getPrincipal();
+        }
         return ResponseEntity.ok(tripService.createTrip(request, user));
     }
 
     @GetMapping
-    public ResponseEntity<List<TripResponse>> getUserTrips(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(tripService.getUserTrips(user));
+    public ResponseEntity<List<TripResponse>> getTrips(Authentication authentication) {
+        User user = null;
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            user = (User) authentication.getPrincipal();
+        }
+        return ResponseEntity.ok(tripService.getUserTripsOrAll(user));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<TripResponse>> getAllTrips() {
+        return ResponseEntity.ok(tripService.getAllTrips());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TripResponse> getTripById(@PathVariable Long id, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        User user = null;
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            user = (User) authentication.getPrincipal();
+        }
         return ResponseEntity.ok(tripService.getTripById(id, user));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<TripResponse> updateTrip(@PathVariable Long id, @RequestBody TripRequest request, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        User user = null;
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            user = (User) authentication.getPrincipal();
+        }
         return ResponseEntity.ok(tripService.updateTrip(id, request, user));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTrip(@PathVariable Long id, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        User user = null;
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            user = (User) authentication.getPrincipal();
+        }
         tripService.deleteTrip(id, user);
         return ResponseEntity.noContent().build();
     }

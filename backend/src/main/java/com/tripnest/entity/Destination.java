@@ -20,6 +20,9 @@ public class Destination {
     @Column
     private String city;
 
+    @Column
+    private String location;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -54,11 +57,17 @@ public class Destination {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (location == null || location.isEmpty()) {
+            location = (city != null && !city.isEmpty() ? city + ", " : "") + (country != null ? country : "");
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+        if (location == null || location.isEmpty()) {
+            location = (city != null && !city.isEmpty() ? city + ", " : "") + (country != null ? country : "");
+        }
     }
 
     public Long getId() { return id; }
@@ -69,6 +78,11 @@ public class Destination {
     public void setCountry(String country) { this.country = country; }
     public String getCity() { return city; }
     public void setCity(String city) { this.city = city; }
+    public String getLocation() {
+        if (location != null && !location.isEmpty()) return location;
+        return (city != null && !city.isEmpty() ? city + ", " : "") + (country != null ? country : "");
+    }
+    public void setLocation(String location) { this.location = location; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     public String getPhotoUrl() { return photoUrl; }

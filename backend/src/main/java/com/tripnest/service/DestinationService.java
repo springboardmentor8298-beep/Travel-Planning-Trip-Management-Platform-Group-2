@@ -80,6 +80,7 @@ public class DestinationService {
         response.setName(destination.getName());
         response.setCountry(destination.getCountry());
         response.setCity(destination.getCity());
+        response.setLocation(destination.getLocation());
         response.setDescription(destination.getDescription());
         response.setPhotoUrl(destination.getPhotoUrl());
         response.setLatitude(destination.getLatitude());
