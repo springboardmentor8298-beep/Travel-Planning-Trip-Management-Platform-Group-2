@@ -22,4 +22,6 @@ public class TripMemberResponse {
     private Long tripId;
 
     private String tripName;
+
+    private java.time.LocalDateTime createdAt;
 }

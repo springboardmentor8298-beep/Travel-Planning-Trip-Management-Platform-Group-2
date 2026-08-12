@@ -81,7 +81,8 @@ export const AppProvider = ({ children }) => {
           bio: user.bio || "",
           photo: user.photo || "",
           travelStyle: user.travelStyle || "",
-          emergencyContact: user.emergencyContact || ""
+          emergencyContact: user.emergencyContact || "",
+          role: user.role || ""
         });
       }
     } catch (error) {
@@ -515,7 +516,8 @@ export const AppProvider = ({ children }) => {
           bio: data.bio || "",
           photo: data.photo || "",
           travelStyle: data.travelStyle || "",
-          emergencyContact: data.emergencyContact || ""
+          emergencyContact: data.emergencyContact || "",
+          role: data.role || ""
         });
         logActivity('profile', `Updated travel profile details`);
         triggerNotification("Profile details saved!", "success");

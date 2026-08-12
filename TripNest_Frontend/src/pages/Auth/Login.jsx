@@ -82,9 +82,14 @@ export default function Login({ onSuccess }) {
 
             saveToken(response.data.data.token);
 
-            setLoggedInUser(response.data.data);
+            const loggedInUser = response.data.data;
+            setLoggedInUser(loggedInUser);
 
-            navigate("/dashboard");
+            if (loggedInUser.role === 'ADMIN') {
+                navigate("/admin");
+            } else {
+                navigate("/dashboard");
+            }
         } catch (error) {
 
             alert(

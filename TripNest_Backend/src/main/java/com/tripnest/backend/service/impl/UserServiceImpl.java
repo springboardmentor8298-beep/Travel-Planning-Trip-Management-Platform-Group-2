@@ -125,6 +125,7 @@ public class UserServiceImpl implements UserService {
                 .photo(user.getPhoto())
                 .travelStyle(user.getTravelStyle())
                 .emergencyContact(user.getEmergencyContact())
+                .role(user.getRole().name())
                 .build();
 
         return ApiResponse.<UserProfileDto>builder()
@@ -157,6 +158,7 @@ public class UserServiceImpl implements UserService {
                 .photo(user.getPhoto())
                 .travelStyle(user.getTravelStyle())
                 .emergencyContact(user.getEmergencyContact())
+                .role(user.getRole().name())
                 .build();
 
         return ApiResponse.<UserProfileDto>builder()

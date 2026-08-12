@@ -8,6 +8,7 @@ import {
   Map,
   Calendar,
   User,
+  Users,
   Settings,
   Luggage,
   X,
@@ -16,7 +17,8 @@ import {
   Moon,
   ChevronRight,
   Globe,
-  BarChart3
+  BarChart3,
+  Shield
 } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { getTripStatus } from '../../utils/date';
@@ -45,7 +47,16 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen }) => {
       .substring(0, 2);
   };
 
-  const navItems = [
+  const isAdmin = profile?.role === 'ADMIN';
+
+  const navItems = isAdmin ? [
+    { id: 'admin', label: t('sidebar.adminDashboard', { defaultValue: 'Dashboard' }), icon: LayoutDashboard },
+    { id: 'admin-users', label: t('sidebar.users', { defaultValue: 'Users' }), icon: Users },
+    { id: 'admin-trips', label: t('sidebar.trips', { defaultValue: 'Trips' }), icon: Luggage },
+    { id: 'admin-analytics', label: t('sidebar.analytics', { defaultValue: 'Analytics' }), icon: BarChart3 },
+    { id: 'profile', label: t('sidebar.travelProfile', { defaultValue: 'Travel Profile' }), icon: User },
+    { id: 'settings', label: t('sidebar.settings', { defaultValue: 'Settings' }), icon: Settings },
+  ] : [
     { id: 'dashboard', label: t('sidebar.dashboard', { defaultValue: 'Dashboard' }), icon: LayoutDashboard },
     { id: 'trips', label: t('sidebar.myTrips', { defaultValue: 'My Trips' }), icon: Luggage },
     { id: 'planner', label: t('sidebar.itineraryPlanner', { defaultValue: 'Itinerary Planner' }), icon: Map },
@@ -139,7 +150,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen }) => {
         {/* Workspace Title */}
         <div className="px-3 mb-2">
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">
-            {t('sidebar.workspace', { defaultValue: 'Workspace' })}
+            {isAdmin ? 'ADMINISTRATION' : t('sidebar.workspace', { defaultValue: 'Workspace' })}
           </p>
         </div>
 
