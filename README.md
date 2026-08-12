@@ -50,34 +50,33 @@ The platform is built as a decoupled full-stack application — a Spring Boot RE
 
 ## Project Status
 
-Development follows a structured 4-milestone plan. **Milestones 1 and 2 are complete.**
+Development follows a structured 4-milestone plan. **All 4 milestones are complete.**
 
 | Milestone | Scope | Status |
 |---|---|---|
 | **Milestone 1** | Auth & Role-Based Access, Profile Management, Trip Management | ✅ **Complete** |
 | **Milestone 2** | Itinerary Planning, Activity Scheduling, Destination Discovery | ✅ **Complete** |
-| **Milestone 3** | Budget & Expense Management, Group Collaboration, Notifications | 🔜 **Next** |
-| **Milestone 4** | Analytics Dashboard, Testing, Deployment | ⏳ Planned |
+| **Milestone 3** | Budget & Expense Management, Group Collaboration, Notifications, Document Upload | ✅ **Complete** |
+| **Milestone 4** | Analytics Dashboard, Chart.js Reports, Weather API, Testing & Deployment | ✅ **Complete** |
 
 ### Completed Modules
 
 <table>
 <tr><th>#</th><th>Module</th><th>Milestone</th><th>Status</th></tr>
-<tr><td>1</td><td>User Authentication & Role-Based Access</td><td>1</td><td>✅</td></tr>
+<tr><td>1</td><td>User Authentication & Role-Based Access (JWT + OAuth2)</td><td>1</td><td>✅</td></tr>
 <tr><td>2</td><td>User Profile Management</td><td>1</td><td>✅</td></tr>
 <tr><td>3</td><td>Trip Management System</td><td>1</td><td>✅</td></tr>
-<tr><td>4</td><td>Itinerary Planning System</td><td>2</td><td>✅</td></tr>
-<tr><td>5</td><td>Destination Discovery System</td><td>2</td><td>✅</td></tr>
-<tr><td>6</td><td>Budget & Expense Management</td><td>3</td><td>🔜</td></tr>
-<tr><td>7</td><td>Group Collaboration System</td><td>3</td><td>🔜</td></tr>
-<tr><td>8</td><td>Notification System</td><td>3</td><td>🔜</td></tr>
-<tr><td>9</td><td>Media & Document Management</td><td>3</td><td>🔜</td></tr>
-<tr><td>10</td><td>Reports & Analytics</td><td>4</td><td>⏳</td></tr>
-<tr><td>11</td><td>Payment Management (Optional)</td><td>4</td><td>⏳</td></tr>
-<tr><td>12</td><td>Final Integration, Testing & Deployment</td><td>4</td><td>⏳</td></tr>
+<tr><td>4</td><td>Itinerary Planning System (day-wise, activity types)</td><td>2</td><td>✅</td></tr>
+<tr><td>5</td><td>Destination Discovery System (image, GPS, map link)</td><td>2</td><td>✅</td></tr>
+<tr><td>6</td><td>Budget & Expense Management (category-wise, reports)</td><td>3</td><td>✅</td></tr>
+<tr><td>7</td><td>Group Collaboration System (invite, chat, shared expenses)</td><td>3</td><td>✅</td></tr>
+<tr><td>8</td><td>Notification System (trip reminders, budget alerts, invitations)</td><td>3</td><td>✅</td></tr>
+<tr><td>9</td><td>Media & Document Management (upload, cloud storage)</td><td>3</td><td>✅</td></tr>
+<tr><td>10</td><td>Reports & Analytics Dashboard (Chart.js Doughnut, Bar, Line)</td><td>4</td><td>✅</td></tr>
+<tr><td>11</td><td>Admin Dashboard (user analytics, trip analytics, platform stats)</td><td>4</td><td>✅</td></tr>
+<tr><td>12</td><td>Weather API Integration (OpenWeatherMap — destination cards + dashboard)</td><td>4</td><td>✅</td></tr>
+<tr><td>13</td><td>Payment Management (Optional)</td><td>4</td><td>⏳ Optional</td></tr>
 </table>
-
-> OAuth2 (Google Login) and password reset are part of Module 1's original scope but deferred — the JWT authentication foundation shipped here is what they will plug into.
 
 ---
 

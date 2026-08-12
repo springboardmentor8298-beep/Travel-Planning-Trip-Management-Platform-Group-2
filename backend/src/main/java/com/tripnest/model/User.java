@@ -45,6 +45,9 @@ public class User {
 
     private boolean active = true;
 
+    @Column(nullable = false)
+    private boolean emailVerified = false;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
@@ -154,13 +157,11 @@ public class User {
         this.profilePictureUrl = profilePictureUrl;
     }
 
-    public boolean isActive() {
-        return active;
-    }
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 
-    public void setActive(boolean active) {
-        this.active = active;
-    }
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;

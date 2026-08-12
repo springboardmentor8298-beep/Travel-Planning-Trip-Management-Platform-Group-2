@@ -69,5 +69,7 @@ public class ItineraryService {
         item.setPlaceAddress(request.getPlaceAddress());
         item.setReminderAt(request.getReminderAt());
         item.setNotes(request.getNotes());
+        item.setLat(request.getLat());
+        item.setLng(request.getLng());
     }
 }

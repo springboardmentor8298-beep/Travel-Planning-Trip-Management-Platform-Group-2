@@ -1,0 +1,69 @@
+# ─────────────────────────────────────────────────────────────
+# TripNest — Render.com Deployment
+#
+# HOW TO DEPLOY:
+# 1. Push this repo to GitHub.
+# 2. Go to https://render.com → New → Blueprint
+# 3. Connect your GitHub repo — Render reads this file automatically.
+# 4. Set secret env vars in Render dashboard:
+#      JWT_SECRET, MAIL_USERNAME, MAIL_PASSWORD,
+#      GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET  (optional)
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Spring Boot Backend ───────────────────────────────────
+  - type: web
+    name: tripnest-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free                     # upgrade to starter for always-on
+    healthCheckPath: /api/auth/oauth-enabled
+    envVars:
+      - key: APP_PROFILE
+        value: postgres            # Render uses PostgreSQL
+
+      # Database — Render injects DATABASE_URL automatically from the DB service below
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tripnest-db
+          property: connectionString
+
+      - key: DB_USERNAME
+        fromDatabase:
+          name: tripnest-db
+          property: user
+
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: tripnest-db
+          property: password
+
+      - key: JWT_SECRET
+        sync: false                # Set manually in Render dashboard
+
+      - key: MAIL_USERNAME
+        sync: false
+
+      - key: MAIL_PASSWORD
+        sync: false
+
+      - key: FRONTEND_URL
+        value: https://tripnest.vercel.app   # update to your Vercel URL
+
+      - key: CORS_ORIGINS
+        value: https://tripnest.vercel.app,http://localhost:3000
+
+      - key: GOOGLE_CLIENT_ID
+        sync: false                # optional — leave blank to disable OAuth
+
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+  # ── PostgreSQL Database ───────────────────────────────────
+databases:
+  - name: tripnest-db
+    plan: free
+    databaseName: tripnest_db
+    user: tripnest_user

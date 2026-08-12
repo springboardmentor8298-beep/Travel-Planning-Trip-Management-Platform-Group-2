@@ -25,10 +25,19 @@ public class GoogleOAuthConfig {
     }
 
     private boolean isValid(String value) {
-        return value != null && !value.isBlank()
-                && !value.trim().equalsIgnoreCase("YOUR_GOOGLE_CLIENT_ID")
-                && !value.trim().equalsIgnoreCase("YOUR_GOOGLE_CLIENT_SECRET")
-                && !value.trim().equalsIgnoreCase("your-real-client-id")
-                && !value.trim().equalsIgnoreCase("your-real-client-secret");
+        if (value == null || value.isBlank()) {
+            return false;
+        }
+
+        String trimmed = value.trim();
+        return !trimmed.equalsIgnoreCase("YOUR_GOOGLE_CLIENT_ID")
+                && !trimmed.equalsIgnoreCase("YOUR_GOOGLE_CLIENT_SECRET")
+                && !trimmed.equalsIgnoreCase("your-real-client-id")
+                && !trimmed.equalsIgnoreCase("your-real-client-secret")
+                && !trimmed.toUpperCase().contains("YOUR_")
+                && !trimmed.startsWith("<YOUR_")
+                && !trimmed.contains("***")
+                && !trimmed.contains("<")
+                && !trimmed.contains(">");
     }
 }

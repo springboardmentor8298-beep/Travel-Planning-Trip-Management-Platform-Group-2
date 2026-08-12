@@ -43,6 +43,12 @@ public class ItineraryItem {
     @Column(length = 1000)
     private String notes;
 
+    @Column(columnDefinition = "DOUBLE")
+    private Double lat;
+
+    @Column(columnDefinition = "DOUBLE")
+    private Double lng;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
@@ -124,17 +130,16 @@ public class ItineraryItem {
         this.reminderAt = reminderAt;
     }
 
-    public String getNotes() {
-        return notes;
-    }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
+    public Double getLat() { return lat; }
+    public void setLat(Double lat) { this.lat = lat; }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+    public Double getLng() { return lng; }
+    public void setLng(Double lng) { this.lng = lng; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
