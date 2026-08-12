@@ -1,0 +1,11 @@
+package com.tripnest.backend;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class TripNestBackendApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(TripNestBackendApplication.class, args);
+    }
+}
