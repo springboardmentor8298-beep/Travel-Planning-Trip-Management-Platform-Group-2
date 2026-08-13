@@ -33,11 +33,11 @@ function iconFor(code) {
 
 export default function WeatherWidget({ city, compact = false }) {
   const [weather, setWeather] = useState(null);
-  const [status,  setStatus]  = useState("idle"); // idle | loading | ok | error | no-key
+  const [status, setStatus] = useState("idle"); // idle | loading | ok | error | no-key
 
   const load = useCallback(() => {
     if (!API_KEY) { setStatus("no-key"); return; }
-    if (!city)    { setStatus("error");  return; }
+    if (!city) { setStatus("error"); return; }
 
     setStatus("loading");
     const query = encodeURIComponent(city.split(",")[0].trim());
@@ -50,14 +50,14 @@ export default function WeatherWidget({ city, compact = false }) {
       })
       .then((data) => {
         setWeather({
-          temp:        Math.round(data.main.temp),
-          feels:       Math.round(data.main.feels_like),
-          humidity:    data.main.humidity,
+          temp: Math.round(data.main.temp),
+          feels: Math.round(data.main.feels_like),
+          humidity: data.main.humidity,
           description: data.weather[0].description,
-          icon:        data.weather[0].icon,
-          wind:        Math.round(data.wind.speed * 3.6), // m/s → km/h
-          cityName:    data.name,
-          country:     data.sys.country,
+          icon: data.weather[0].icon,
+          wind: Math.round(data.wind.speed * 3.6), // m/s → km/h
+          cityName: data.name,
+          country: data.sys.country,
         });
         setStatus("ok");
       })
@@ -71,14 +71,14 @@ export default function WeatherWidget({ city, compact = false }) {
 
   /* ── Compact badge (used inside Destination cards) ── */
   if (compact) {
-    if (status === "loading") {
+    if (status === "loading" || status === "idle") {
       return (
         <span className="inline-flex items-center gap-1 text-xs text-slate-400 animate-pulse">
           🌡️ …
         </span>
       );
     }
-    if (status !== "ok") return null;
+    if (status !== "ok" || !weather) return null;
     return (
       <span
         className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-full"
@@ -91,7 +91,7 @@ export default function WeatherWidget({ city, compact = false }) {
   }
 
   /* ── Full card (used in Dashboard / Trip detail) ── */
-  if (status === "loading") {
+  if (status === "loading" || status === "idle") {
     return (
       <div className="bg-sky-50 border border-sky-100 rounded-xl p-4 animate-pulse">
         <div className="h-4 bg-sky-100 rounded w-1/2 mb-2" />
@@ -100,7 +100,7 @@ export default function WeatherWidget({ city, compact = false }) {
     );
   }
 
-  if (status === "error") {
+  if (status === "error" || !weather) {
     return (
       <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 flex items-center gap-2 text-xs text-slate-400">
         🌡️ Weather unavailable for "{city}"
@@ -146,8 +146,8 @@ export default function WeatherWidget({ city, compact = false }) {
       <div className="grid grid-cols-3 gap-2 pt-3 border-t border-sky-200">
         {[
           { icon: "🌡️", label: "Feels like", value: `${weather.feels}°C` },
-          { icon: "💧", label: "Humidity",   value: `${weather.humidity}%` },
-          { icon: "💨", label: "Wind",       value: `${weather.wind} km/h` },
+          { icon: "💧", label: "Humidity", value: `${weather.humidity}%` },
+          { icon: "💨", label: "Wind", value: `${weather.wind} km/h` },
         ].map((d) => (
           <div key={d.label} className="text-center">
             <p className="text-base">{d.icon}</p>
