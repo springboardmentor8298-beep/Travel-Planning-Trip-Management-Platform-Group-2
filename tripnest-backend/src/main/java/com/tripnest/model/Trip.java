@@ -1,6 +1,8 @@
 package com.tripnest.model;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "trips")
@@ -26,6 +28,17 @@ public class Trip {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Itinerary> itineraries = new ArrayList<>();
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Expense> expenses = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "trip_collaborators", joinColumns = @JoinColumn(name = "trip_id"))
+    @Column(name = "collaborator_email")
+    private List<String> collaboratorEmails = new ArrayList<>();
 
     public Trip() {
     }
@@ -107,4 +120,28 @@ public class Trip {
     public void setUser(User user) {
         this.user = user;
     }
-}
+
+    public List<Itinerary> getItineraries() {
+        return itineraries;
+    }
+
+    public void setItineraries(List<Itinerary> itineraries) {
+        this.itineraries = itineraries;
+    }
+
+    public List<Expense> getExpenses() {
+        return expenses;
+    }
+
+    public void setExpenses(List<Expense> expenses) {
+        this.expenses = expenses;
+    }
+
+    public List<String> getCollaboratorEmails() {
+        return collaboratorEmails;
+    }
+
+    public void setCollaboratorEmails(List<String> collaboratorEmails) {
+        this.collaboratorEmails = collaboratorEmails;
+    }
+}

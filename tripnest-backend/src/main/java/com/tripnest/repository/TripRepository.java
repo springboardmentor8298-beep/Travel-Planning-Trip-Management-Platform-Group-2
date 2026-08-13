@@ -12,4 +12,5 @@ public interface TripRepository extends JpaRepository<Trip, Integer> {
 
     List<Trip> findByUser(User user);
 
+    List<Trip> findByCollaboratorEmailsContaining(String email);
 }

@@ -16,6 +16,11 @@ public class Notification {
     public Notification() {
     }
 
+    public Notification(String message, String status) {
+        this.message = message;
+        this.status = status;
+    }
+
     public Integer getId() {
         return id;
     }

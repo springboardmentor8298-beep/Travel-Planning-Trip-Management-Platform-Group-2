@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     @Autowired
@@ -27,11 +27,13 @@ public class AuthController {
         User user = new User();
 
         user.setName(request.getName());
+        user.setAge(request.getAge());
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
 
         return userService.registerUser(user);
     }
+
 
     // Login User
     @PostMapping("/login")

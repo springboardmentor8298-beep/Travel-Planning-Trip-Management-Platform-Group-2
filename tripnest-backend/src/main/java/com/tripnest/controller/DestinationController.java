@@ -9,6 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/destinations")
+@CrossOrigin(origins = "*")
 public class DestinationController {
 
     @Autowired
@@ -23,4 +24,9 @@ public class DestinationController {
     public List<Destination> getAllDestinations() {
         return destinationService.getAllDestinations();
     }
-}
+
+    @GetMapping("/{id}")
+    public Destination getDestinationById(@PathVariable int id) {
+        return destinationService.getDestinationById(id);
+    }
+}

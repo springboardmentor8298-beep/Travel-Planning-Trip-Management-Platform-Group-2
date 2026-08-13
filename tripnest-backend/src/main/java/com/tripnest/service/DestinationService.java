@@ -20,4 +20,8 @@ public class DestinationService {
     public List<Destination> getAllDestinations() {
         return destinationRepository.findAll();
     }
-}
+
+    public Destination getDestinationById(int id) {
+        return destinationRepository.findById(id).orElse(null);
+    }
+}

@@ -3,6 +3,7 @@ package com.tripnest.dto;
 public class RegisterRequest {
 
     private String name;
+    private int age;
     private String email;
     private String password;
 
@@ -15,6 +16,14 @@ public class RegisterRequest {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
     }
 
     public String getEmail() {
@@ -32,4 +41,4 @@ public class RegisterRequest {
     public void setPassword(String password) {
         this.password = password;
     }
-}
+}

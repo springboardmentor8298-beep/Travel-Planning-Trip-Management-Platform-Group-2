@@ -9,6 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/notifications")
+@CrossOrigin(origins = "*")
 public class NotificationController {
 
     @Autowired
@@ -22,5 +23,16 @@ public class NotificationController {
     @GetMapping("/all")
     public List<Notification> getAllNotifications() {
         return notificationService.getAllNotifications();
+    }
+
+    @PutMapping("/mark-read/{id}")
+    public Notification markAsRead(@PathVariable Integer id) {
+        return notificationService.markAsRead(id);
+    }
+
+    @PutMapping("/mark-all-read")
+    public String markAllAsRead() {
+        notificationService.markAllAsRead();
+        return "All notifications marked as READ";
     }
 }

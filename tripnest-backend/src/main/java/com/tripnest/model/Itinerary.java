@@ -1,5 +1,6 @@
 package com.tripnest.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -13,7 +14,22 @@ public class Itinerary {
 
     private String activity;
 
+    private String timeSlot;
+
+    @ManyToOne
+    @JoinColumn(name = "trip_id")
+    @JsonIgnore
+    private Trip trip;
+
     public Itinerary() {
+    }
+
+    public Itinerary(Integer id, String day, String activity, String timeSlot, Trip trip) {
+        this.id = id;
+        this.day = day;
+        this.activity = activity;
+        this.timeSlot = timeSlot;
+        this.trip = trip;
     }
 
     public Integer getId() {
@@ -39,4 +55,20 @@ public class Itinerary {
     public void setActivity(String activity) {
         this.activity = activity;
     }
-}
+
+    public String getTimeSlot() {
+        return timeSlot;
+    }
+
+    public void setTimeSlot(String timeSlot) {
+        this.timeSlot = timeSlot;
+    }
+
+    public Trip getTrip() {
+        return trip;
+    }
+
+    public void setTrip(Trip trip) {
+        this.trip = trip;
+    }
+}

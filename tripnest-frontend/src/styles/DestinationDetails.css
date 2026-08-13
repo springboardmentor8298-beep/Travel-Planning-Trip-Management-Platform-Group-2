@@ -1,39 +1,19 @@
-.details-container{
-    background:#eef7ff;
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:30px;
+.destination-hero-wrapper {
+    height: 380px;
+    overflow: hidden;
+    position: relative;
 }
 
-.details-card{
-    width:700px;
-    background:white;
-    padding:40px;
-    border-radius:15px;
-    box-shadow:0 5px 15px rgba(0,0,0,.2);
+.destination-hero-img {
+    height: 100%;
+    object-fit: cover;
 }
 
-.details-card h1{
-    color:#007bff;
-    margin-bottom:20px;
-}
-
-.details-card h3{
-    margin-top:20px;
-}
-
-.details-card button{
-    margin-top:25px;
-    padding:12px 25px;
-    border:none;
-    background:#007bff;
-    color:white;
-    border-radius:8px;
-    cursor:pointer;
-}
-
-.details-card button:hover{
-    background:#0056b3;
+.destination-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(15, 23, 42, 0.85) 100%);
 }

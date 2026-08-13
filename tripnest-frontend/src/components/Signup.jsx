@@ -22,11 +22,15 @@ function Signup() {
 
     const register = async () => {
         try {
-            const response = await API.post("/users/register", user);
+            const payload = {
+                ...user,
+                age: user.age ? parseInt(user.age) : 0
+            };
+            const response = await API.post("/auth/register", payload);
 
             console.log("Response:", response.data);
 
-            alert("Registration Successful!");
+            alert("🎉 Registration Successful! Please login with your credentials.");
 
             navigate("/");
         } catch (error) {

@@ -1,5 +1,6 @@
 package com.tripnest.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -11,8 +12,22 @@ public class Expense {
 
     private String expenseName;
     private Double amount;
+    private String category;
+
+    @ManyToOne
+    @JoinColumn(name = "trip_id")
+    @JsonIgnore
+    private Trip trip;
 
     public Expense() {
+    }
+
+    public Expense(Integer id, String expenseName, Double amount, String category, Trip trip) {
+        this.id = id;
+        this.expenseName = expenseName;
+        this.amount = amount;
+        this.category = category;
+        this.trip = trip;
     }
 
     public Integer getId() {
@@ -38,4 +53,20 @@ public class Expense {
     public void setAmount(Double amount) {
         this.amount = amount;
     }
-}
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Trip getTrip() {
+        return trip;
+    }
+
+    public void setTrip(Trip trip) {
+        this.trip = trip;
+    }
+}

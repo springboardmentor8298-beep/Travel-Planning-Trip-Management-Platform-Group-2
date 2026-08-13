@@ -54,4 +54,20 @@ public class TripController {
 
         return "Trip Deleted Successfully";
     }
+
+    // Invite Collaborator
+    @PostMapping("/{id}/collaborators/invite")
+    public Trip inviteCollaborator(@PathVariable int id, @RequestBody java.util.Map<String, String> payload) {
+        String email = payload.get("email");
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        return tripService.addCollaborator(id, email.trim());
+    }
+
+    // Remove Collaborator
+    @DeleteMapping("/{id}/collaborators/remove")
+    public Trip removeCollaborator(@PathVariable int id, @RequestParam String email) {
+        return tripService.removeCollaborator(id, email.trim());
+    }
 }
