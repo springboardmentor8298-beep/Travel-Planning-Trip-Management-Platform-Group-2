@@ -25,5 +25,6 @@ public class TripResponse {
     private Long userId;
     private String username;
     private int durationDays;
+    private String shareToken;
     private List<ItineraryResponse> itineraries;
 }

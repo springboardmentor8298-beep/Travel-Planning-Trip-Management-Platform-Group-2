@@ -77,4 +77,17 @@ public class TripController {
         tripService.deleteTrip(id, currentUser.getId());
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/share-token")
+    public ResponseEntity<java.util.Map<String, String>> generateShareToken(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl currentUser) {
+        String token = tripService.generateShareToken(id, currentUser.getId());
+        return ResponseEntity.ok(java.util.Map.of("shareToken", token));
+    }
+
+    @GetMapping("/share/{shareToken}")
+    public ResponseEntity<TripResponse> getSharedTrip(@PathVariable String shareToken) {
+        return ResponseEntity.ok(tripService.getTripByShareToken(shareToken));
+    }
 }

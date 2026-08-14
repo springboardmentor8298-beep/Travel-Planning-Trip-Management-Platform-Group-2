@@ -73,6 +73,9 @@ public class Trip {
     @Column(name = "number_of_travelers", nullable = false)
     private int numberOfTravelers = 1;
 
+    @Column(name = "share_token", unique = true, length = 64)
+    private String shareToken;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

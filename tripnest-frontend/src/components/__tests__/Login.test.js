@@ -16,7 +16,7 @@ test('renders Login form with inputs and login button', () => {
 
   const usernameInput = screen.getByLabelText(/username/i);
   const passwordInput = screen.getByLabelText(/password/i);
-  const submitButton = screen.getByRole('button', { name: /sign in/i });
+  const submitButton = screen.getByRole('button', { name: /^sign in$/i });
 
   expect(usernameInput).toBeInTheDocument();
   expect(passwordInput).toBeInTheDocument();

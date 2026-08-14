@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Navbar from './Navbar';
 import { getDestinations, searchDestinations } from '../services/trip.service';
+import userService from '../services/user.service';
+import WeatherWidget from './WeatherWidget';
 
 /**
- * Destinations — browse and search travel destinations.
+ * Destinations — browse and search travel destinations with live weather and bookmarking.
  */
 const Destinations = () => {
   const [destinations, setDestinations] = useState([]);
+  const [favorites, setFavorites] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
@@ -14,11 +17,35 @@ const Destinations = () => {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    getDestinations()
-      .then(setDestinations)
+    Promise.all([
+      getDestinations(),
+      userService.getFavorites().catch(() => ({ data: [] }))
+    ])
+      .then(([dists, favs]) => {
+        setDestinations(dists);
+        if (favs.data) {
+          setFavorites(new Set(favs.data.map(f => f.id)));
+        }
+      })
       .catch(() => setError('Failed to load destinations.'))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleToggleFavorite = async (destId, e) => {
+    e.stopPropagation();
+    try {
+      const res = await userService.toggleFavorite(destId);
+      const isFav = res.data.favorited;
+      setFavorites(prev => {
+        const next = new Set(prev);
+        if (isFav) next.add(destId);
+        else next.delete(destId);
+        return next;
+      });
+    } catch {
+      // Ignored if user not logged in
+    }
+  };
 
   const handleSearch = useCallback(async (q) => {
     if (!q.trim()) {
@@ -48,7 +75,7 @@ const Destinations = () => {
         <div className="page-header">
           <div>
             <h1 className="page-title">Destinations 🌍</h1>
-            <p className="page-subtitle">Explore popular travel destinations around the world.</p>
+            <p className="page-subtitle">Explore global travel destinations with real-time weather and guides.</p>
           </div>
         </div>
 
@@ -70,14 +97,29 @@ const Destinations = () => {
         {/* Destination Detail Modal */}
         {selected && (
           <div className="modal-overlay" onClick={() => setSelected(null)}>
-            <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal" style={{ maxWidth: '640px' }} onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h2 className="modal-title">{selected.name}</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <h2 className="modal-title">{selected.name}</h2>
+                  <button
+                    onClick={(e) => handleToggleFavorite(selected.id, e)}
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.25rem' }}
+                    title="Bookmark Favorite"
+                  >
+                    {favorites.has(selected.id) ? '❤️' : '🤍'}
+                  </button>
+                </div>
                 <button className="modal-close" onClick={() => setSelected(null)} id="close-destination-modal">✕</button>
               </div>
-              <div className="modal-body">
-                <p className="text-muted" style={{ marginBottom: '1rem' }}>🌐 {selected.country}</p>
-                {selected.description && <p style={{ marginBottom: '1rem', lineHeight: 1.7 }}>{selected.description}</p>}
+              <div className="modal-body space-y-4">
+                <p className="text-muted">🌐 {selected.country}</p>
+                {selected.description && <p style={{ lineHeight: 1.7 }}>{selected.description}</p>}
+
+                {/* Live Weather Forecast */}
+                <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+                  <WeatherWidget destinationName={selected.name} />
+                </div>
+
                 <div className="dest-detail-grid">
                   {selected.climate && (
                     <div className="dest-detail-item">
@@ -126,9 +168,18 @@ const Destinations = () => {
                 tabIndex={0}
                 onKeyDown={(e) => e.key === 'Enter' && setSelected(dest)}
               >
-                <div className="dest-card-header">
-                  <h3 className="dest-name">{dest.name}</h3>
-                  <span className="dest-country">🌐 {dest.country}</span>
+                <div className="dest-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <h3 className="dest-name">{dest.name}</h3>
+                    <span className="dest-country">🌐 {dest.country}</span>
+                  </div>
+                  <button
+                    onClick={(e) => handleToggleFavorite(dest.id, e)}
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
+                    title="Bookmark Favorite"
+                  >
+                    {favorites.has(dest.id) ? '❤️' : '🤍'}
+                  </button>
                 </div>
                 {dest.description && (
                   <p className="dest-desc">{dest.description.substring(0, 100)}...</p>
@@ -139,7 +190,7 @@ const Destinations = () => {
                 </div>
                 <div style={{ marginTop: '0.75rem' }}>
                   <button className="btn btn-sm btn-outline btn-auto" id={`view-dest-${dest.id}`}>
-                    View Details
+                    View Details & Weather
                   </button>
                 </div>
               </div>

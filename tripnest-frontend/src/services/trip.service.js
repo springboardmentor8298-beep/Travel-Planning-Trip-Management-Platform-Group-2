@@ -70,11 +70,23 @@ export const searchDestinations = (q) =>
 export const getDestinationById = (id) =>
   axios.get(`/api/destinations/${id}`).then((r) => r.data);
 
+// ─── Expense Splits & Sharing ────────────────────────────────────────────────
+
+export const getTripSplits = (tripId) =>
+  axios.get(`/api/trips/${tripId}/expenses/splits`, { headers: getAuthHeader() }).then((r) => r.data);
+
+export const generateShareToken = (tripId) =>
+  axios.post(`/api/trips/${tripId}/share-token`, {}, { headers: getAuthHeader() }).then((r) => r.data);
+
+export const getPublicSharedTrip = (shareToken) =>
+  axios.get(`/api/trips/share/${shareToken}`).then((r) => r.data);
+
 const tripService = {
   createTrip, getTrips, getTripById, updateTrip, deleteTrip, getTripStats,
   getItineraries, addItinerary, updateItinerary, deleteItinerary,
   getActivities, addActivity, updateActivity, deleteActivity,
   getDestinations, searchDestinations, getDestinationById,
+  getTripSplits, generateShareToken, getPublicSharedTrip,
 };
 
 export default tripService;

@@ -94,6 +94,7 @@ public class WebSecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     // Public endpoints
                     .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/trips/share/**").permitAll()
                     .requestMatchers("/api/test/all").permitAll()
                     .requestMatchers("/api/destinations/**").permitAll()
                     .requestMatchers("/uploads/**").permitAll()

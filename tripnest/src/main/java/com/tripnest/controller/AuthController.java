@@ -130,4 +130,101 @@ public class AuthController {
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
+
+    private final com.tripnest.repository.PasswordResetTokenRepository passwordResetTokenRepository;
+
+    /**
+     * Forgot Password — generates a 15-minute reset token.
+     */
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "No account registered with this email"));
+
+        // Remove previous tokens for this user
+        passwordResetTokenRepository.findByUser(user)
+                .ifPresent(passwordResetTokenRepository::delete);
+
+        String token = java.util.UUID.randomUUID().toString();
+        com.tripnest.entity.PasswordResetToken resetToken = new com.tripnest.entity.PasswordResetToken(
+                token, user, java.time.LocalDateTime.now().plusMinutes(15));
+        passwordResetTokenRepository.save(resetToken);
+
+        // Return token in response (and log simulated email dispatch)
+        return ResponseEntity.ok(java.util.Map.of(
+                "message", "Password reset instructions sent to " + request.getEmail(),
+                "resetToken", token
+        ));
+    }
+
+    /**
+     * Reset Password — updates user password using validated reset token.
+     */
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        com.tripnest.entity.PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.getToken())
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Invalid or expired reset token"));
+
+        if (resetToken.isExpired()) {
+            passwordResetTokenRepository.delete(resetToken);
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Reset token has expired");
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(encoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        passwordResetTokenRepository.delete(resetToken);
+        return ResponseEntity.ok(new MessageResponse("Password has been reset successfully. You can now login."));
+    }
+
+    /**
+     * OAuth2 Social Sign-In — Google Login integration.
+     */
+    @PostMapping("/oauth2/google")
+    public ResponseEntity<?> oauth2GoogleLogin(@Valid @RequestBody OAuth2LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseGet(() -> {
+                    String baseUsername = request.getEmail().split("@")[0];
+                    String username = baseUsername;
+                    int suffix = 1;
+                    while (userRepository.existsByUsername(username)) {
+                        username = baseUsername + suffix++;
+                    }
+
+                    User newUser = new User(username, request.getEmail(), encoder.encode(java.util.UUID.randomUUID().toString()));
+                    String[] names = request.getName().split(" ", 2);
+                    newUser.setFirstName(names[0]);
+                    if (names.length > 1) newUser.setLastName(names[1]);
+                    if (request.getAvatarUrl() != null) newUser.setAvatarUrl(request.getAvatarUrl());
+
+                    Role travelerRole = roleRepository.findByName(ERole.ROLE_TRAVELER)
+                            .orElseThrow(() -> new RuntimeException("Error: Role TRAVELER not found."));
+                    newUser.setRoles(Set.of(travelerRole));
+                    return userRepository.save(newUser);
+                });
+
+        UserDetailsImpl userDetails = UserDetailsImpl.build(user);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new JwtResponse(
+                jwt,
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getPhone(),
+                roles
+        ));
+    }
 }

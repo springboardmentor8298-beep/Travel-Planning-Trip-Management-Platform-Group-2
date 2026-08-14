@@ -55,6 +55,11 @@ const Navbar = () => {
           <Link to="/trips" className={isActive('/trips')}>My Trips</Link>
           <Link to="/destinations" className={isActive('/destinations')}>Destinations</Link>
           <Link to="/analytics" className={isActive('/analytics')}>Analytics</Link>
+          {currentUser?.roles?.includes('ROLE_ADMIN') && (
+            <Link to="/admin" className={isActive('/admin')} style={{ color: '#fb7185', fontWeight: 'bold' }}>
+              🛡️ Admin
+            </Link>
+          )}
         </div>
 
         {/* User Info + Notifications */}
@@ -106,6 +111,24 @@ const Navbar = () => {
                   </span>
                 </div>
                 <div className="profile-dropdown__divider" />
+                <Link
+                  to="/profile"
+                  className="profile-dropdown__logout"
+                  style={{ display: 'block', textAlign: 'center', textDecoration: 'none', color: '#10b981', marginBottom: '0.25rem' }}
+                  onClick={() => setProfileOpen(false)}
+                >
+                  👤 My Profile & Settings
+                </Link>
+                {currentUser?.roles?.includes('ROLE_ADMIN') && (
+                  <Link
+                    to="/admin"
+                    className="profile-dropdown__logout"
+                    style={{ display: 'block', textAlign: 'center', textDecoration: 'none', color: '#f43f5e', marginBottom: '0.25rem' }}
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    🛡️ Admin Portal
+                  </Link>
+                )}
                 <button
                   id="profile-logout-btn"
                   className="profile-dropdown__logout"

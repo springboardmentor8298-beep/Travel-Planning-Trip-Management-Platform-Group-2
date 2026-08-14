@@ -20,6 +20,8 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
     Optional<Trip> findByIdAndUserId(Long id, Long userId);
 
+    Optional<Trip> findByShareToken(String shareToken);
+
     long countByUserId(Long userId);
 
     long countByUserIdAndStatus(Long userId, TripStatus status);

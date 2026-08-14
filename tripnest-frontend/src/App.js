@@ -9,6 +9,11 @@ import TripForm from './components/TripForm';
 import TripDetail from './components/TripDetail';
 import Destinations from './components/Destinations';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
+import Profile from './components/Profile';
+import AdminDashboard from './components/AdminDashboard';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
+import PublicTripView from './components/PublicTripView';
 import './App.css';
 
 /**
@@ -55,6 +60,26 @@ function App() {
               </PublicRoute>
             }
           />
+          <Route
+            path="/forgot-password"
+            element={
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/reset-password"
+            element={
+              <PublicRoute>
+                <ResetPassword />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/trips/share/:token"
+            element={<PublicTripView />}
+          />
 
           {/* Protected routes */}
           <Route
@@ -62,6 +87,26 @@ function App() {
             element={
               <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
+            }
+          />
+
+          {/* User Profile */}
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Admin Dashboard */}
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute>
+                <AdminDashboard />
               </PrivateRoute>
             }
           />

@@ -9,13 +9,20 @@ import ExpenseForm from './ExpenseForm';
 import TripMembers from './TripMembers';
 import GroupChat from './GroupChat';
 import DocumentManager from './DocumentManager';
-import { getTripById, deleteTrip, getItineraries, addItinerary, deleteItinerary } from '../services/trip.service';
+import WeatherWidget from './WeatherWidget';
+import TripMap from './TripMap';
+import TripTimeline from './TripTimeline';
+import ExpenseSplits from './ExpenseSplits';
+import { getTripById, deleteTrip, getItineraries, addItinerary, deleteItinerary, generateShareToken } from '../services/trip.service';
 import authService from '../services/auth.service';
 
 const TABS = [
   { id: 'overview',   label: '📋 Overview' },
   { id: 'itinerary',  label: '🗓️ Itinerary' },
+  { id: 'map',        label: '🗺️ Map' },
+  { id: 'timeline',   label: '📈 Timeline' },
   { id: 'budget',     label: '💰 Budget & Expenses' },
+  { id: 'splits',     label: '🤝 Expense Splits' },
   { id: 'members',    label: '👥 Members' },
   { id: 'documents',  label: '📁 Documents' },
   { id: 'chat',       label: '💬 Group Chat' },
@@ -31,6 +38,7 @@ const TripDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
+  const [copiedShare, setCopiedShare] = useState(false);
 
   // Expense form state
   const [showExpenseForm, setShowExpenseForm] = useState(false);
@@ -58,15 +66,31 @@ const TripDetail = () => {
       } else if (status === 404) {
         setError('Trip not found.');
       } else {
-        setError('Failed to load trip. Please try again.');
+        setError('Failed to load trip details.');
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleShareTrip = async () => {
+    try {
+      const res = await generateShareToken(id);
+      const token = res.shareToken || trip.shareToken;
+      const shareUrl = `${window.location.origin}/trips/share/${token}`;
+      await navigator.clipboard.writeText(shareUrl);
+      setCopiedShare(true);
+      setTimeout(() => setCopiedShare(false), 3000);
+    } catch (err) {
+      console.error('Share generation error:', err);
+      setError('Failed to generate public share link.');
+    }
+  };
+
   const handleDeleteTrip = async () => {
-    if (!window.confirm('Are you sure you want to delete this trip and all its data?')) return;
+    if (!window.confirm(`Are you sure you want to delete "${trip.title}"? This cannot be undone.`)) {
+      return;
+    }
     try {
       await deleteTrip(id);
       navigate('/trips');
@@ -80,63 +104,82 @@ const TripDetail = () => {
     setDayError('');
     setAddingDay(true);
     try {
-      const payload = { dayNumber: parseInt(dayForm.dayNumber, 10), date: dayForm.date || null, notes: dayForm.notes || null };
-      const newDay = await addItinerary(id, payload);
-      setItineraries((prev) => [...prev, newDay].sort((a, b) => a.dayNumber - b.dayNumber));
+      const payload = {
+        dayNumber: parseInt(dayForm.dayNumber, 10),
+        date: dayForm.date || null,
+        notes: dayForm.notes || null,
+      };
+      await addItinerary(id, payload);
       setDayForm({ dayNumber: '', date: '', notes: '' });
       setShowAddDay(false);
+      const updated = await getItineraries(id);
+      setItineraries(updated);
     } catch (err) {
-      setDayError(err.response?.data?.message || 'Failed to add day.');
+      setDayError(err.response?.data?.message || 'Failed to add itinerary day.');
     } finally {
       setAddingDay(false);
     }
   };
 
-  const handleDeleteDay = async (dayId) => {
+  const handleDeleteDay = async (itineraryId) => {
     if (!window.confirm('Delete this day and all its activities?')) return;
     try {
-      await deleteItinerary(id, dayId);
-      setItineraries((prev) => prev.filter((d) => d.id !== dayId));
+      await deleteItinerary(id, itineraryId);
+      setItineraries((prev) => prev.filter((d) => d.id !== itineraryId));
     } catch {
-      setError('Failed to delete day.');
+      setError('Failed to delete itinerary day.');
     }
-  };
-
-  const getStatusClass = (status) => {
-    const map = { PLANNED: 'badge-planned', ONGOING: 'badge-ongoing', COMPLETED: 'badge-completed', CANCELLED: 'badge-cancelled' };
-    return `badge ${map[status] || ''}`;
   };
 
   const handleExpenseSaved = () => {
     setShowExpenseForm(false);
     setEditingExpense(null);
-    setExpenseRefresh((r) => r + 1);
+    setExpenseRefresh((prev) => prev + 1);
   };
 
-  if (loading) return (
-    <div className="page-root">
-      <Navbar />
-      <div className="page-content"><div className="loading-text">Loading trip...</div></div>
-    </div>
-  );
-
-  if (!trip) return (
-    <div className="page-root">
-      <Navbar />
-      <div className="page-content">
-        <div className="alert alert-error">Trip not found.</div>
-        <Link to="/trips" className="link">← Back to trips</Link>
+  if (loading) {
+    return (
+      <div className="page-root">
+        <Navbar />
+        <div className="page-content page-loading">
+          <div className="spinner" />
+          <p>Loading trip...</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
-  const isOwner = currentUser?.id === trip.userId;
+  if (error && !trip) {
+    return (
+      <div className="page-root">
+        <Navbar />
+        <div className="page-content">
+          <div className="alert alert-error">{error}</div>
+          <Link to="/trips" className="btn btn-outline" style={{ marginTop: '1rem' }}>
+            ← Back to My Trips
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const isOwner = currentUser && trip && currentUser.id === trip.userId;
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'ONGOING':   return 'badge badge-success';
+      case 'COMPLETED': return 'badge badge-info';
+      case 'CANCELLED': return 'badge badge-danger';
+      default:          return 'badge badge-warning';
+    }
+  };
 
   const handleExportPdf = async () => {
     try {
-      const token = authService.getToken();
-      const response = await fetch(`/api/trips/${id}/export/pdf`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await fetch(`/api/trips/${trip.id}/export/pdf`, {
+        headers: {
+          'Authorization': 'Bearer ' + authService.getToken()
+        }
       });
       if (!response.ok) throw new Error('PDF generation failed');
       const blob = await response.blob();
@@ -169,6 +212,9 @@ const TripDetail = () => {
             <p className="page-subtitle">📍 {trip.destination}</p>
           </div>
           <div className="trip-detail-actions">
+            <button className="btn btn-outline btn-auto" onClick={handleShareTrip} id="share-trip-btn">
+              {copiedShare ? '✅ Link Copied!' : '🔗 Share Trip'}
+            </button>
             <button className="btn btn-outline btn-auto" onClick={handleExportPdf} id="export-pdf-btn">
               📄 Export PDF
             </button>
@@ -222,25 +268,30 @@ const TripDetail = () => {
 
           {/* Overview */}
           {activeTab === 'overview' && (
-            <div className="section-card">
-              <h2 className="section-title">Trip Overview</h2>
-              {trip.description && (
-                <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.7, marginBottom: '1.5rem' }}>{trip.description}</p>
-              )}
-              <div className="overview-quick-stats">
-                <div className="quick-stat">
-                  <div className="quick-stat__label">Status</div>
-                  <span className={getStatusClass(trip.status)}>{trip.status}</span>
-                </div>
-                <div className="quick-stat">
-                  <div className="quick-stat__label">Itinerary Days</div>
-                  <div className="quick-stat__value">{itineraries.length}</div>
-                </div>
-                <div className="quick-stat">
-                  <div className="quick-stat__label">Owner</div>
-                  <div className="quick-stat__value">@{trip.username}</div>
+            <div className="space-y-6">
+              <div className="section-card">
+                <h2 className="section-title">Trip Overview</h2>
+                {trip.description && (
+                  <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.7, marginBottom: '1.5rem' }}>{trip.description}</p>
+                )}
+                <div className="overview-quick-stats">
+                  <div className="quick-stat">
+                    <div className="quick-stat__label">Status</div>
+                    <span className={getStatusClass(trip.status)}>{trip.status}</span>
+                  </div>
+                  <div className="quick-stat">
+                    <div className="quick-stat__label">Itinerary Days</div>
+                    <div className="quick-stat__value">{itineraries.length}</div>
+                  </div>
+                  <div className="quick-stat">
+                    <div className="quick-stat__label">Owner</div>
+                    <div className="quick-stat__value">@{trip.username}</div>
+                  </div>
                 </div>
               </div>
+
+              {/* Real-time destination weather */}
+              <WeatherWidget destinationName={trip.destination} />
             </div>
           )}
 
@@ -294,6 +345,21 @@ const TripDetail = () => {
             </div>
           )}
 
+          {/* Interactive Map */}
+          {activeTab === 'map' && (
+            <div>
+              <TripMap destination={trip.destination} itineraries={itineraries} />
+            </div>
+          )}
+
+          {/* Visual Timeline */}
+          {activeTab === 'timeline' && (
+            <div className="section-card">
+              <h2 className="section-title">Trip Timeline</h2>
+              <TripTimeline itineraries={itineraries} />
+            </div>
+          )}
+
           {/* Budget & Expenses */}
           {activeTab === 'budget' && (
             <div className="section-card">
@@ -315,6 +381,14 @@ const TripDetail = () => {
                   onCancel={() => { setShowExpenseForm(false); setEditingExpense(null); }}
                 />
               )}
+            </div>
+          )}
+
+          {/* Group Expense Splits */}
+          {activeTab === 'splits' && (
+            <div className="section-card">
+              <h2 className="section-title">Group Expense Splits & Settlements</h2>
+              <ExpenseSplits tripId={id} />
             </div>
           )}
 

@@ -15,10 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -131,6 +128,114 @@ public class ExpenseService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your expense");
         }
         expenseRepository.delete(expense);
+    }
+
+    // -------------------------------------------------------------------------
+    // Group Expense Splitting (Splitwise-style)
+    // -------------------------------------------------------------------------
+
+    @Transactional(readOnly = true)
+    public com.tripnest.dto.ExpenseSplitResponse getGroupExpenseSplits(Long tripId, Long userId) {
+        checkTripAccess(tripId, userId);
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
+
+        // Collect all participants: Owner + Accepted members
+        Map<Long, User> participants = new LinkedHashMap<>();
+        participants.put(trip.getUser().getId(), trip.getUser());
+
+        tripMemberRepository.findByTripIdAndStatus(tripId, MemberStatus.ACCEPTED)
+                .forEach(m -> participants.put(m.getUser().getId(), m.getUser()));
+
+        List<Expense> expenses = expenseRepository.findByTripIdOrderByExpenseDateDesc(tripId);
+
+        BigDecimal totalSpent = BigDecimal.ZERO;
+        Map<Long, BigDecimal> paidByUser = new HashMap<>();
+        for (Long uid : participants.keySet()) {
+            paidByUser.put(uid, BigDecimal.ZERO);
+        }
+
+        for (Expense exp : expenses) {
+            BigDecimal amt = exp.getAmount() != null ? exp.getAmount() : BigDecimal.ZERO;
+            totalSpent = totalSpent.add(amt);
+            Long payerId = exp.getUser().getId();
+            paidByUser.put(payerId, paidByUser.getOrDefault(payerId, BigDecimal.ZERO).add(amt));
+        }
+
+        int participantCount = Math.max(1, participants.size());
+        BigDecimal equalShare = totalSpent.divide(BigDecimal.valueOf(participantCount), 2, java.math.RoundingMode.HALF_UP);
+
+        List<com.tripnest.dto.ExpenseSplitResponse.MemberBalance> balances = new ArrayList<>();
+        // For settlement calculation: Creditors (positive balance) and Debtors (negative balance)
+        List<double[]> debtors = new ArrayList<>();
+        List<double[]> creditors = new ArrayList<>();
+
+        for (Map.Entry<Long, User> entry : participants.entrySet()) {
+            Long uid = entry.getKey();
+            User u = entry.getValue();
+            BigDecimal paid = paidByUser.getOrDefault(uid, BigDecimal.ZERO);
+            BigDecimal net = paid.subtract(equalShare);
+
+            String status = "SETTLED";
+            if (net.compareTo(BigDecimal.valueOf(0.01)) > 0) status = "GETS_BACK";
+            else if (net.compareTo(BigDecimal.valueOf(-0.01)) < 0) status = "OWES";
+
+            String fullName = ((u.getFirstName() != null ? u.getFirstName() : "") + " " +
+                    (u.getLastName() != null ? u.getLastName() : "")).trim();
+            if (fullName.isEmpty()) fullName = u.getUsername();
+
+            balances.add(new com.tripnest.dto.ExpenseSplitResponse.MemberBalance(
+                    uid, u.getUsername(), fullName, paid, net, status
+            ));
+
+            if (net.doubleValue() < -0.01) {
+                debtors.add(new double[]{uid, -net.doubleValue()});
+            } else if (net.doubleValue() > 0.01) {
+                creditors.add(new double[]{uid, net.doubleValue()});
+            }
+        }
+
+        // Greedy two-pointer debt settlement simplification algorithm
+        List<com.tripnest.dto.ExpenseSplitResponse.SettlementTransaction> settlements = new ArrayList<>();
+        int d = 0, c = 0;
+        while (d < debtors.size() && c < creditors.size()) {
+            double[] debtor = debtors.get(d);
+            double[] creditor = creditors.get(c);
+
+            double settleAmt = Math.min(debtor[1], creditor[1]);
+            User fromUser = participants.get((long) debtor[0]);
+            User toUser = participants.get((long) creditor[0]);
+
+            String fromName = ((fromUser.getFirstName() != null ? fromUser.getFirstName() : "") + " " +
+                    (fromUser.getLastName() != null ? fromUser.getLastName() : "")).trim();
+            if (fromName.isEmpty()) fromName = fromUser.getUsername();
+
+            String toName = ((toUser.getFirstName() != null ? toUser.getFirstName() : "") + " " +
+                    (toUser.getLastName() != null ? toUser.getLastName() : "")).trim();
+            if (toName.isEmpty()) toName = toUser.getUsername();
+
+            settlements.add(new com.tripnest.dto.ExpenseSplitResponse.SettlementTransaction(
+                    fromUser.getUsername(), fromName,
+                    toUser.getUsername(), toName,
+                    BigDecimal.valueOf(settleAmt).setScale(2, java.math.RoundingMode.HALF_UP)
+            ));
+
+            debtor[1] -= settleAmt;
+            creditor[1] -= settleAmt;
+
+            if (debtor[1] < 0.01) d++;
+            if (creditor[1] < 0.01) c++;
+        }
+
+        return com.tripnest.dto.ExpenseSplitResponse.builder()
+                .tripId(tripId)
+                .tripTitle(trip.getTitle())
+                .totalTripSpent(totalSpent)
+                .totalMembers(participantCount)
+                .equalSharePerMember(equalShare)
+                .memberBalances(balances)
+                .suggestedSettlements(settlements)
+                .build();
     }
 
     // -------------------------------------------------------------------------

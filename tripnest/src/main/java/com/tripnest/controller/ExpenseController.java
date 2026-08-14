@@ -46,6 +46,13 @@ public class ExpenseController {
         return ResponseEntity.ok(expenseService.getBudgetSummary(tripId, currentUser.getId()));
     }
 
+    @GetMapping("/splits")
+    public ResponseEntity<com.tripnest.dto.ExpenseSplitResponse> getSplits(
+            @PathVariable Long tripId,
+            @AuthenticationPrincipal UserDetailsImpl currentUser) {
+        return ResponseEntity.ok(expenseService.getGroupExpenseSplits(tripId, currentUser.getId()));
+    }
+
     @PostMapping
     public ResponseEntity<ExpenseResponse> addExpense(
             @PathVariable Long tripId,

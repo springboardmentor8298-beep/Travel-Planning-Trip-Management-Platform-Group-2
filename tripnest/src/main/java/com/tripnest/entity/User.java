@@ -73,12 +73,27 @@ public class User {
     @Column(name = "last_name", length = 50)
     private String lastName;
 
-    @Size(max = 15)
-    @Column(length = 15)
+    @Size(max = 20)
+    @Column(length = 20)
     private String phone;
 
     @Column(nullable = false)
     private boolean enabled = true;
+
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    @Column(name = "avatar_url", length = 255)
+    private String avatarUrl;
+
+    @Column(name = "travel_preferences", length = 255)
+    private String travelPreferences;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_favorite_destinations",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "destination_id"))
+    private Set<Destination> favoriteDestinations = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",

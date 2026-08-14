@@ -142,6 +142,34 @@ public class TripService {
     }
 
     // -------------------------------------------------------------------------
+    // Public Trip Sharing
+    // -------------------------------------------------------------------------
+
+    public String generateShareToken(Long tripId, Long userId) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
+
+        if (!trip.getUser().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only trip owner can generate share link");
+        }
+
+        if (trip.getShareToken() == null || trip.getShareToken().isBlank()) {
+            trip.setShareToken(java.util.UUID.randomUUID().toString().replace("-", ""));
+            tripRepository.save(trip);
+        }
+
+        return trip.getShareToken();
+    }
+
+    @Transactional(readOnly = true)
+    public TripResponse getTripByShareToken(String shareToken) {
+        Trip trip = tripRepository.findByShareToken(shareToken)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Shared trip not found or link expired"));
+
+        return toResponse(trip, true);
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 
@@ -171,6 +199,7 @@ public class TripService {
         res.setNumberOfTravelers(trip.getNumberOfTravelers());
         res.setUserId(trip.getUser().getId());
         res.setUsername(trip.getUser().getUsername());
+        res.setShareToken(trip.getShareToken());
 
         // Compute duration
         if (trip.getStartDate() != null && trip.getEndDate() != null) {
