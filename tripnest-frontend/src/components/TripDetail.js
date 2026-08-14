@@ -28,7 +28,6 @@ import {
   Share2,
   FileDown,
   Trash2,
-  Plus,
   MapPin,
   Check
 } from 'lucide-react';

@@ -3,17 +3,13 @@ import Navbar from './Navbar';
 import userService from '../services/user.service';
 import { Link } from 'react-router-dom';
 import {
-  User,
   Heart,
   Settings,
-  Lock,
   Compass,
   Globe,
   Sun,
   Shield,
-  Save,
-  CheckCircle,
-  Sparkles
+  CheckCircle
 } from 'lucide-react';
 
 const TRAVEL_STYLES = [

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import userService from '../services/user.service';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '245352485800-uvquov8ph6rtqp4q7uj75a7ff947i5sf.apps.googleusercontent.com';
 

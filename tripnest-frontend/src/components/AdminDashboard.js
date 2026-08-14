@@ -9,7 +9,6 @@ import {
   MapPin,
   PieChart,
   BarChart3,
-  Search,
   DollarSign,
   CheckCircle,
   Compass
@@ -227,9 +226,18 @@ const AdminDashboard = () => {
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2 text-white text-xs focus:outline-none focus:border-emerald-500 w-64"
-            />
+              <Users size={20} className="text-indigo-400" />
+              <span>User Directory & Role Assignment ({users.length})</span>
+            </h3>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search user by name, email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2 text-white text-xs focus:outline-none focus:border-emerald-500 w-64"
+              />
+            </div>
           </div>
 
           <div className="overflow-x-auto">

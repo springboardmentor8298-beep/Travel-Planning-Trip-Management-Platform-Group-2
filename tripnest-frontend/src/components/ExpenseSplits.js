@@ -186,6 +186,8 @@ const ExpenseSplits = ({ tripId }) => {
               </div>
             ))}
           </div>
+        )}
+
         {settledHistory.length > 0 && (
           <div className="mt-6 pt-4 border-t border-slate-700/60">
             <h5 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
