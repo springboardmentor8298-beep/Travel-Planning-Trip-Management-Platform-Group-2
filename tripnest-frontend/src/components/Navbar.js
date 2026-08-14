@@ -2,10 +2,23 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from './NotificationBell';
+import {
+  Compass,
+  MapPin,
+  BarChart3,
+  Shield,
+  User,
+  LogOut,
+  Mail,
+  Phone,
+  ChevronDown,
+  ChevronUp,
+  LayoutDashboard
+} from 'lucide-react';
 
 /**
  * Top navigation bar — shown on all authenticated pages.
- * Includes a clickable profile dropdown with user details.
+ * Features sleek vector icons and user dropdown.
  */
 const Navbar = () => {
   const { currentUser, logout } = useAuth();
@@ -45,19 +58,34 @@ const Navbar = () => {
       <div className="nav-container">
         {/* Brand */}
         <Link to="/dashboard" className="nav-brand">
-          <span className="nav-brand-icon">✈️</span>
+          <span className="nav-brand-icon" style={{ display: 'flex', alignItems: 'center' }}>
+            <Compass size={24} className="text-primary" />
+          </span>
           <span className="nav-brand-text">TripNest</span>
         </Link>
 
         {/* Navigation Links */}
         <div className="nav-links">
-          <Link to="/dashboard" className={isActive('/dashboard')}>Dashboard</Link>
-          <Link to="/trips" className={isActive('/trips')}>My Trips</Link>
-          <Link to="/destinations" className={isActive('/destinations')}>Destinations</Link>
-          <Link to="/analytics" className={isActive('/analytics')}>Analytics</Link>
+          <Link to="/dashboard" className={isActive('/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <LayoutDashboard size={16} />
+            <span>Dashboard</span>
+          </Link>
+          <Link to="/trips" className={isActive('/trips')} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <MapPin size={16} />
+            <span>My Trips</span>
+          </Link>
+          <Link to="/destinations" className={isActive('/destinations')} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <Compass size={16} />
+            <span>Destinations</span>
+          </Link>
+          <Link to="/analytics" className={isActive('/analytics')} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <BarChart3 size={16} />
+            <span>Analytics</span>
+          </Link>
           {currentUser?.roles?.includes('ROLE_ADMIN') && (
-            <Link to="/admin" className={isActive('/admin')} style={{ color: '#fb7185', fontWeight: 'bold' }}>
-              🛡️ Admin
+            <Link to="/admin" className={isActive('/admin')} style={{ color: '#fb7185', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <Shield size={16} />
+              <span>Admin</span>
             </Link>
           )}
         </div>
@@ -77,7 +105,9 @@ const Navbar = () => {
             >
               <span className="profile-avatar">{initials}</span>
               <span className="profile-display-name">{fullName}</span>
-              <span className="profile-caret">{profileOpen ? '▲' : '▼'}</span>
+              <span className="profile-caret" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                {profileOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              </span>
             </button>
 
             {profileOpen && (
@@ -92,18 +122,18 @@ const Navbar = () => {
                 </div>
                 <div className="profile-dropdown__divider" />
                 {/* Details */}
-                <div className="profile-dropdown__detail">
-                  <span className="profile-dropdown__label">📧 Email</span>
+                <div className="profile-dropdown__detail" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Mail size={14} className="text-muted" />
                   <span className="profile-dropdown__value">{currentUser?.email || '—'}</span>
                 </div>
                 {currentUser?.phone && (
-                  <div className="profile-dropdown__detail">
-                    <span className="profile-dropdown__label">📱 Phone</span>
+                  <div className="profile-dropdown__detail" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Phone size={14} className="text-muted" />
                     <span className="profile-dropdown__value">{currentUser.phone}</span>
                   </div>
                 )}
-                <div className="profile-dropdown__detail">
-                  <span className="profile-dropdown__label">🎭 Role</span>
+                <div className="profile-dropdown__detail" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Shield size={14} className="text-muted" />
                   <span className="profile-dropdown__value">
                     {(currentUser?.roles || [])
                       .map(r => r.replace('ROLE_', ''))
@@ -114,27 +144,31 @@ const Navbar = () => {
                 <Link
                   to="/profile"
                   className="profile-dropdown__logout"
-                  style={{ display: 'block', textAlign: 'center', textDecoration: 'none', color: '#10b981', marginBottom: '0.25rem' }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', textDecoration: 'none', color: '#10b981', marginBottom: '0.25rem' }}
                   onClick={() => setProfileOpen(false)}
                 >
-                  👤 My Profile & Settings
+                  <User size={15} />
+                  <span>My Profile & Settings</span>
                 </Link>
                 {currentUser?.roles?.includes('ROLE_ADMIN') && (
                   <Link
                     to="/admin"
                     className="profile-dropdown__logout"
-                    style={{ display: 'block', textAlign: 'center', textDecoration: 'none', color: '#f43f5e', marginBottom: '0.25rem' }}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', textDecoration: 'none', color: '#f43f5e', marginBottom: '0.25rem' }}
                     onClick={() => setProfileOpen(false)}
                   >
-                    🛡️ Admin Portal
+                    <Shield size={15} />
+                    <span>Admin Portal</span>
                   </Link>
                 )}
                 <button
                   id="profile-logout-btn"
                   className="profile-dropdown__logout"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
                   onClick={handleLogout}
                 >
-                  🚪 Logout
+                  <LogOut size={15} />
+                  <span>Logout</span>
                 </button>
               </div>
             )}

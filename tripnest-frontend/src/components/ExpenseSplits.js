@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getTripSplits } from '../services/trip.service';
+import { Users, CreditCard, ArrowRight, ArrowLeftRight, CheckCircle2, Wallet, Check } from 'lucide-react';
 
 const ExpenseSplits = ({ tripId }) => {
   const [splitData, setSplitData] = useState(null);
@@ -59,17 +60,26 @@ const ExpenseSplits = ({ tripId }) => {
       {/* Header Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-5">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Total Trip Spent</span>
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <Wallet size={14} className="text-slate-400" />
+            <span>Total Trip Spent</span>
+          </span>
           <span className="text-2xl font-black text-white mt-1 block">₹{splitData.totalTripSpent?.toLocaleString() || '0'}</span>
         </div>
 
         <div className="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-5">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Group Members</span>
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <Users size={14} className="text-slate-400" />
+            <span>Group Members</span>
+          </span>
           <span className="text-2xl font-black text-white mt-1 block">{splitData.totalMembers} Travelers</span>
         </div>
 
         <div className="bg-gradient-to-br from-emerald-950/40 to-slate-900 border border-emerald-500/30 rounded-2xl p-5">
-          <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider block">Equal Share / Person</span>
+          <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+            <CreditCard size={14} className="text-emerald-400" />
+            <span>Equal Share / Person</span>
+          </span>
           <span className="text-2xl font-black text-emerald-400 mt-1 block">₹{splitData.equalSharePerMember?.toLocaleString() || '0'}</span>
         </div>
       </div>
@@ -77,7 +87,8 @@ const ExpenseSplits = ({ tripId }) => {
       {/* Member Balances Table */}
       <div className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6">
         <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <span>👥</span> Individual Member Balances
+          <Users size={18} className="text-indigo-400" />
+          <span>Individual Member Balances</span>
         </h4>
 
         <div className="overflow-x-auto">
@@ -131,15 +142,17 @@ const ExpenseSplits = ({ tripId }) => {
       {/* Suggested Settlement Transactions (Splitwise style) */}
       <div className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6">
         <h4 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-          <span>🤝</span> Suggested Debt Settlements
+          <ArrowLeftRight size={18} className="text-emerald-400" />
+          <span>Suggested Debt Settlements</span>
         </h4>
         <p className="text-xs text-slate-400 mb-5">
           Calculated using the minimal transfer graph algorithm to resolve all debts with fewest transactions.
         </p>
 
         {splitData.suggestedSettlements?.length === 0 ? (
-          <div className="text-center py-6 text-emerald-400 font-medium bg-emerald-500/5 rounded-xl border border-emerald-500/20">
-            🎉 All trip expenses are completely settled! No payments required.
+          <div className="text-center py-6 text-emerald-400 font-medium bg-emerald-500/5 rounded-xl border border-emerald-500/20 flex items-center justify-center gap-2">
+            <CheckCircle2 size={18} />
+            <span>All trip expenses are completely settled! No payments required.</span>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -148,31 +161,42 @@ const ExpenseSplits = ({ tripId }) => {
                 <div>
                   <div className="flex items-center gap-2 text-sm font-semibold text-white">
                     <span className="text-rose-400 font-bold">{s.fromFullName}</span>
-                    <span className="text-slate-500">➔</span>
+                    <ArrowRight size={14} className="text-slate-400" />
                     <span className="text-emerald-400 font-bold">{s.toFullName}</span>
                   </div>
-                  <span className="text-lg font-extrabold text-white mt-1 block">₹{s.amount?.toLocaleString()}</span>
+                  <span className="text-xs text-slate-400 mt-1 block">To settle outstanding balance</span>
                 </div>
-
-                <button
-                  onClick={() => handleSettle(s)}
-                  disabled={settling !== null}
-                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg transition-colors shadow-sm disabled:opacity-50"
-                >
-                  {settling === s ? 'Settling...' : '💳 Settle Up'}
-                </button>
+                <div className="flex items-center gap-3">
+                  <span className="text-base font-black text-white">₹{s.amount?.toLocaleString()}</span>
+                  <button
+                    onClick={() => handleSettle(s)}
+                    disabled={settling === s}
+                    className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-bold transition-all flex items-center gap-1"
+                  >
+                    {settling === s ? (
+                      <span className="spinner" style={{ width: '12px', height: '12px' }}></span>
+                    ) : (
+                      <>
+                        <Check size={13} />
+                        <span>Settle</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
-        )}
-
         {settledHistory.length > 0 && (
           <div className="mt-6 pt-4 border-t border-slate-700/60">
-            <h5 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">Recent Settlements (Session)</h5>
-            <ul className="space-y-1 text-xs text-slate-300">
+            <h5 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <CheckCircle2 size={14} />
+              <span>Recent Settlements (Session)</span>
+            </h5>
+            <ul className="space-y-1.5 text-xs text-slate-300">
               {settledHistory.map((item, i) => (
                 <li key={i} className="flex items-center gap-2">
-                  <span>✅</span> <span>{item}</span>
+                  <Check size={13} className="text-emerald-400" />
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>

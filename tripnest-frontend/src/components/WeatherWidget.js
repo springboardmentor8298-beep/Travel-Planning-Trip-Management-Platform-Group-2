@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import {
+  Sun,
+  CloudSun,
+  Cloud,
+  CloudFog,
+  CloudRain,
+  Snowflake,
+  CloudLightning,
+  Wind,
+  Thermometer
+} from 'lucide-react';
 
 // Known coordinates fallback for seeded destinations
 const CITY_COORDS = {
@@ -25,16 +36,16 @@ const CITY_COORDS = {
   'Machu Picchu': { lat: -13.1631, lon: -72.5450 }
 };
 
-const getWeatherIcon = (code) => {
-  if (code === 0) return '☀️ Clear Sky';
-  if (code === 1 || code === 2) return '🌤️ Partly Cloudy';
-  if (code === 3) return '☁️ Overcast';
-  if (code >= 45 && code <= 48) return '🌫️ Foggy';
-  if (code >= 51 && code <= 67) return '🌧️ Rain Showers';
-  if (code >= 71 && code <= 77) return '❄️ Snow';
-  if (code >= 80 && code <= 82) return '🌦️ Heavy Showers';
-  if (code >= 95) return '⛈️ Thunderstorm';
-  return '🌡️ Moderate';
+const getWeatherDisplay = (code) => {
+  if (code === 0) return { label: 'Clear Sky', icon: Sun, color: '#f59e0b' };
+  if (code === 1 || code === 2) return { label: 'Partly Cloudy', icon: CloudSun, color: '#38bdf8' };
+  if (code === 3) return { label: 'Overcast', icon: Cloud, color: '#94a3b8' };
+  if (code >= 45 && code <= 48) return { label: 'Foggy', icon: CloudFog, color: '#94a3b8' };
+  if (code >= 51 && code <= 67) return { label: 'Rain Showers', icon: CloudRain, color: '#60a5fa' };
+  if (code >= 71 && code <= 77) return { label: 'Snow', icon: Snowflake, color: '#e0f2fe' };
+  if (code >= 80 && code <= 82) return { label: 'Heavy Showers', icon: CloudRain, color: '#3b82f6' };
+  if (code >= 95) return { label: 'Thunderstorm', icon: CloudLightning, color: '#a855f7' };
+  return { label: 'Moderate', icon: Thermometer, color: '#10b981' };
 };
 
 const WeatherWidget = ({ destinationName = 'Paris' }) => {
@@ -109,6 +120,9 @@ const WeatherWidget = ({ destinationName = 'Paris' }) => {
 
   if (!weather) return null;
 
+  const currentDisplay = getWeatherDisplay(weather.weatherCode);
+  const CurrentIcon = currentDisplay.icon;
+
   return (
     <div className="bg-gradient-to-r from-blue-900/40 via-indigo-900/30 to-purple-900/40 border border-blue-500/20 rounded-2xl p-5 backdrop-blur-md shadow-lg">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -118,27 +132,36 @@ const WeatherWidget = ({ destinationName = 'Paris' }) => {
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
           </div>
           <h4 className="text-xl font-bold text-white mt-1">{destinationName}</h4>
-          <p className="text-slate-300 text-sm font-medium mt-0.5">
-            {getWeatherIcon(weather.weatherCode)}
-          </p>
+          <div className="text-slate-300 text-sm font-medium mt-1 flex items-center gap-1.5">
+            <CurrentIcon size={16} color={currentDisplay.color} />
+            <span>{currentDisplay.label}</span>
+          </div>
         </div>
 
         <div className="flex items-center gap-6">
           <div className="text-right">
             <span className="text-4xl font-extrabold text-white tracking-tight">{weather.temp}°C</span>
-            <p className="text-xs text-slate-400 mt-0.5">Wind: {weather.windSpeed} km/h</p>
+            <p className="text-xs text-slate-400 mt-0.5 flex items-center justify-end gap-1">
+              <Wind size={12} />
+              <span>Wind: {weather.windSpeed} km/h</span>
+            </p>
           </div>
         </div>
       </div>
 
       {weather.forecast && weather.forecast.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 pt-3 border-t border-white/10">
-          {weather.forecast.map((f, i) => (
-            <div key={i} className="bg-white/5 rounded-lg p-2 text-center">
-              <span className="text-xs text-slate-300 block">{f.day}</span>
-              <span className="text-sm font-semibold text-white mt-0.5 block">{f.max}° / {f.min}°</span>
-            </div>
-          ))}
+          {weather.forecast.map((f, i) => {
+            const fDisplay = getWeatherDisplay(f.code);
+            const FIcon = fDisplay.icon;
+            return (
+              <div key={i} className="bg-white/5 rounded-lg p-2 text-center flex flex-col items-center">
+                <span className="text-xs text-slate-300 block">{f.day}</span>
+                <FIcon size={16} color={fDisplay.color} className="my-1" />
+                <span className="text-xs font-semibold text-white mt-0.5 block">{f.max}° / {f.min}°</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

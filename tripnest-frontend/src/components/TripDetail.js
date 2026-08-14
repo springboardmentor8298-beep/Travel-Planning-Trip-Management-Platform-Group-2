@@ -15,17 +15,34 @@ import TripTimeline from './TripTimeline';
 import ExpenseSplits from './ExpenseSplits';
 import { getTripById, deleteTrip, getItineraries, addItinerary, deleteItinerary, generateShareToken } from '../services/trip.service';
 import authService from '../services/auth.service';
+import {
+  Info,
+  Calendar,
+  Map as MapIcon,
+  Clock,
+  DollarSign,
+  ArrowLeftRight,
+  Users,
+  Folder,
+  MessageSquare,
+  Share2,
+  FileDown,
+  Trash2,
+  Plus,
+  MapPin,
+  Check
+} from 'lucide-react';
 
 const TABS = [
-  { id: 'overview',   label: '📋 Overview' },
-  { id: 'itinerary',  label: '🗓️ Itinerary' },
-  { id: 'map',        label: '🗺️ Map' },
-  { id: 'timeline',   label: '📈 Timeline' },
-  { id: 'budget',     label: '💰 Budget & Expenses' },
-  { id: 'splits',     label: '🤝 Expense Splits' },
-  { id: 'members',    label: '👥 Members' },
-  { id: 'documents',  label: '📁 Documents' },
-  { id: 'chat',       label: '💬 Group Chat' },
+  { id: 'overview',   label: 'Overview',          icon: Info },
+  { id: 'itinerary',  label: 'Itinerary',         icon: Calendar },
+  { id: 'map',        label: 'Map',               icon: MapIcon },
+  { id: 'timeline',   label: 'Timeline',          icon: Clock },
+  { id: 'budget',     label: 'Budget & Expenses', icon: DollarSign },
+  { id: 'splits',     label: 'Expense Splits',    icon: ArrowLeftRight },
+  { id: 'members',    label: 'Members',           icon: Users },
+  { id: 'documents',  label: 'Documents',         icon: Folder },
+  { id: 'chat',       label: 'Group Chat',        icon: MessageSquare },
 ];
 
 const TripDetail = () => {
@@ -209,19 +226,24 @@ const TripDetail = () => {
               <h1 className="page-title" style={{ marginBottom: 0 }}>{trip.title}</h1>
               <span className={getStatusClass(trip.status)}>{trip.status}</span>
             </div>
-            <p className="page-subtitle">📍 {trip.destination}</p>
+            <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <MapPin size={15} className="text-muted" />
+              <span>{trip.destination}</span>
+            </p>
           </div>
           <div className="trip-detail-actions">
-            <button className="btn btn-outline btn-auto" onClick={handleShareTrip} id="share-trip-btn">
-              {copiedShare ? '✅ Link Copied!' : '🔗 Share Trip'}
+            <button className="btn btn-outline btn-auto" onClick={handleShareTrip} id="share-trip-btn" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              {copiedShare ? <><Check size={16} /> Link Copied!</> : <><Share2 size={16} /> Share Trip</>}
             </button>
-            <button className="btn btn-outline btn-auto" onClick={handleExportPdf} id="export-pdf-btn">
-              📄 Export PDF
+            <button className="btn btn-outline btn-auto" onClick={handleExportPdf} id="export-pdf-btn" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <FileDown size={16} /> Export PDF
             </button>
             {isOwner && (
               <>
                 <Link to={`/trips/${id}/edit`} className="btn btn-outline btn-auto" id="edit-trip-btn">Edit</Link>
-                <button className="btn btn-danger btn-auto" onClick={handleDeleteTrip} id="delete-trip-detail-btn">Delete</button>
+                <button className="btn btn-danger btn-auto" onClick={handleDeleteTrip} id="delete-trip-detail-btn" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Trash2 size={15} /> Delete
+                </button>
               </>
             )}
           </div>
@@ -230,37 +252,50 @@ const TripDetail = () => {
         {/* Trip Info Cards */}
         <div className="trip-info-row">
           <div className="info-card">
-            <div className="info-label">Dates</div>
-            <div className="info-value">📅 {trip.startDate} → {trip.endDate}</div>
+            <div className="info-label" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <Calendar size={14} className="text-muted" /> Dates
+            </div>
+            <div className="info-value">{trip.startDate} → {trip.endDate}</div>
           </div>
           <div className="info-card">
-            <div className="info-label">Duration</div>
-            <div className="info-value">🗓️ {trip.durationDays} day{trip.durationDays !== 1 ? 's' : ''}</div>
+            <div className="info-label" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <Clock size={14} className="text-muted" /> Duration
+            </div>
+            <div className="info-value">{trip.durationDays} day{trip.durationDays !== 1 ? 's' : ''}</div>
           </div>
           <div className="info-card">
-            <div className="info-label">Travelers</div>
-            <div className="info-value">👥 {trip.numberOfTravelers}</div>
+            <div className="info-label" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <Users size={14} className="text-muted" /> Travelers
+            </div>
+            <div className="info-value">{trip.numberOfTravelers}</div>
           </div>
           {trip.budget && (
             <div className="info-card">
-              <div className="info-label">Budget</div>
-              <div className="info-value">💰 ₹{Number(trip.budget).toLocaleString()}</div>
+              <div className="info-label" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                <DollarSign size={14} className="text-muted" /> Budget
+              </div>
+              <div className="info-value">₹{Number(trip.budget).toLocaleString()}</div>
             </div>
           )}
         </div>
 
         {/* Tab Navigation */}
         <div className="trip-tabs">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              className={`trip-tab ${activeTab === tab.id ? 'trip-tab--active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-              id={`tab-${tab.id}`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                className={`trip-tab ${activeTab === tab.id ? 'trip-tab--active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+                id={`tab-${tab.id}`}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                {Icon && <Icon size={16} />}
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Tab Content */}

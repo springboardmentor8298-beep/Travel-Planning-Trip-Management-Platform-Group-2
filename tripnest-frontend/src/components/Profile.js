@@ -2,18 +2,31 @@ import React, { useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import userService from '../services/user.service';
 import { Link } from 'react-router-dom';
+import {
+  User,
+  Heart,
+  Settings,
+  Lock,
+  Compass,
+  Globe,
+  Sun,
+  Shield,
+  Save,
+  CheckCircle,
+  Sparkles
+} from 'lucide-react';
 
 const TRAVEL_STYLES = [
-  '🏔️ Adventure',
-  '🏖️ Beach & Coastal',
-  '🏛️ Cultural & Historical',
-  '🎒 Budget Backpacker',
-  '✨ Luxury & Resort',
-  '🌲 Nature & Wildlife',
-  '🍜 Food & Culinary',
-  '🚶 Solo Traveler',
-  '👨‍👩‍👧‍👦 Family & Kids',
-  '🚗 Road Trips'
+  'Adventure',
+  'Beach & Coastal',
+  'Cultural & Historical',
+  'Budget Backpacker',
+  'Luxury & Resort',
+  'Nature & Wildlife',
+  'Food & Culinary',
+  'Solo Traveler',
+  'Family & Kids',
+  'Road Trips'
 ];
 
 const Profile = () => {
@@ -143,7 +156,8 @@ const Profile = () => {
                 {profile?.firstName ? `${profile.firstName} ${profile.lastName || ''}` : profile?.username}
               </h1>
               {profile?.roles?.map((r, i) => (
-                <span key={i} className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase">
+                <span key={i} className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase flex items-center gap-1">
+                  <Shield size={12} />
                   {r.replace('ROLE_', '')}
                 </span>
               ))}
@@ -168,7 +182,7 @@ const Profile = () => {
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <span>❤️</span> Favorite Destinations ({profile?.favoriteDestinations?.size || profile?.favoriteDestinations?.length || 0})
+              <Heart size={20} className="text-rose-500 fill-rose-500" /> Favorite Destinations ({profile?.favoriteDestinations?.size || profile?.favoriteDestinations?.length || 0})
             </h3>
             <Link to="/destinations" className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold">
               Explore More Destinations →
@@ -177,7 +191,7 @@ const Profile = () => {
 
           {(!profile?.favoriteDestinations || profile.favoriteDestinations.length === 0) ? (
             <div className="text-center py-8 text-slate-400 bg-slate-950/40 rounded-2xl border border-slate-800/80">
-              <span className="text-3xl block mb-2">🌍</span>
+              <Compass size={36} className="mx-auto mb-2 text-slate-500" />
               <p className="font-semibold text-white">No Favorite Destinations Saved Yet</p>
               <p className="text-xs text-slate-400 mt-1">Browse the destinations catalog and click the heart icon to save your favorites!</p>
             </div>
@@ -187,14 +201,14 @@ const Profile = () => {
                 <div key={dest.id} className="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 hover:border-emerald-500/40 transition-all shadow-lg">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-white text-base">{dest.name}</h4>
-                    <span className="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                      {dest.country}
+                    <span className="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                      <Globe size={11} /> {dest.country}
                     </span>
                   </div>
                   <p className="text-xs text-slate-300 mt-2 line-clamp-2">{dest.description}</p>
                   {dest.bestTimeToVisit && (
                     <p className="text-[11px] text-slate-400 mt-3 flex items-center gap-1">
-                      <span>☀️ Best time:</span> {dest.bestTimeToVisit}
+                      <Sun size={12} className="text-amber-400" /> Best time: {dest.bestTimeToVisit}
                     </p>
                   )}
                 </div>
@@ -207,12 +221,12 @@ const Profile = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-2 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8">
             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <span>⚙️</span> Edit Profile Details
+              <Settings size={20} className="text-emerald-400" /> Edit Profile Details
             </h3>
 
             {message && (
-              <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-sm font-medium">
-                {message}
+              <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-sm font-medium flex items-center gap-2">
+                <CheckCircle size={18} /> {message}
               </div>
             )}
             {error && (

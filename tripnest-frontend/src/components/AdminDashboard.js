@@ -3,6 +3,18 @@ import Navbar from './Navbar';
 import adminService from '../services/admin.service';
 import { Doughnut, Bar } from 'react-chartjs-2';
 import {
+  Shield,
+  Users,
+  RefreshCw,
+  MapPin,
+  PieChart,
+  BarChart3,
+  Search,
+  DollarSign,
+  CheckCircle,
+  Compass
+} from 'lucide-react';
+import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
@@ -128,8 +140,9 @@ const AdminDashboard = () => {
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-6">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-0.5 rounded-full">
-                Admin Console
+              <span className="text-xs font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <Shield size={12} />
+                <span>Admin Console</span>
               </span>
             </div>
             <h1 className="text-3xl font-black text-white mt-1">Platform Analytics & Management</h1>
@@ -138,37 +151,51 @@ const AdminDashboard = () => {
 
           <button
             onClick={fetchData}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-colors border border-slate-700"
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-colors border border-slate-700 flex items-center gap-1.5"
           >
-            🔄 Refresh Data
+            <RefreshCw size={13} />
+            <span>Refresh Data</span>
           </button>
         </div>
 
         {actionMsg && (
-          <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-300 text-sm font-medium">
-            {actionMsg}
+          <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-300 text-sm font-medium flex items-center gap-2">
+            <CheckCircle size={16} />
+            <span>{actionMsg}</span>
           </div>
         )}
 
         {/* Top Metric Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-            <span className="text-xs font-semibold uppercase text-slate-400">Total Travelers</span>
+            <span className="text-xs font-semibold uppercase text-slate-400 flex items-center gap-1.5">
+              <Users size={14} className="text-slate-400" />
+              <span>Total Travelers</span>
+            </span>
             <span className="text-3xl font-black text-white mt-1 block">{overview?.totalUsers || 0}</span>
           </div>
 
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-            <span className="text-xs font-semibold uppercase text-slate-400">Total Trips</span>
+            <span className="text-xs font-semibold uppercase text-slate-400 flex items-center gap-1.5">
+              <Compass size={14} className="text-emerald-400" />
+              <span>Total Trips</span>
+            </span>
             <span className="text-3xl font-black text-emerald-400 mt-1 block">{overview?.totalTrips || 0}</span>
           </div>
 
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-            <span className="text-xs font-semibold uppercase text-slate-400">Curated Destinations</span>
+            <span className="text-xs font-semibold uppercase text-slate-400 flex items-center gap-1.5">
+              <MapPin size={14} className="text-cyan-400" />
+              <span>Curated Destinations</span>
+            </span>
             <span className="text-3xl font-black text-cyan-400 mt-1 block">{overview?.totalDestinations || 0}</span>
           </div>
 
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-            <span className="text-xs font-semibold uppercase text-slate-400">Expense Volume</span>
+            <span className="text-xs font-semibold uppercase text-slate-400 flex items-center gap-1.5">
+              <DollarSign size={14} className="text-purple-400" />
+              <span>Expense Volume</span>
+            </span>
             <span className="text-2xl font-black text-purple-400 mt-1 block">₹{overview?.totalPlatformExpenseVolume?.toLocaleString() || '0'}</span>
           </div>
         </div>
@@ -177,7 +204,8 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl">
             <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
-              <span>👥</span> User Role Distribution
+              <PieChart size={18} className="text-emerald-400" />
+              <span>User Role Distribution</span>
             </h3>
             <div className="h-64 flex items-center justify-center">
               <Doughnut data={roleChartData} options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }} />
@@ -186,7 +214,8 @@ const AdminDashboard = () => {
 
           <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl">
             <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
-              <span>📍</span> Top Booked Destinations
+              <BarChart3 size={18} className="text-cyan-400" />
+              <span>Top Booked Destinations</span>
             </h3>
             <div className="h-64">
               <Bar data={destChartData} options={{ maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }} />
@@ -198,12 +227,6 @@ const AdminDashboard = () => {
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <span>🛡️</span> User Directory & Role Assignment ({users.length})
-            </h3>
-            <input
-              type="text"
-              placeholder="Search user by name, email..."
-              value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2 text-white text-xs focus:outline-none focus:border-emerald-500 w-64"
             />
