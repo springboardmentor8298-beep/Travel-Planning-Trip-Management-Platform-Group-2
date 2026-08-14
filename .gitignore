@@ -58,5 +58,7 @@ Thumbs.db
 .env
 *.env
 *.env.*
+*client_secret*.json
+client_secret.json
 application-local.properties
 application-prod.properties
