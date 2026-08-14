@@ -25,6 +25,12 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const loginWithGoogle = async (payload) => {
+    const data = await authService.googleLogin(payload);
+    setCurrentUser(data);
+    return data;
+  };
+
   const logout = () => {
     authService.logout();
     setCurrentUser(null);
@@ -38,6 +44,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     currentUser,
     login,
+    loginWithGoogle,
     logout,
     hasRole,
     loading,

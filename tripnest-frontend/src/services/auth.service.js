@@ -37,6 +37,15 @@ const getCurrentUser = () => {
   return JSON.parse(localStorage.getItem('tripnest_user'));
 };
 
+const googleLogin = (payload) => {
+  return axios.post(API_URL + 'oauth2/google', payload).then((response) => {
+    if (response.data.token) {
+      localStorage.setItem('tripnest_user', JSON.stringify(response.data));
+    }
+    return response.data;
+  });
+};
+
 const getToken = () => {
   const user = getCurrentUser();
   return user ? user.token : null;
@@ -45,6 +54,7 @@ const getToken = () => {
 const authService = {
   register,
   login,
+  googleLogin,
   logout,
   getCurrentUser,
   getToken,

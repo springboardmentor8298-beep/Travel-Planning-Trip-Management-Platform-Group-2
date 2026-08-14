@@ -31,7 +31,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleGoogleCredentialResponse = async (response) => {
@@ -43,15 +43,14 @@ const Login = () => {
         throw new Error('Invalid Google credential token');
       }
 
-      const res = await userService.googleLogin({
+      await loginWithGoogle({
         email: decoded.email,
         name: decoded.name || decoded.email.split('@')[0],
         avatarUrl: decoded.picture,
         provider: 'google'
       });
 
-      localStorage.setItem('user', JSON.stringify(res.data));
-      window.location.href = '/dashboard';
+      navigate('/dashboard');
     } catch (err) {
       console.error('Google Sign-in error:', err);
       setMessage('Google Sign-In failed. Please try again.');
@@ -184,13 +183,12 @@ const Login = () => {
                 setLoading(true);
                 const email = prompt('Enter your Google account email:', 'alex.traveler@gmail.com');
                 if (!email) { setLoading(false); return; }
-                const res = await userService.googleLogin({
+                await loginWithGoogle({
                   email,
                   name: email.split('@')[0].toUpperCase(),
                   provider: 'google'
                 });
-                localStorage.setItem('user', JSON.stringify(res.data));
-                window.location.href = '/dashboard';
+                navigate('/dashboard');
               } catch (err) {
                 setMessage('Google OAuth2 sign-in failed.');
                 setLoading(false);
