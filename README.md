@@ -41,15 +41,17 @@
 
 1. [Objective](#objective)
 2. [Modules Implemented](#modules-implemented)
-3. [Week-wise Milestone Progress](#milestone-progress)
+3. [Week-wise Milestone Progress](#week-wise-milestone-progress)
 4. [Tech Stack](#tech-stack)
 5. [Architecture](#architecture)
 6. [Project Structure](#project-structure)
 7. [Evaluation Criteria](#evaluation-criteria)
 8. [Performance Metrics](#performance-metrics)
-9. [Running Locally](#running-locally)
+9. [Running Locally](#running-locally-docker)
 
 ---
+
+<a id="objective"></a>
 
 ## 🎯 Objective
 
@@ -77,6 +79,8 @@ Build a full-stack web application (React.js frontend + Spring Boot backend) tha
 - ✅ Integrated AI Tourist Guide powered by Groq LLaMA 3.3 70B
 
 ---
+
+<a id="modules-implemented"></a>
 
 ## 🧩 Modules Implemented
 
@@ -176,6 +180,8 @@ Build a full-stack web application (React.js frontend + Spring Boot backend) tha
 
 ---
 
+<a id="week-wise-milestone-progress"></a>
+
 ## 📅 Week-wise Milestone Progress
 
 ### ✅ Milestone 1 — Week 1 & 2: Requirements, Database Design & Backend Setup
@@ -253,6 +259,8 @@ Build a full-stack web application (React.js frontend + Spring Boot backend) tha
 
 ---
 
+<a id="architecture"></a>
+
 ## 🏗️ Architecture
 
 ```
@@ -279,6 +287,8 @@ Build a full-stack web application (React.js frontend + Spring Boot backend) tha
 
 ---
 
+<a id="tech-stack"></a>
+
 ## 🏛️ Tech Stack
 
 | Layer | Technology |
@@ -298,6 +308,8 @@ Build a full-stack web application (React.js frontend + Spring Boot backend) tha
 | **Backend Hosting** | Render |
 
 ---
+
+<a id="project-structure"></a>
 
 ## 📁 Project Structure
 
@@ -340,6 +352,8 @@ TripNest/
 
 ---
 
+<a id="evaluation-criteria"></a>
+
 ## 🎯 Evaluation Criteria
 
 ### ✅ Milestone 1 (Week 2)
@@ -368,6 +382,8 @@ TripNest/
 
 ---
 
+<a id="performance-metrics"></a>
+
 ## 📊 Performance Metrics
 
 ### Trip Management Metrics
@@ -388,6 +404,8 @@ TripNest/
 - Concurrent user support: **Stateless JWT — scales horizontally**
 
 ---
+
+<a id="running-locally-docker"></a>
 
 ## 🚀 Running Locally (Docker)
 
