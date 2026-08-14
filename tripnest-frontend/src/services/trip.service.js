@@ -81,12 +81,18 @@ export const generateShareToken = (tripId) =>
 export const getPublicSharedTrip = (shareToken) =>
   axios.get(`/api/trips/share/${shareToken}`).then((r) => r.data);
 
+export const exportTripPdf = (tripId) =>
+  axios.get(`/api/trips/${tripId}/export/pdf`, {
+    headers: getAuthHeader(),
+    responseType: 'blob',
+  });
+
 const tripService = {
   createTrip, getTrips, getTripById, updateTrip, deleteTrip, getTripStats,
   getItineraries, addItinerary, updateItinerary, deleteItinerary,
   getActivities, addActivity, updateActivity, deleteActivity,
   getDestinations, searchDestinations, getDestinationById,
-  getTripSplits, generateShareToken, getPublicSharedTrip,
+  getTripSplits, generateShareToken, getPublicSharedTrip, exportTripPdf,
 };
 
 export default tripService;

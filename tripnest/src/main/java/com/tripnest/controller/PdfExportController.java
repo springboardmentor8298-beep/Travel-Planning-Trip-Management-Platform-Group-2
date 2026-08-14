@@ -39,7 +39,7 @@ public class PdfExportController {
         ByteArrayInputStream pdfStream = pdfExportService.generateTripPdf(id);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "inline; filename=tripnest_trip_" + id + ".pdf");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"tripnest_trip_" + id + ".pdf\"");
 
         return ResponseEntity.ok()
                 .headers(headers)

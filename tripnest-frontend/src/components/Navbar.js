@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import NotificationBell from './NotificationBell';
 import {
   Compass,
@@ -22,6 +23,7 @@ import {
  */
 const Navbar = () => {
   const { currentUser, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [profileOpen, setProfileOpen] = useState(false);
@@ -32,7 +34,8 @@ const Navbar = () => {
     navigate('/login');
   };
 
-  const isActive = (path) => location.pathname.startsWith(path) ? 'nav-link active' : 'nav-link';
+  const isActive = (path) =>
+    location.pathname.startsWith(path) ? 'nav-link active' : 'nav-link';
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -58,8 +61,8 @@ const Navbar = () => {
       <div className="nav-container">
         {/* Brand */}
         <Link to="/dashboard" className="nav-brand">
-          <span className="nav-brand-icon" style={{ display: 'flex', alignItems: 'center' }}>
-            <Compass size={24} className="text-primary" />
+          <span className="nav-brand-icon">
+            <Compass size={22} />
           </span>
           <span className="nav-brand-text">TripNest</span>
         </Link>
@@ -92,6 +95,17 @@ const Navbar = () => {
 
         {/* User Info + Notifications */}
         <div className="nav-user">
+          {/* Theme Toggle */}
+          <button
+            id="theme-toggle-btn"
+            onClick={toggleTheme}
+            className="theme-toggle"
+            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            aria-label="Toggle theme"
+          >
+            {isDark ? '☀️' : '🌙'}
+          </button>
+
           <NotificationBell />
 
           {/* Profile Avatar + Dropdown */}

@@ -5,14 +5,12 @@ services:
     container_name: tripnest-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: VSSSM@2006
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-VSSSM@2006}
       MYSQL_DATABASE: tripnest_db
-    ports:
-      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "--password=VSSSM@2006"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "--password=${DB_PASSWORD:-VSSSM@2006}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,23 +23,19 @@ services:
       dockerfile: Dockerfile
     container_name: tripnest-backend
     restart: always
-    ports:
-      - "8082:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/tripnest_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: VSSSM@2006
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-VSSSM@2006}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      # ── Milestone 3: File Upload Directory ──────────────────────
-      # Uploaded travel documents are stored here inside the container.
-      # Mapped to the named volume below so files survive container restarts.
       TRIPNEST_UPLOAD_DIR: /uploads
       SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 10MB
       SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 15MB
     volumes:
       - uploads_data:/uploads
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   # 3. React Frontend Service (served via Nginx)
   frontend:
@@ -51,11 +45,11 @@ services:
     container_name: tripnest-frontend
     restart: always
     ports:
-      - "8081:80"
+      # Expose directly on port 80 for production instead of 8081
+      - "80:80"
     depends_on:
       - backend
 
 volumes:
   db_data:
-  # ── Milestone 3: Persistent volume for uploaded travel documents ──
   uploads_data:

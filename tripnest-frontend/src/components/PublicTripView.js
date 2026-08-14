@@ -4,6 +4,7 @@ import { getPublicSharedTrip } from '../services/trip.service';
 import TripMap from './TripMap';
 import TripTimeline from './TripTimeline';
 import WeatherWidget from './WeatherWidget';
+import { Compass, Calendar, Clock, Users, DollarSign, MapPin } from 'lucide-react';
 
 const PublicTripView = () => {
   const { token } = useParams();
@@ -30,10 +31,18 @@ const PublicTripView = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="inline-block w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-slate-400 font-medium">Loading shared trip itinerary...</p>
+      <div className="page-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            display: 'inline-block',
+            width: '40px', height: '40px',
+            border: '3px solid rgba(16,185,129,0.2)',
+            borderTopColor: '#10b981',
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+            marginBottom: '1rem',
+          }} />
+          <p style={{ color: 'var(--text-secondary)' }}>Loading shared trip itinerary...</p>
         </div>
       </div>
     );
@@ -41,15 +50,12 @@ const PublicTripView = () => {
 
   if (error || !trip) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center shadow-2xl">
-          <span className="text-4xl block mb-3">⚠️</span>
-          <h2 className="text-xl font-bold text-white mb-2">Trip Not Found</h2>
-          <p className="text-slate-400 text-sm mb-6">{error || 'Unable to display this trip.'}</p>
-          <Link
-            to="/login"
-            className="inline-block px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 font-bold text-white rounded-xl transition-colors text-sm"
-          >
+      <div className="page-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '2rem' }}>
+        <div className="section-card" style={{ maxWidth: '480px', width: '100%', textAlign: 'center', padding: '3rem 2rem' }}>
+          <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>⚠️</span>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Trip Not Found</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{error || 'Unable to display this trip.'}</p>
+          <Link to="/login" className="btn btn-primary" style={{ display: 'inline-flex' }}>
             Go to TripNest Home
           </Link>
         </div>
@@ -58,79 +64,100 @@ const PublicTripView = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-16">
+    <div className="page-root">
       {/* Top Navbar */}
-      <nav className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 px-6 py-4 sticky top-0 z-30 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">✈️</span>
-          <span className="font-black text-xl bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
-            TripNest
-          </span>
-          <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ml-2">
-            Shared Itinerary
-          </span>
-        </div>
+      <nav className="top-navbar">
+        <div className="nav-container">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Compass size={24} color="var(--accent)" />
+            <span className="nav-brand-text">TripNest</span>
+            <span className="badge badge-ongoing" style={{ fontSize: '0.75rem' }}>
+              Shared Itinerary
+            </span>
+          </div>
 
-        <div className="flex items-center gap-3">
-          <Link
-            to="/register"
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-colors shadow-lg shadow-emerald-600/20"
-          >
-            Join TripNest
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Link to="/register" className="btn btn-primary btn-sm btn-auto">
+              Join TripNest
+            </Link>
+          </div>
         </div>
       </nav>
 
       {/* Main Container */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 space-y-8">
+      <div className="page-content">
         {/* Trip Hero Banner */}
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800/90 to-slate-900 border border-slate-700/60 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
-          <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="section-card" style={{
+          padding: '2rem 2.5rem',
+          marginBottom: '2rem',
+          background: 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(56,189,248,0.04) 50%, var(--bg-card) 100%)',
+        }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1.5rem' }}>
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-extrabold rounded-full uppercase tracking-wider">
-                  {trip.status || 'PLANNED'}
-                </span>
-                <span className="text-xs text-slate-400">Created by @{trip.username}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                <span className="badge badge-completed">{trip.status || 'PLANNED'}</span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Created by @{trip.username}</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">{trip.title}</h1>
-              <p className="text-slate-300 font-medium text-base mt-1 flex items-center gap-2">
-                <span>📍</span> {trip.destination}
+              <h1 className="page-title" style={{ fontSize: '2rem', marginBottom: '0.375rem' }}>{trip.title}</h1>
+              <p style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '1rem' }}>
+                <MapPin size={16} /> <span>{trip.destination}</span>
               </p>
-            </div>
-
-            <div className="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-right">
-              <span className="text-xs text-slate-400 block">Trip Duration</span>
-              <span className="text-xl font-bold text-white block mt-0.5">
-                {trip.durationDays ? `${trip.durationDays} Days` : 'N/A'}
-              </span>
-              <span className="text-xs text-emerald-400 mt-1 block">
-                {trip.startDate} {trip.endDate ? `– ${trip.endDate}` : ''}
-              </span>
             </div>
           </div>
 
           {trip.description && (
-            <p className="mt-4 text-slate-300 text-sm bg-slate-950/40 p-4 rounded-xl border border-slate-800/80 leading-relaxed">
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, marginTop: '1.25rem', maxWidth: '720px' }}>
               {trip.description}
             </p>
           )}
+
+          {/* Quick Metrics */}
+          <div className="trip-info-row" style={{ marginTop: '1.5rem' }}>
+            <div className="info-card">
+              <div className="info-label" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                <Calendar size={14} className="text-muted" /> Dates
+              </div>
+              <div className="info-value">{trip.startDate} → {trip.endDate}</div>
+            </div>
+            <div className="info-card">
+              <div className="info-label" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                <Clock size={14} className="text-muted" /> Duration
+              </div>
+              <div className="info-value">{trip.durationDays} day{trip.durationDays !== 1 ? 's' : ''}</div>
+            </div>
+            <div className="info-card">
+              <div className="info-label" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                <Users size={14} className="text-muted" /> Travelers
+              </div>
+              <div className="info-value">{trip.numberOfTravelers}</div>
+            </div>
+            {trip.budget && (
+              <div className="info-card">
+                <div className="info-label" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <DollarSign size={14} className="text-muted" /> Budget
+                </div>
+                <div className="info-value">₹{Number(trip.budget).toLocaleString()}</div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Live Weather Widget */}
-        <WeatherWidget destinationName={trip.destination} />
+        {/* Live Weather Forecast */}
+        <div style={{ marginBottom: '2rem' }}>
+          <WeatherWidget destinationName={trip.destination} />
+        </div>
 
-        {/* Interactive Map */}
-        <TripMap destination={trip.destination} itineraries={trip.itineraries || []} />
+        {/* Map & Timeline Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.75rem' }}>
+          <div className="section-card">
+            <h3 className="section-title" style={{ marginBottom: '1.25rem' }}>🗺️ Route & Places to Visit</h3>
+            <TripMap tripId={trip.id} destinationName={trip.destination} />
+          </div>
 
-        {/* Chronological Timeline */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8">
-          <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <span>🗓️</span> Day-by-Day Itinerary & Activities
-          </h3>
-          <TripTimeline itineraries={trip.itineraries || []} />
+          <div className="section-card">
+            <h3 className="section-title" style={{ marginBottom: '1.25rem' }}>⏱️ Day-by-Day Timeline</h3>
+            <TripTimeline tripId={trip.id} />
+          </div>
         </div>
       </div>
     </div>

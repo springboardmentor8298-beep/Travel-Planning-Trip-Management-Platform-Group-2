@@ -13,8 +13,7 @@ import WeatherWidget from './WeatherWidget';
 import TripMap from './TripMap';
 import TripTimeline from './TripTimeline';
 import ExpenseSplits from './ExpenseSplits';
-import { getTripById, deleteTrip, getItineraries, addItinerary, deleteItinerary, generateShareToken } from '../services/trip.service';
-import authService from '../services/auth.service';
+import { getTripById, deleteTrip, getItineraries, addItinerary, deleteItinerary, generateShareToken, exportTripPdf } from '../services/trip.service';
 import {
   Info,
   Calendar,
@@ -29,7 +28,8 @@ import {
   FileDown,
   Trash2,
   MapPin,
-  Check
+  Check,
+  X
 } from 'lucide-react';
 
 const TABS = [
@@ -41,7 +41,6 @@ const TABS = [
   { id: 'splits',     label: 'Expense Splits',    icon: ArrowLeftRight },
   { id: 'members',    label: 'Members',           icon: Users },
   { id: 'documents',  label: 'Documents',         icon: Folder },
-  { id: 'chat',       label: 'Group Chat',        icon: MessageSquare },
 ];
 
 const TripDetail = () => {
@@ -55,6 +54,8 @@ const TripDetail = () => {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
   const [copiedShare, setCopiedShare] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Expense form state
   const [showExpenseForm, setShowExpenseForm] = useState(false);
@@ -192,23 +193,28 @@ const TripDetail = () => {
 
   const handleExportPdf = async () => {
     try {
-      const response = await fetch(`/api/trips/${trip.id}/export/pdf`, {
-        headers: {
-          'Authorization': 'Bearer ' + authService.getToken()
-        }
-      });
-      if (!response.ok) throw new Error('PDF generation failed');
-      const blob = await response.blob();
+      setExportingPdf(true);
+      setError('');
+      const response = await exportTripPdf(trip.id);
+      const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `tripnest_${trip.title.replace(/\s+/g, '_')}_summary.pdf`;
+      const cleanTitle = (trip.title || 'Trip').replace(/[^a-zA-Z0-9_-]/g, '_');
+      link.setAttribute('download', `TripNest_${cleanTitle}_Summary.pdf`);
       document.body.appendChild(link);
       link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch {
+      setTimeout(() => {
+        if (link.parentNode) {
+          link.parentNode.removeChild(link);
+        }
+        window.URL.revokeObjectURL(url);
+      }, 3000);
+    } catch (err) {
+      console.error('PDF export error:', err);
       setError('Failed to export PDF.');
+    } finally {
+      setExportingPdf(false);
     }
   };
 
@@ -234,8 +240,8 @@ const TripDetail = () => {
             <button className="btn btn-outline btn-auto" onClick={handleShareTrip} id="share-trip-btn" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               {copiedShare ? <><Check size={16} /> Link Copied!</> : <><Share2 size={16} /> Share Trip</>}
             </button>
-            <button className="btn btn-outline btn-auto" onClick={handleExportPdf} id="export-pdf-btn" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <FileDown size={16} /> Export PDF
+            <button className="btn btn-outline btn-auto" onClick={handleExportPdf} disabled={exportingPdf} id="export-pdf-btn" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <FileDown size={16} /> {exportingPdf ? 'Generating PDF...' : 'Export PDF'}
             </button>
             {isOwner && (
               <>
@@ -442,16 +448,84 @@ const TripDetail = () => {
             </div>
           )}
 
-          {/* Group Chat */}
-          {activeTab === 'chat' && (
-            <div className="section-card">
-              <h2 className="section-title">Group Chat</h2>
-              <GroupChat tripId={id} />
-            </div>
-          )}
-
         </div>
       </div>
+
+      {/* Floating Docked Chat Widget Window (Non-blocking: entire trip screen remains 100% visible & interactive) */}
+      {chatOpen && (
+        <div
+          id="docked-trip-chat-widget"
+          style={{
+            position: 'fixed',
+            bottom: '8.75rem',
+            right: '2rem',
+            width: '420px',
+            maxWidth: 'calc(100vw - 2.5rem)',
+            height: '540px',
+            maxHeight: 'calc(100vh - 10rem)',
+            zIndex: 999,
+            boxShadow: 'var(--shadow-lg), 0 12px 40px rgba(0, 0, 0, 0.3)',
+            borderRadius: '20px',
+            overflow: 'hidden',
+            animation: 'fadeUp 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+            border: '1px solid var(--border-strong)',
+            background: 'var(--bg-surface)',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <GroupChat
+            tripId={id}
+            tripTitle={trip.title}
+            isDrawer={true}
+            onClose={() => setChatOpen(false)}
+          />
+        </div>
+      )}
+
+      {/* Floating Quick Chat Launcher / Toggle Button (Stacked cleanly above the AI Guide Bot) */}
+      <button
+        onClick={() => setChatOpen(!chatOpen)}
+        id="floating-chat-launcher-btn"
+        style={{
+          position: 'fixed',
+          bottom: '5.25rem',
+          right: '2rem',
+          height: '46px',
+          padding: chatOpen ? '0 1.125rem' : '0 1.25rem',
+          borderRadius: '9999px',
+          background: chatOpen
+            ? 'var(--bg-elevated)'
+            : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: chatOpen ? 'var(--text-primary)' : '#ffffff',
+          border: chatOpen ? '1px solid var(--border-strong)' : '1px solid rgba(255, 255, 255, 0.25)',
+          boxShadow: chatOpen ? 'var(--shadow-md)' : '0 8px 24px rgba(16, 185, 129, 0.35)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.45rem',
+          fontWeight: 700,
+          fontSize: '0.85rem',
+          cursor: 'pointer',
+          zIndex: 1000,
+          transition: 'all 0.2s ease',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+        title={chatOpen ? 'Minimize Group Chat' : 'Open Live Group Chat'}
+        aria-label="Toggle Group Chat"
+      >
+        {chatOpen ? (
+          <>
+            <X size={17} />
+            <span>Close Chat</span>
+          </>
+        ) : (
+          <>
+            <MessageSquare size={17} />
+            <span>Group Chat</span>
+          </>
+        )}
+      </button>
     </div>
   );
 };

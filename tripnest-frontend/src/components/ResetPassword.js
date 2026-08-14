@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import userService from '../services/user.service';
+import { useTheme } from '../context/ThemeContext';
+import { Compass, Lock, KeyRound, ArrowLeft, CheckCircle } from 'lucide-react';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -11,6 +13,7 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,97 +38,137 @@ const ResetPassword = () => {
       }, 2000);
     } catch (err) {
       console.error('Password reset failed:', err);
-      setError(err.response?.data?.message || 'Invalid or expired token.');
+      setError(err.response?.data?.message || 'Invalid or expired reset token.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-slate-100">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Link to="/" className="inline-flex items-center gap-2 text-2xl font-black bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent mb-2">
-          <span>✈️</span> TripNest
-        </Link>
-        <h2 className="text-2xl font-bold tracking-tight text-white">Set New Password</h2>
-        <p className="mt-1 text-sm text-slate-400">
-          Enter your reset token and new password to restore account access.
-        </p>
-      </div>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2rem',
+      background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(16,185,129,0.09), transparent), var(--bg-base)',
+      position: 'relative',
+    }}>
+      {/* Floating theme toggle */}
+      <button
+        onClick={toggleTheme}
+        id="reset-theme-toggle"
+        style={{
+          position: 'fixed', top: '1rem', right: '1rem',
+          width: '40px', height: '40px', borderRadius: '50%',
+          border: '1px solid var(--border-strong)',
+          background: 'var(--bg-glass)',
+          backdropFilter: 'blur(8px)',
+          fontSize: '1.1rem', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 200, transition: 'all 0.25s',
+          color: 'var(--text-secondary)',
+        }}
+        title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        aria-label="Toggle theme"
+      >
+        {isDark ? '☀️' : '🌙'}
+      </button>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
-        <div className="bg-slate-900 border border-slate-800 py-8 px-6 shadow-2xl rounded-3xl sm:px-10">
-          {message && (
-            <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-300 text-sm font-medium text-center">
-              {message} Redirecting to login...
-            </div>
-          )}
-
-          {error && (
-            <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-300 text-sm font-medium">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleReset} className="space-y-5">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Reset Token
-              </label>
-              <input
-                type="text"
-                required
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm font-mono text-xs"
-                placeholder="Enter reset token"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                New Password
-              </label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
-                placeholder="At least 6 characters"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
-                placeholder="Confirm password"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 focus:outline-none transition-all disabled:opacity-50"
-            >
-              {loading ? 'Updating Password...' : 'Save New Password'}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <Link to="/login" className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold">
-              ← Back to Sign In
-            </Link>
+      <div style={{
+        width: '100%',
+        maxWidth: '460px',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-strong)',
+        borderRadius: '24px',
+        padding: '2.5rem',
+        boxShadow: 'var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.07)',
+        backdropFilter: 'blur(20px)',
+        position: 'relative',
+        animation: 'fadeUp 0.4s ease',
+      }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <Compass size={28} color="var(--accent)" />
+            <span style={{ fontFamily: 'Plus Jakarta Sans', fontSize: '1.5rem', fontWeight: 700, background: 'linear-gradient(135deg,#10b981,#38bdf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>TripNest</span>
           </div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.375rem' }}>Set New Password</h1>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Enter your reset token and new password</p>
+        </div>
+
+        {message && (
+          <div className="alert alert-success" style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <CheckCircle size={16} />
+            <span>{message} Redirecting to login...</span>
+          </div>
+        )}
+
+        {error && <div className="alert alert-error" style={{ marginBottom: '1.5rem' }}>{error}</div>}
+
+        <form onSubmit={handleReset}>
+          <div style={{ marginBottom: '1.125rem' }}>
+            <label className="form-label" htmlFor="reset-token" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <KeyRound size={13} /> Reset Token
+            </label>
+            <input
+              id="reset-token"
+              type="text"
+              required
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              className="form-input"
+              placeholder="Enter reset token"
+              style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '1.125rem' }}>
+            <label className="form-label" htmlFor="reset-new-pass" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <Lock size={13} /> New Password
+            </label>
+            <input
+              id="reset-new-pass"
+              type="password"
+              required
+              minLength={6}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="form-input"
+              placeholder="At least 6 characters"
+            />
+          </div>
+
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label className="form-label" htmlFor="reset-confirm-pass" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <Lock size={13} /> Confirm New Password
+            </label>
+            <input
+              id="reset-confirm-pass"
+              type="password"
+              required
+              minLength={6}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="form-input"
+              placeholder="Repeat your new password"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary"
+            style={{ width: '100%', marginBottom: '1.5rem' }}
+          >
+            {loading ? 'Updating Password...' : 'Save New Password'}
+          </button>
+        </form>
+
+        <div style={{ textAlign: 'center' }}>
+          <Link to="/login" className="link" style={{ fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+            <ArrowLeft size={14} /> Back to Sign In
+          </Link>
         </div>
       </div>
     </div>

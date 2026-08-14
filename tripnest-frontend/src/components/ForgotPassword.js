@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import userService from '../services/user.service';
+import { useTheme } from '../context/ThemeContext';
+import { Compass, Mail, ArrowLeft, KeyRound } from 'lucide-react';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -8,6 +10,7 @@ const ForgotPassword = () => {
   const [message, setMessage] = useState('');
   const [resetToken, setResetToken] = useState('');
   const [error, setError] = useState('');
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -30,72 +33,109 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-slate-100">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Link to="/" className="inline-flex items-center gap-2 text-2xl font-black bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent mb-2">
-          <span>✈️</span> TripNest
-        </Link>
-        <h2 className="text-2xl font-bold tracking-tight text-white">Reset Your Password</h2>
-        <p className="mt-1 text-sm text-slate-400">
-          Enter your registered email address to receive password reset instructions.
-        </p>
-      </div>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2rem',
+      background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(16,185,129,0.09), transparent), var(--bg-base)',
+      position: 'relative',
+    }}>
+      {/* Floating theme toggle */}
+      <button
+        onClick={toggleTheme}
+        id="forgot-theme-toggle"
+        style={{
+          position: 'fixed', top: '1rem', right: '1rem',
+          width: '40px', height: '40px', borderRadius: '50%',
+          border: '1px solid var(--border-strong)',
+          background: 'var(--bg-glass)',
+          backdropFilter: 'blur(8px)',
+          fontSize: '1.1rem', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 200, transition: 'all 0.25s',
+          color: 'var(--text-secondary)',
+        }}
+        title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        aria-label="Toggle theme"
+      >
+        {isDark ? '☀️' : '🌙'}
+      </button>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
-        <div className="bg-slate-900 border border-slate-800 py-8 px-6 shadow-2xl rounded-3xl sm:px-10">
-          {message && (
-            <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-300 text-sm">
-              <p className="font-semibold mb-2">{message}</p>
-              {resetToken && (
-                <div className="mt-3 pt-3 border-t border-emerald-500/20">
-                  <p className="text-xs text-slate-300 mb-2">Your secure password reset link:</p>
-                  <button
-                    onClick={() => navigate(`/reset-password?token=${resetToken}`)}
-                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-all"
-                  >
-                    Click to Reset Password Now →
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {error && (
-            <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-300 text-sm font-medium">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
-                placeholder="name@example.com"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 focus:outline-none transition-all disabled:opacity-50"
-            >
-              {loading ? 'Sending Request...' : 'Send Reset Instructions'}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <Link to="/login" className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold">
-              ← Back to Sign In
-            </Link>
+      <div style={{
+        width: '100%',
+        maxWidth: '440px',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-strong)',
+        borderRadius: '24px',
+        padding: '2.5rem',
+        boxShadow: 'var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.07)',
+        backdropFilter: 'blur(20px)',
+        position: 'relative',
+        animation: 'fadeUp 0.4s ease',
+      }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <Compass size={28} color="var(--accent)" />
+            <span style={{ fontFamily: 'Plus Jakarta Sans', fontSize: '1.5rem', fontWeight: 700, background: 'linear-gradient(135deg,#10b981,#38bdf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>TripNest</span>
           </div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.375rem' }}>Reset Your Password</h1>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Enter your registered email address to receive reset instructions</p>
+        </div>
+
+        {message && (
+          <div className="alert alert-success" style={{ marginBottom: '1.5rem' }}>
+            <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{message}</p>
+            {resetToken && (
+              <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Your secure password reset link is ready:</p>
+                <button
+                  onClick={() => navigate(`/reset-password?token=${resetToken}`)}
+                  className="btn btn-primary btn-sm"
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
+                >
+                  <KeyRound size={14} /> Click to Reset Password Now →
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {error && <div className="alert alert-error" style={{ marginBottom: '1.5rem' }}>{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label className="form-label" htmlFor="forgot-email" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <Mail size={13} /> Email Address
+            </label>
+            <input
+              id="forgot-email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="form-input"
+              placeholder="name@example.com"
+              autoFocus
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary"
+            style={{ width: '100%', marginBottom: '1.5rem' }}
+          >
+            {loading ? 'Sending Request...' : 'Send Reset Instructions'}
+          </button>
+        </form>
+
+        <div style={{ textAlign: 'center' }}>
+          <Link to="/login" className="link" style={{ fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+            <ArrowLeft size={14} /> Back to Sign In
+          </Link>
         </div>
       </div>
     </div>

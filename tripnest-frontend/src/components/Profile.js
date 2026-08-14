@@ -9,7 +9,8 @@ import {
   Globe,
   Sun,
   Shield,
-  CheckCircle
+  Key,
+  Check
 } from 'lucide-react';
 
 const TRAVEL_STYLES = [
@@ -121,90 +122,153 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white">
+      <div className="page-root">
         <Navbar />
-        <div className="py-20 text-center text-slate-400">
-          <div className="inline-block w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-          <p>Loading your profile...</p>
+        <div className="page-content" style={{ textAlign: 'center', padding: '4rem' }}>
+          <div style={{
+            display: 'inline-block',
+            width: '40px', height: '40px',
+            border: '3px solid rgba(16,185,129,0.2)',
+            borderTopColor: '#10b981',
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+            marginBottom: '1rem',
+          }} />
+          <p style={{ color: 'var(--text-secondary)' }}>Loading your profile...</p>
         </div>
       </div>
     );
   }
 
+  const initial = (profile?.firstName?.[0] || profile?.username?.[0] || 'U').toUpperCase();
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-16">
+    <div className="page-root">
       <Navbar />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 space-y-8">
-        {/* Profile Header Banner */}
-        <div className="bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/20 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          <div className="w-24 h-24 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center text-3xl font-black text-emerald-400 overflow-hidden shadow-xl shrink-0">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              (profile?.firstName?.[0] || profile?.username?.[0] || 'U').toUpperCase()
-            )}
+      <div className="page-content">
+        {/* Profile Header Card */}
+        <div className="section-card" style={{
+          padding: '2rem 2.5rem',
+          marginBottom: '2rem',
+          background: 'linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(56,189,248,0.04) 50%, var(--bg-card) 100%)',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1.5rem',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: '#fff',
+              fontSize: '2rem',
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 24px rgba(16,185,129,0.35)',
+              overflow: 'hidden',
+              flexShrink: 0
+            }}>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                initial
+              )}
+            </div>
+
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.375rem' }}>
+                <h1 style={{
+                  fontSize: '1.75rem',
+                  fontWeight: 700,
+                  color: 'var(--text-primary)',
+                  letterSpacing: '-0.01em'
+                }}>
+                  {profile?.firstName ? `${profile.firstName} ${profile.lastName || ''}` : profile?.username}
+                </h1>
+                {profile?.roles?.map((r, i) => (
+                  <span key={i} className="badge badge-ongoing" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <Shield size={12} />
+                    {r.replace('ROLE_', '')}
+                  </span>
+                ))}
+              </div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                @{profile?.username} • {profile?.email}
+              </p>
+              {profile?.bio && (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.5rem', maxWidth: '600px', lineHeight: 1.5 }}>
+                  {profile.bio}
+                </p>
+              )}
+            </div>
           </div>
 
-          <div className="flex-1 text-center sm:text-left">
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-                {profile?.firstName ? `${profile.firstName} ${profile.lastName || ''}` : profile?.username}
-              </h1>
-              {profile?.roles?.map((r, i) => (
-                <span key={i} className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase flex items-center gap-1">
-                  <Shield size={12} />
-                  {r.replace('ROLE_', '')}
-                </span>
-              ))}
+          <div style={{ display: 'flex', gap: '1.5rem', borderLeft: '1px solid var(--border)', paddingLeft: '1.5rem' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--accent)' }}>
+                {profile?.totalTrips || 0}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>
+                Total Trips
+              </div>
             </div>
-            <p className="text-slate-400 text-sm font-medium">@{profile?.username} • {profile?.email}</p>
-            {profile?.bio && <p className="text-slate-300 text-sm mt-3 leading-relaxed max-w-2xl">{profile.bio}</p>}
-          </div>
-
-          <div className="flex gap-4 sm:flex-col shrink-0 text-center sm:text-right border-t sm:border-t-0 sm:border-l border-slate-700/60 pt-4 sm:pt-0 sm:pl-6">
-            <div>
-              <span className="text-2xl font-black text-emerald-400 block">{profile?.totalTrips || 0}</span>
-              <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Trips</span>
-            </div>
-            <div>
-              <span className="text-2xl font-black text-cyan-400 block">{profile?.completedTrips || 0}</span>
-              <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Completed</span>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--accent-info)' }}>
+                {profile?.completedTrips || 0}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>
+                Completed
+              </div>
             </div>
           </div>
         </div>
 
         {/* Favorite Destinations Gallery */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <Heart size={20} className="text-rose-500 fill-rose-500" /> Favorite Destinations ({profile?.favoriteDestinations?.size || profile?.favoriteDestinations?.length || 0})
+        <div className="section-card" style={{ marginBottom: '2rem' }}>
+          <div className="section-header">
+            <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Heart size={18} color="#e11d48" fill="#e11d48" />
+              Favorite Destinations ({profile?.favoriteDestinations?.size || profile?.favoriteDestinations?.length || 0})
             </h3>
-            <Link to="/destinations" className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold">
-              Explore More Destinations →
+            <Link to="/destinations" className="link" style={{ fontSize: '0.85rem' }}>
+              Explore Destinations →
             </Link>
           </div>
 
           {(!profile?.favoriteDestinations || profile.favoriteDestinations.length === 0) ? (
-            <div className="text-center py-8 text-slate-400 bg-slate-950/40 rounded-2xl border border-slate-800/80">
-              <Compass size={36} className="mx-auto mb-2 text-slate-500" />
-              <p className="font-semibold text-white">No Favorite Destinations Saved Yet</p>
-              <p className="text-xs text-slate-400 mt-1">Browse the destinations catalog and click the heart icon to save your favorites!</p>
+            <div className="empty-state" style={{ padding: '2rem' }}>
+              <Compass size={32} style={{ color: 'var(--text-muted)', marginBottom: '0.75rem' }} />
+              <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>No Favorite Destinations Saved Yet</p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Browse the destinations catalog and click the heart icon to save favorites!</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
               {Array.from(profile.favoriteDestinations).map((dest) => (
-                <div key={dest.id} className="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 hover:border-emerald-500/40 transition-all shadow-lg">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-white text-base">{dest.name}</h4>
-                    <span className="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                <div key={dest.id} style={{
+                  background: 'var(--bg-elevated)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '1.25rem',
+                  transition: 'border-color 0.2s',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                    <h4 style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '1rem' }}>{dest.name}</h4>
+                    <span className="badge badge-planned" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
                       <Globe size={11} /> {dest.country}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-300 mt-2 line-clamp-2">{dest.description}</p>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '0.5rem' }}>
+                    {dest.description}
+                  </p>
                   {dest.bestTimeToVisit && (
-                    <p className="text-[11px] text-slate-400 mt-3 flex items-center gap-1">
-                      <Sun size={12} className="text-amber-400" /> Best time: {dest.bestTimeToVisit}
+                    <p style={{ fontSize: '0.75rem', color: 'var(--accent-2)', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}>
+                      <Sun size={13} /> Best time: {dest.bestTimeToVisit}
                     </p>
                   )}
                 </div>
@@ -213,101 +277,106 @@ const Profile = () => {
           )}
         </div>
 
-        {/* Profile Edit & Settings Form */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8">
-            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <Settings size={20} className="text-emerald-400" /> Edit Profile Details
+        {/* 2-Column Grid: Edit Profile + Change Password */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.75rem' }}>
+          {/* Edit Profile Form */}
+          <div className="section-card">
+            <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              <Settings size={18} style={{ color: 'var(--accent)' }} /> Edit Profile Details
             </h3>
 
-            {message && (
-              <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-sm font-medium flex items-center gap-2">
-                <CheckCircle size={18} /> {message}
-              </div>
-            )}
-            {error && (
-              <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-sm font-medium">
-                {error}
-              </div>
-            )}
+            {message && <div className="alert alert-success" style={{ marginBottom: '1.25rem' }}>{message}</div>}
+            {error && <div className="alert alert-error" style={{ marginBottom: '1.25rem' }}>{error}</div>}
 
-            <form onSubmit={handleUpdateProfile} className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form onSubmit={handleUpdateProfile}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.125rem' }}>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">First Name</label>
+                  <label className="form-label" htmlFor="prof-fn">First Name</label>
                   <input
+                    id="prof-fn"
                     type="text"
+                    className="form-input"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 text-sm"
                     placeholder="First Name"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Last Name</label>
+                  <label className="form-label" htmlFor="prof-ln">Last Name</label>
                   <input
+                    id="prof-ln"
                     type="text"
+                    className="form-input"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 text-sm"
                     placeholder="Last Name"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Phone Number</label>
-                  <input
-                    type="text"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 text-sm"
-                    placeholder="+91 9876543210"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Avatar URL</label>
-                  <input
-                    type="text"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 text-sm"
-                    placeholder="https://..."
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Bio</label>
-                <textarea
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  rows={3}
-                  className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 text-sm leading-relaxed"
-                  placeholder="Tell other travelers about yourself, your favorite travel spots..."
+              <div style={{ marginBottom: '1.125rem' }}>
+                <label className="form-label" htmlFor="prof-phone">Phone Number</label>
+                <input
+                  id="prof-phone"
+                  type="tel"
+                  className="form-input"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+91 9876543210"
                 />
               </div>
 
-              {/* Travel Preferences Tag Selector */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                  Travel Style Preferences
-                </label>
-                <div className="flex flex-wrap gap-2">
+              <div style={{ marginBottom: '1.125rem' }}>
+                <label className="form-label" htmlFor="prof-avatar">Avatar Image URL</label>
+                <input
+                  id="prof-avatar"
+                  type="url"
+                  className="form-input"
+                  value={avatarUrl}
+                  onChange={(e) => setAvatarUrl(e.target.value)}
+                  placeholder="https://example.com/avatar.jpg"
+                />
+              </div>
+
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label className="form-label" htmlFor="prof-bio">Bio & Travel Preferences</label>
+                <textarea
+                  id="prof-bio"
+                  rows={3}
+                  className="form-input"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Tell other travelers about yourself..."
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label className="form-label">Travel Style Preferences</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.375rem' }}>
                   {TRAVEL_STYLES.map((style) => {
-                    const isSelected = selectedStyles.includes(style);
+                    const active = selectedStyles.includes(style);
                     return (
                       <button
                         key={style}
                         type="button"
                         onClick={() => handleToggleStyle(style)}
-                        className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
-                          isSelected
-                            ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
-                            : 'bg-slate-950 text-slate-300 border-slate-700 hover:border-slate-500'
-                        }`}
+                        style={{
+                          padding: '0.4rem 0.85rem',
+                          borderRadius: '99px',
+                          fontSize: '0.78rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          border: active ? '1px solid var(--accent)' : '1px solid var(--border-strong)',
+                          background: active ? 'var(--accent-dim)' : 'var(--bg-glass)',
+                          color: active ? 'var(--accent)' : 'var(--text-secondary)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}
                       >
+                        {active && <Check size={12} />}
                         {style}
                       </button>
                     );
@@ -317,58 +386,55 @@ const Profile = () => {
 
               <button
                 type="submit"
+                className="btn btn-primary"
                 disabled={saving}
-                className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 font-bold text-white text-sm rounded-xl transition-all shadow-lg shadow-emerald-600/30 disabled:opacity-50"
               >
-                {saving ? 'Saving Changes...' : 'Save Profile Changes'}
+                {saving ? 'Saving...' : 'Save Profile Changes'}
               </button>
             </form>
           </div>
 
-          {/* Change Password Box */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 self-start">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <span>🔐</span> Change Password
+          {/* Change Password Form */}
+          <div className="section-card">
+            <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              <Key size={18} style={{ color: 'var(--accent-2)' }} /> Change Password
             </h3>
 
-            {passMsg && (
-              <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs font-medium">
-                {passMsg}
-              </div>
-            )}
-            {passErr && (
-              <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs font-medium">
-                {passErr}
-              </div>
-            )}
+            {passMsg && <div className="alert alert-success" style={{ marginBottom: '1.25rem' }}>{passMsg}</div>}
+            {passErr && <div className="alert alert-error" style={{ marginBottom: '1.25rem' }}>{passErr}</div>}
 
-            <form onSubmit={handleChangePassword} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">Current Password</label>
+            <form onSubmit={handleChangePassword}>
+              <div style={{ marginBottom: '1.125rem' }}>
+                <label className="form-label" htmlFor="curr-pass">Current Password</label>
                 <input
+                  id="curr-pass"
                   type="password"
-                  required
+                  className="form-input"
                   value={currPass}
                   onChange={(e) => setCurrPass(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-white text-sm focus:outline-none focus:border-emerald-500"
+                  placeholder="Enter current password"
+                  required
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">New Password</label>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label className="form-label" htmlFor="new-pass">New Password</label>
                 <input
+                  id="new-pass"
                   type="password"
-                  required
-                  minLength={6}
+                  className="form-input"
                   value={newPass}
                   onChange={(e) => setNewPass(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-white text-sm focus:outline-none focus:border-emerald-500"
+                  placeholder="Enter new password (min 6 chars)"
+                  required
+                  minLength={6}
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 font-semibold text-white text-xs rounded-xl transition-all"
+                className="btn btn-outline"
+                style={{ width: '100%' }}
               >
                 Update Password
               </button>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
@@ -14,6 +15,7 @@ import AdminDashboard from './components/AdminDashboard';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import PublicTripView from './components/PublicTripView';
+import AiAssistant from './components/AiAssistant';
 import './App.css';
 
 /**
@@ -37,8 +39,9 @@ const PublicRoute = ({ children }) => {
  */
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
         <Routes>
           {/* Default redirect */}
           <Route path="/" element={<Navigate to="/login" replace />} />
@@ -168,8 +171,10 @@ function App() {
           {/* 404 fallback */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
-      </Router>
-    </AuthProvider>
+        <AiAssistant />
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

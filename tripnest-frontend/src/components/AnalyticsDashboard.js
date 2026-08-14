@@ -14,6 +14,7 @@ import {
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import analyticsService from '../services/analytics.service';
 import Navbar from './Navbar';
+import { useTheme } from '../context/ThemeContext';
 
 ChartJS.register(
   CategoryScale,
@@ -28,9 +29,13 @@ ChartJS.register(
 );
 
 const AnalyticsDashboard = () => {
+  const { isDark } = useTheme();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const textColor = isDark ? '#cbd5e1' : '#334155';
+  const gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
 
   useEffect(() => {
     fetchAnalytics();
@@ -146,52 +151,107 @@ const AnalyticsDashboard = () => {
         </div>
 
         {/* Summary Stat Cards */}
-        <div className="stats-grid" style={{ marginBottom: '2rem' }}>
+        <div className="stats-row" style={{ marginBottom: '2rem' }}>
           <div className="stat-card">
-            <div className="stat-value">{data.totalTrips}</div>
+            <div style={{fontSize:'1.5rem',marginBottom:'0.375rem'}}>🗺️</div>
+            <div className="stat-number">{data.totalTrips}</div>
             <div className="stat-label">Total Trips Planned</div>
           </div>
           <div className="stat-card">
-            <div className="stat-value">₹{data.totalBudgetAllocated.toLocaleString()}</div>
+            <div style={{fontSize:'1.5rem',marginBottom:'0.375rem'}}>💰</div>
+            <div className="stat-number" style={{fontSize:'1.5rem'}}>₹{data.totalBudgetAllocated.toLocaleString()}</div>
             <div className="stat-label">Total Budget Allocated</div>
           </div>
           <div className="stat-card">
-            <div className="stat-value" style={{ color: data.totalSpentAllTrips > data.totalBudgetAllocated ? '#ef4444' : '#10b981' }}>
+            <div style={{fontSize:'1.5rem',marginBottom:'0.375rem'}}>📊</div>
+            <div className="stat-number" style={{ fontSize:'1.5rem', color: data.totalSpentAllTrips > data.totalBudgetAllocated ? 'var(--accent-danger)' : 'var(--accent)' }}>
               ₹{data.totalSpentAllTrips.toLocaleString()}
             </div>
-            <div className="stat-label">Total Spent Across Trips</div>
+            <div className="stat-label">Total Spent</div>
           </div>
           <div className="stat-card">
-            <div className="stat-value">
-              {Object.keys(data.topDestinations || {}).length}
-            </div>
+            <div style={{fontSize:'1.5rem',marginBottom:'0.375rem'}}>🌍</div>
+            <div className="stat-number">{Object.keys(data.topDestinations || {}).length}</div>
             <div className="stat-label">Unique Destinations</div>
           </div>
         </div>
 
         {/* Charts Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '1.5rem' }}>
           {/* Chart 1: Category Expenses */}
-          <div className="card" style={{ padding: '1.5rem' }}>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 600 }}>🏷️ Spending by Category</h3>
+          <div className="section-card">
+            <h3 className="section-title" style={{ marginBottom: '1.25rem' }}>🏷️ Spending by Category</h3>
             <div style={{ maxHeight: '300px', display: 'flex', justifyContent: 'center' }}>
-              <Doughnut data={categoryChartData} options={{ responsive: true, maintainAspectRatio: false }} />
+              <Doughnut
+                data={categoryChartData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      labels: { color: textColor, font: { family: 'Inter', size: 12 } }
+                    }
+                  }
+                }}
+              />
             </div>
           </div>
 
           {/* Chart 2: Budget vs Spent per Trip */}
-          <div className="card" style={{ padding: '1.5rem' }}>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 600 }}>⚖️ Budget vs Actual Spent per Trip</h3>
+          <div className="section-card">
+            <h3 className="section-title" style={{ marginBottom: '1.25rem' }}>⚖️ Budget vs Actual Spent per Trip</h3>
             <div style={{ height: '300px' }}>
-              <Bar data={budgetVsSpentData} options={{ responsive: true, maintainAspectRatio: false }} />
+              <Bar
+                data={budgetVsSpentData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      labels: { color: textColor, font: { family: 'Inter', size: 12 } }
+                    }
+                  },
+                  scales: {
+                    x: {
+                      ticks: { color: textColor, font: { family: 'Inter' } },
+                      grid: { color: gridColor }
+                    },
+                    y: {
+                      ticks: { color: textColor, font: { family: 'Inter' } },
+                      grid: { color: gridColor }
+                    }
+                  }
+                }}
+              />
             </div>
           </div>
 
           {/* Chart 3: Monthly Spending Trend */}
-          <div className="card" style={{ padding: '1.5rem', gridColumn: '1 / -1' }}>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 600 }}>📈 Monthly Expenditure Trend</h3>
+          <div className="section-card" style={{ gridColumn: '1 / -1' }}>
+            <h3 className="section-title" style={{ marginBottom: '1.25rem' }}>📈 Monthly Expenditure Trend</h3>
             <div style={{ height: '280px' }}>
-              <Line data={monthlyTrendData} options={{ responsive: true, maintainAspectRatio: false }} />
+              <Line
+                data={monthlyTrendData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      labels: { color: textColor, font: { family: 'Inter', size: 12 } }
+                    }
+                  },
+                  scales: {
+                    x: {
+                      ticks: { color: textColor, font: { family: 'Inter' } },
+                      grid: { color: gridColor }
+                    },
+                    y: {
+                      ticks: { color: textColor, font: { family: 'Inter' } },
+                      grid: { color: gridColor }
+                    }
+                  }
+                }}
+              />
             </div>
           </div>
         </div>
@@ -201,3 +261,4 @@ const AnalyticsDashboard = () => {
 };
 
 export default AnalyticsDashboard;
+
