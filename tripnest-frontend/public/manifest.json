@@ -1,0 +1,59 @@
+{
+  "short_name": "TripNest",
+  "name": "TripNest — AI Travel & Trip Planner",
+  "description": "Plan trips, day-wise itineraries, track budgets, and collaborate with friends with your personal AI Tourist Guide.",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#10b981",
+  "background_color": "#0b132b",
+  "categories": ["travel", "productivity", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "My Trips",
+      "short_name": "Trips",
+      "description": "View and manage your travel itineraries",
+      "url": "/dashboard",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Discover Places",
+      "short_name": "Discover",
+      "description": "Explore popular destinations and attractions",
+      "url": "/destinations",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    }
+  ]
+}

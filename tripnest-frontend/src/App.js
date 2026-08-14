@@ -16,6 +16,7 @@ import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import PublicTripView from './components/PublicTripView';
 import AiAssistant from './components/AiAssistant';
+import InstallPwaPrompt from './components/InstallPwaPrompt';
 import './App.css';
 
 /**
@@ -172,6 +173,7 @@ function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
         <AiAssistant />
+        <InstallPwaPrompt />
         </Router>
       </AuthProvider>
     </ThemeProvider>
