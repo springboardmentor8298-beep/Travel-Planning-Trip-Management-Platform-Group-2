@@ -11,9 +11,29 @@ node_modules/
 # IDE
 .idea/
 .vscode/
+# Backend (Java/Maven)
+backend/target/
+*.class
+*.jar
+!maven-wrapper.jar
+
+# Frontend (React/Node)
+frontend/node_modules/
+frontend/build/
+frontend/.env.local
+
+# IDE
+.vscode/
+.idea/
+*.iml
 
 # OS
 .DS_Store
 Thumbs.db
 
+<<<<<<< HEAD
 uploads/
+=======
+# Logs
+*.log
+>>>>>>> origin/main
