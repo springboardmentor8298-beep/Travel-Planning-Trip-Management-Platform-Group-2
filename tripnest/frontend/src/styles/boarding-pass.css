@@ -1,0 +1,310 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+
+.bp-page {
+  min-height: 100vh;
+  width: 100%;
+  background: #16211e;
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(201, 162, 39, 0.07), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(193, 68, 14, 0.08), transparent 45%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+.bp-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #c9a227;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.bp-card {
+  display: flex;
+  width: 100%;
+  max-width: 860px;
+  background: #f3ecd8;
+  border-radius: 14px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0,0,0,0.04);
+  overflow: hidden;
+  position: relative;
+}
+
+/* ---- Stub (left, teal) ---- */
+.bp-stub {
+  width: 34%;
+  background: #0e4b43;
+  color: #f3ecd8;
+  padding: 36px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.bp-logo {
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: -0.01em;
+}
+
+.bp-logo span {
+  color: #c9a227;
+}
+
+.bp-route {
+  margin-top: 32px;
+}
+
+.bp-route-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.bp-route-code {
+  font-family: 'Fraunces', serif;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.bp-route-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(243, 236, 216, 0.6);
+  margin-top: 4px;
+}
+
+.bp-route-arrow {
+  flex: 1;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, rgba(243,236,216,0.5) 0 6px, transparent 6px 12px);
+  position: relative;
+  margin: 0 4px;
+}
+
+.bp-route-arrow::after {
+  content: '✈';
+  position: absolute;
+  right: -4px;
+  top: -9px;
+  font-size: 14px;
+  color: #c9a227;
+}
+
+.bp-stub-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: rgba(243, 236, 216, 0.55);
+  line-height: 1.8;
+  border-top: 1px dashed rgba(243, 236, 216, 0.25);
+  padding-top: 16px;
+}
+
+.bp-stub-meta b {
+  color: #f3ecd8;
+  font-weight: 500;
+}
+
+/* Perforation between stub and form */
+.bp-perforation {
+  width: 0;
+  position: relative;
+  border-left: 2px dashed rgba(22, 33, 30, 0.18);
+}
+
+.bp-perforation::before,
+.bp-perforation::after {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: #16211e;
+  border-radius: 50%;
+  left: -11px;
+}
+
+.bp-perforation::before { top: -11px; }
+.bp-perforation::after { bottom: -11px; }
+
+/* ---- Form half ---- */
+.bp-form-half {
+  flex: 1;
+  padding: 40px 44px;
+  position: relative;
+}
+
+.bp-title {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #16211e;
+  margin-bottom: 6px;
+}
+
+.bp-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  color: #5c5541;
+  margin-bottom: 28px;
+}
+
+.bp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bp-row {
+  display: flex;
+  gap: 14px;
+}
+
+.bp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.bp-field label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7a7358;
+}
+
+.bp-field input {
+  font-family: 'Inter', sans-serif;
+  font-size: 14.5px;
+  color: #16211e;
+  background: #fbf8ef;
+  border: 1.5px solid #d9cfae;
+  border-radius: 7px;
+  padding: 11px 13px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bp-field input:focus {
+  border-color: #0e4b43;
+  box-shadow: 0 0 0 3px rgba(14, 75, 67, 0.12);
+}
+
+.bp-field input::placeholder {
+  color: #b3a984;
+}
+
+.bp-submit {
+  margin-top: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #f3ecd8;
+  background: #0e4b43;
+  border: none;
+  border-radius: 7px;
+  padding: 13px;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.15s ease;
+}
+
+.bp-submit:hover:not(:disabled) { background: #0b3a34; }
+.bp-submit:active:not(:disabled) { transform: scale(0.98); }
+.bp-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.bp-switch {
+  margin-top: 22px;
+  font-size: 13px;
+  color: #7a7358;
+  text-align: center;
+}
+
+.bp-switch a {
+  color: #0e4b43;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(14, 75, 67, 0.35);
+}
+
+.bp-alert {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  padding: 11px 14px;
+  border-radius: 7px;
+  margin-bottom: 18px;
+}
+
+.bp-alert-error {
+  background: rgba(193, 68, 14, 0.1);
+  border: 1px solid rgba(193, 68, 14, 0.3);
+  color: #a33a0d;
+}
+
+.bp-alert-success {
+  background: rgba(14, 75, 67, 0.1);
+  border: 1px solid rgba(14, 75, 67, 0.3);
+  color: #0e4b43;
+}
+
+/* Passport stamp - signature element */
+.bp-stamp {
+  position: absolute;
+  top: 34px;
+  right: 40px;
+  width: 84px;
+  height: 84px;
+  border: 2.5px solid #c1440e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-14deg);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.bp-stamp-inner {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #c1440e;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.bp-stamp-inner b {
+  display: block;
+  font-size: 10px;
+}
+
+@media (max-width: 720px) {
+  .bp-card { flex-direction: column; max-width: 420px; }
+  .bp-stub { width: 100%; padding: 28px 24px; }
+  .bp-perforation {
+    width: auto;
+    height: 0;
+    border-left: none;
+    border-top: 2px dashed rgba(22, 33, 30, 0.18);
+  }
+  .bp-perforation::before, .bp-perforation::after { top: -11px; left: auto; }
+  .bp-perforation::before { left: -11px; }
+  .bp-perforation::after { right: -11px; }
+  .bp-form-half { padding: 32px 26px; }
+  .bp-stamp { top: 24px; right: 24px; width: 68px; height: 68px; }
+  .bp-row { flex-direction: column; gap: 16px; }
+}

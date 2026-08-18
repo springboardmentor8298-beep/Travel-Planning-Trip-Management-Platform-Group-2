@@ -1,3 +1,16 @@
+# Maven
+target/
+
+# Node
+node_modules/
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
 # Backend (Java/Maven)
 backend/target/
 *.class
@@ -18,5 +31,9 @@ frontend/.env.local
 .DS_Store
 Thumbs.db
 
+<<<<<<< HEAD
+uploads/
+=======
 # Logs
 *.log
+>>>>>>> origin/main
