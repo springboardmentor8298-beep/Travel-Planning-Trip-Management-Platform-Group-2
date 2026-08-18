@@ -1,648 +1,1675 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 
-import AddDayModal from "../components/AddDayModal";
-import AddActivityModal from "../components/AddActivityModal";
-import EditActivityModal from "../components/EditActivityModal";
-import DeleteActivityModal from "../components/DeleteActivityModal";
 import itineraryService from "../services/itineraryService";
 import activityService from "../services/activityService";
 
 const Itineraries = () => {
 
-  // -----------------------------
-  // Trip Context
-  // -----------------------------
+    // ==========================================
+    // TEMPORARY TRIP ID
+    // ==========================================
 
-  // TODO: replace with the real trip id (e.g. from route params / context)
-  const TRIP_ID = 1;
+    const TRIP_ID = 2;
 
-  // -----------------------------
-  // Itinerary Data (now loaded from backend, not hardcoded)
-  // -----------------------------
+    // ==========================================
+    // STATE
+    // ==========================================
 
-  const [days, setDays] = useState([]);
+    const [days, setDays] = useState([]);
 
-  const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
 
-  // -----------------------------
-  // Modal States
-  // -----------------------------
+    const [error, setError] = useState("");
 
-  const [showAddDay, setShowAddDay] = useState(false);
+    // Day modal
+    const [showDayModal, setShowDayModal] =
+        useState(false);
 
-  const [showAddActivity, setShowAddActivity] =
-    useState(false);
+    const [dayForm, setDayForm] = useState({
+        date: "",
+        notes: ""
+    });
 
-  const [showEditActivity, setShowEditActivity] =
-    useState(false);
+    // Activity modal
+    const [showActivityModal, setShowActivityModal] =
+        useState(false);
 
-  const [showDeleteActivity, setShowDeleteActivity] =
-    useState(false);
+    const [activityMode, setActivityMode] =
+        useState("add");
 
-  // -----------------------------
-  // Selected Day
-  // -----------------------------
+    const [selectedDayId, setSelectedDayId] =
+        useState(null);
 
-  const [selectedDayIndex, setSelectedDayIndex] =
-    useState(null);
+    const [selectedActivityId, setSelectedActivityId] =
+        useState(null);
 
-  // -----------------------------
-  // Selected Activity
-  // -----------------------------
+    const [activityForm, setActivityForm] = useState({
+        title: "",
+        description: "",
+        startTime: "",
+        endTime: "",
+        location: "",
+        type: "SIGHTSEEING",
+        cost: ""
+    });
 
-  const [selectedActivityIndex, setSelectedActivityIndex] =
-    useState(null);
+    // ==========================================
+    // LOAD ITINERARY
+    // ==========================================
 
-  const [selectedActivity, setSelectedActivity] =
-    useState(null);
+    const loadItinerary = async () => {
 
-  // -----------------------------
-  // Load itinerary + activities from backend
-  // -----------------------------
+        try {
 
-  const loadItinerary = async () => {
+            setLoading(true);
+            setError("");
 
-    try {
+            const response =
+                await itineraryService.getTripItineraries(
+                    TRIP_ID
+                );
 
-      setLoading(true);
+            const itineraryDays =
+                response.data || [];
 
-      const itineraryRes =
-        await itineraryService.getTripItineraries(TRIP_ID);
+            const formattedDays =
+                itineraryDays.map((day, index) => ({
 
-      const itineraryDays = itineraryRes.data;
+                    id: day.id,
 
-      const finalDays = [];
+                    day: index + 1,
 
-      for (const day of itineraryDays) {
+                    date: day.date,
 
-        const activityRes =
-          await activityService.getActivities(day.id);
+                    notes: day.notes || "",
 
-        finalDays.push({
-          id: day.id,
-          day: finalDays.length + 1,
-          description: day.notes,
-          activities: activityRes.data.map((a) => ({
-            id: a.id,
-            title: a.title,
-            location: a.location,
-            time: a.startTime,
-            type: a.type,
-            notes: a.description,
-          })),
+                    tripTitle:
+                        day.tripTitle || "",
+
+                    activities:
+                        (day.activities || []).map(
+                            (activity) => ({
+
+                                id: activity.id,
+
+                                title:
+                                    activity.title || "",
+
+                                description:
+                                    activity.description || "",
+
+                                startTime:
+                                    activity.startTime || "",
+
+                                endTime:
+                                    activity.endTime || "",
+
+                                location:
+                                    activity.location || "",
+
+                                type:
+                                    activity.type ||
+                                    "OTHER",
+
+                                cost:
+                                    activity.cost ??
+                                    null
+                            })
+                        )
+                }));
+
+            setDays(formattedDays);
+
+        } catch (err) {
+
+            console.error(
+                "Error loading itinerary:",
+                err
+            );
+
+            setError(
+                err?.response?.data?.message ||
+                "Unable to load itinerary."
+            );
+
+        } finally {
+
+            setLoading(false);
+        }
+    };
+
+    // ==========================================
+    // INITIAL LOAD
+    // ==========================================
+
+    useEffect(() => {
+
+        loadItinerary();
+
+    }, []);
+
+    // ==========================================
+    // DAY MODAL
+    // ==========================================
+
+    const openDayModal = () => {
+
+        setDayForm({
+            date: "",
+            notes: ""
         });
-      }
 
-      setDays(finalDays);
+        setShowDayModal(true);
+    };
 
-    } catch (err) {
+    const closeDayModal = () => {
 
-      console.log(err);
+        setShowDayModal(false);
 
-    } finally {
+        setDayForm({
+            date: "",
+            notes: ""
+        });
+    };
 
-      setLoading(false);
+    // ==========================================
+    // DAY FORM CHANGE
+    // ==========================================
 
-    }
-  };
+    const handleDayChange = (e) => {
 
-  useEffect(() => {
+        setDayForm({
+            ...dayForm,
+            [e.target.name]: e.target.value
+        });
+    };
 
-    loadItinerary();
+    // ==========================================
+    // CREATE DAY
+    // ==========================================
 
-  }, []);
+    const handleCreateDay = async (e) => {
 
-  // -----------------------------
-  // Open Add Day
-  // -----------------------------
+        e.preventDefault();
 
-  const openAddDay = () => {
-    setShowAddDay(true);
-  };
+        try {
 
-  // -----------------------------
-  // Save Day -> backend
-  // -----------------------------
+            if (!dayForm.date) {
 
-  const handleAddDay = async (data) => {
+                alert("Please select a date.");
 
-    try {
+                return;
+            }
 
-      await itineraryService.createItinerary({
-        tripId: TRIP_ID,
-        date: new Date().toISOString().split("T")[0],
-        notes: data.description,
-      });
+            await itineraryService.createItinerary({
 
-      setShowAddDay(false);
+                tripId: TRIP_ID,
 
-      await loadItinerary();
+                date: dayForm.date,
 
-    } catch (err) {
+                notes: dayForm.notes
 
-      console.log(err);
+            });
 
-      alert("Unable to create itinerary day.");
+            closeDayModal();
 
-    }
-  };
+            await loadItinerary();
 
-  // -----------------------------
-  // Open Add Activity
-  // -----------------------------
+        } catch (err) {
 
-  const openAddActivity = (dayIndex) => {
+            console.error(
+                "Error creating itinerary:",
+                err
+            );
 
-    setSelectedDayIndex(dayIndex);
+            alert(
+                err?.response?.data?.message ||
+                "Unable to create itinerary."
+            );
+        }
+    };
 
-    setShowAddActivity(true);
-  };
+    // ==========================================
+    // ACTIVITY MODAL
+    // ==========================================
 
-  // -----------------------------
-  // Save Activity -> backend
-  // -----------------------------
+    const openAddActivity = (dayId) => {
 
-  const handleAddActivity = async (activity) => {
+        setActivityMode("add");
 
-    try {
+        setSelectedDayId(dayId);
 
-      const itineraryId = days[selectedDayIndex].id;
+        setSelectedActivityId(null);
 
-      await activityService.createActivity({
-        itineraryId,
-        title: activity.title,
-        location: activity.location,
-        startTime: activity.time,
-        type: activity.type,
-        description: activity.notes,
-      });
+        setActivityForm({
 
-      setShowAddActivity(false);
+            title: "",
 
-      await loadItinerary();
+            description: "",
 
-    } catch (err) {
+            startTime: "",
 
-      console.log(err);
+            endTime: "",
 
-      alert("Unable to add activity.");
+            location: "",
 
-    }
-  };
+            type: "SIGHTSEEING",
 
-  // -----------------------------
-  // Open Edit
-  // -----------------------------
+            cost: ""
+        });
 
-  const openEditActivity = (
-    dayIndex,
-    activityIndex
-  ) => {
+        setShowActivityModal(true);
+    };
 
-    setSelectedDayIndex(dayIndex);
+    // ==========================================
+    // EDIT ACTIVITY
+    // ==========================================
 
-    setSelectedActivityIndex(activityIndex);
+    const openEditActivity = (
+        dayId,
+        activity
+    ) => {
 
-    setSelectedActivity(
-      days[dayIndex].activities[activityIndex]
-    );
+        setActivityMode("edit");
 
-    setShowEditActivity(true);
-  };
+        setSelectedDayId(dayId);
 
-  // -----------------------------
-  // Update Activity -> backend
-  // -----------------------------
+        setSelectedActivityId(
+            activity.id
+        );
 
-  const handleUpdateActivity = async (updatedActivity) => {
+        setActivityForm({
 
-    try {
+            title:
+                activity.title || "",
 
-      const activityId = selectedActivity.id;
+            description:
+                activity.description || "",
 
-      await activityService.updateActivity(activityId, {
-        title: updatedActivity.title,
-        location: updatedActivity.location,
-        startTime: updatedActivity.time,
-        type: updatedActivity.type,
-        description: updatedActivity.notes,
-      });
+            startTime:
+                activity.startTime || "",
 
-      setShowEditActivity(false);
+            endTime:
+                activity.endTime || "",
 
-      await loadItinerary();
+            location:
+                activity.location || "",
 
-    } catch (err) {
+            type:
+                activity.type || "OTHER",
 
-      console.log(err);
+            cost:
+                activity.cost ?? ""
+        });
 
-      alert("Unable to update activity.");
+        setShowActivityModal(true);
+    };
 
-    }
-  };
+    // ==========================================
+    // CLOSE ACTIVITY MODAL
+    // ==========================================
 
-  // -----------------------------
-  // Open Delete
-  // -----------------------------
+    const closeActivityModal = () => {
 
-  const openDeleteActivity = (
-    dayIndex,
-    activityIndex
-  ) => {
+        setShowActivityModal(false);
 
-    setSelectedDayIndex(dayIndex);
+        setSelectedDayId(null);
 
-    setSelectedActivityIndex(activityIndex);
+        setSelectedActivityId(null);
+    };
 
-    setSelectedActivity(
-      days[dayIndex].activities[activityIndex]
-    );
+    // ==========================================
+    // ACTIVITY FORM CHANGE
+    // ==========================================
 
-    setShowDeleteActivity(true);
-  };
+    const handleActivityChange = (e) => {
 
-  // -----------------------------
-  // Delete Activity -> backend
-  // -----------------------------
+        setActivityForm({
 
-  const handleDeleteActivity = async () => {
+            ...activityForm,
 
-    try {
+            [e.target.name]:
+                e.target.value
+        });
+    };
 
-      const activityId = selectedActivity.id;
+    // ==========================================
+    // SAVE ACTIVITY
+    // ==========================================
 
-      await activityService.deleteActivity(activityId);
+    const handleSaveActivity = async (e) => {
 
-      setShowDeleteActivity(false);
+        e.preventDefault();
 
-      await loadItinerary();
+        try {
 
-    } catch (err) {
+            if (!activityForm.title.trim()) {
 
-      console.log(err);
+                alert(
+                    "Activity title is required."
+                );
 
-      alert("Unable to delete activity.");
+                return;
+            }
 
-    }
-  };
+            if (
+                activityForm.startTime &&
+                activityForm.endTime &&
+                activityForm.endTime <
+                    activityForm.startTime
+            ) {
 
-  return (
-    <div style={styles.container}>
-      <Sidebar />
+                alert(
+                    "End time cannot be before start time."
+                );
 
-      <main style={styles.main}>
-        {/* Header */}
-        <div style={styles.header}>
-          <div>
-            <h1 style={styles.title}>Trip Itinerary 🗓️</h1>
-            <p style={styles.subtitle}>
-              Plan and organize your trip activities
-            </p>
-          </div>
+                return;
+            }
 
-          <button
-            className="btn-aurora"
-            onClick={openAddDay}
-          >
-            + Add Day
-          </button>
-        </div>
+            const data = {
 
-        {/* Day Cards */}
+                itineraryId:
+                    selectedDayId,
 
-        {loading ? (
-          <div style={styles.emptyCard}>
-            <h2>Loading itinerary...</h2>
-          </div>
-        ) : days.length === 0 ? (
-          <div style={styles.emptyCard}>
-            <h2>No itinerary created</h2>
+                title:
+                    activityForm.title,
 
-            <p>Create your first itinerary day.</p>
+                description:
+                    activityForm.description,
 
-            <button
-              className="btn-aurora"
-              onClick={openAddDay}
-            >
-              Create Day
-            </button>
-          </div>
-        ) : (
-          days.map((day, dayIndex) => (
-            <div
-              key={day.id}
-              style={styles.dayCard}
-              className="glass-card"
-            >
-              {/* Day Header */}
+                startTime:
+                    activityForm.startTime ||
+                    null,
 
-              <div style={styles.dayHeader}>
-                <div>
-                  <h2 style={styles.dayTitle}>
-                    Day {day.day}
-                  </h2>
+                endTime:
+                    activityForm.endTime ||
+                    null,
 
-                  <p style={styles.dayDescription}>
-                    {day.description}
-                  </p>
-                </div>
+                location:
+                    activityForm.location,
 
-                <button
-                  className="btn-ghost"
-                  onClick={() =>
-                    openAddActivity(dayIndex)
-                  }
-                >
-                  + Add Activity
-                </button>
-              </div>
+                type:
+                    activityForm.type,
 
-              {/* Activities */}
+                cost:
+                    activityForm.cost === ""
+                        ? null
+                        : Number(
+                            activityForm.cost
+                        )
+            };
 
-              {day.activities.length === 0 ? (
-                <div style={styles.noActivity}>
-                  No activities added.
-                </div>
-              ) : (
-                day.activities.map(
-                  (activity, activityIndex) => (
+            if (
+                activityMode === "edit"
+            ) {
+
+                await activityService
+                    .updateActivity(
+                        selectedActivityId,
+                        data
+                    );
+
+            } else {
+
+                await activityService
+                    .createActivity(data);
+            }
+
+            closeActivityModal();
+
+            await loadItinerary();
+
+        } catch (err) {
+
+            console.error(
+                "Error saving activity:",
+                err
+            );
+
+            alert(
+                err?.response?.data?.message ||
+                "Unable to save activity."
+            );
+        }
+    };
+
+    // ==========================================
+    // DELETE ACTIVITY
+    // ==========================================
+
+    const handleDeleteActivity = async (
+        activityId
+    ) => {
+
+        const confirmed =
+            window.confirm(
+                "Are you sure you want to delete this activity?"
+            );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+
+            await activityService
+                .deleteActivity(
+                    activityId
+                );
+
+            await loadItinerary();
+
+        } catch (err) {
+
+            console.error(
+                "Error deleting activity:",
+                err
+            );
+
+            alert(
+                err?.response?.data?.message ||
+                "Unable to delete activity."
+            );
+        }
+    };
+
+    // ==========================================
+    // FORMAT DATE
+    // ==========================================
+
+    const formatDate = (date) => {
+
+        if (!date) {
+            return "";
+        }
+
+        return new Date(
+            `${date}T00:00:00`
+        ).toLocaleDateString(
+            "en-IN",
+            {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+            }
+        );
+    };
+
+    // ==========================================
+    // ACTIVITY ICON
+    // ==========================================
+
+    const getActivityIcon = (type) => {
+
+        switch (type) {
+
+            case "SIGHTSEEING":
+                return "📸";
+
+            case "TRANSPORTATION":
+                return "🚆";
+
+            case "ACCOMMODATION":
+                return "🏨";
+
+            case "DINING":
+                return "🍽️";
+
+            case "ADVENTURE":
+                return "🏔️";
+
+            case "SHOPPING":
+                return "🛍️";
+
+            default:
+                return "📍";
+        }
+    };
+
+    // ==========================================
+    // LOADING
+    // ==========================================
+
+    if (loading) {
+
+        return (
+
+            <div style={styles.container}>
+
+                <Sidebar />
+
+                <main style={styles.main}>
+
                     <div
-                      key={activity.id}
-                      style={styles.activityCard}
+                        className="glass-card"
+                        style={styles.loading}
                     >
-                      <div style={styles.left}>
-                        <div style={styles.icon}>
-                          📍
-                        </div>
-
-                        <div>
-                          <h3
-                            style={
-                              styles.activityTitle
-                            }
-                          >
-                            {activity.title}
-                          </h3>
-
-                          <p
-                            style={
-                              styles.activityLocation
-                            }
-                          >
-                            {activity.location}
-                          </p>
-
-                          <div
-                            style={
-                              styles.activityInfo
-                            }
-                          >
-                            <span>
-                              🕒 {activity.time}
-                            </span>
-
-                            <span>
-                              {activity.type}
-                            </span>
-                          </div>
-
-                          {activity.notes && (
-                            <p
-                              style={
-                                styles.activityNotes
-                              }
-                            >
-                              {activity.notes}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Buttons */}
-
-                      <div style={styles.buttons}>
-                        <button
-                          className="btn-ghost"
-                          onClick={() =>
-                            openEditActivity(
-                              dayIndex,
-                              activityIndex
-                            )
-                          }
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          style={styles.deleteButton}
-                          onClick={() =>
-                            openDeleteActivity(
-                              dayIndex,
-                              activityIndex
-                            )
-                          }
-                        >
-                          Delete
-                        </button>
-                      </div>
+                        Loading itinerary...
                     </div>
-                  )
-                )
-              )}
+
+                </main>
+
             </div>
-          ))
-        )}
+        );
+    }
 
-        {/* Add Day Modal */}
+    // ==========================================
+    // MAIN UI
+    // ==========================================
 
-        <AddDayModal
-          isOpen={showAddDay}
-          onClose={() =>
-            setShowAddDay(false)
-          }
-          onSave={handleAddDay}
-          nextDay={days.length + 1}
-        />
+    return (
 
-        {/* Add Activity Modal */}
+        <div style={styles.container}>
 
-        <AddActivityModal
-          isOpen={showAddActivity}
-          onClose={() =>
-            setShowAddActivity(false)
-          }
-          onSave={handleAddActivity}
-        />
+            <Sidebar />
 
-        {/* Edit Modal */}
+            <main style={styles.main}>
 
-        <EditActivityModal
-          isOpen={showEditActivity}
-          onClose={() =>
-            setShowEditActivity(false)
-          }
-          onUpdate={handleUpdateActivity}
-          activity={selectedActivity}
-        />
+                {/* HEADER */}
 
-        {/* Delete Modal */}
+                <div style={styles.header}>
 
-        <DeleteActivityModal
-          isOpen={showDeleteActivity}
-          onClose={() =>
-            setShowDeleteActivity(false)
-          }
-          onConfirm={handleDeleteActivity}
-          activityName={
-            selectedActivity?.title || ""
-          }
-        />
-      </main>
-    </div>
-  );
+                    <div>
+
+                        <p style={styles.eyebrow}>
+                            TRIPNEST PLANNER
+                        </p>
+
+                        <h1 style={styles.title}>
+                            📅 Itineraries
+                        </h1>
+
+                        <p style={styles.subtitle}>
+                            Plan your trip day by day
+                            and organize every activity.
+                        </p>
+
+                    </div>
+
+                    <button
+                        className="btn-aurora"
+                        onClick={openDayModal}
+                    >
+                        + Add Day
+                    </button>
+
+                </div>
+
+                {/* ERROR */}
+
+                {error && (
+
+                    <div style={styles.error}>
+                        ⚠️ {error}
+                    </div>
+
+                )}
+
+                {/* EMPTY */}
+
+                {days.length === 0 ? (
+
+                    <div
+                        className="glass-card"
+                        style={styles.empty}
+                    >
+
+                        <div
+                            style={
+                                styles.emptyIcon
+                            }
+                        >
+                            📅
+                        </div>
+
+                        <h2>
+                            No itinerary yet
+                        </h2>
+
+                        <p>
+                            Start planning your
+                            trip day by day.
+                        </p>
+
+                        <button
+                            className="btn-aurora"
+                            onClick={
+                                openDayModal
+                            }
+                        >
+                            + Create First Day
+                        </button>
+
+                    </div>
+
+                ) : (
+
+                    <div>
+
+                        {days.map((day) => (
+
+                            <div
+                                key={day.id}
+                                className="glass-card"
+                                style={
+                                    styles.dayCard
+                                }
+                            >
+
+                                {/* DAY HEADER */}
+
+                                <div
+                                    style={
+                                        styles.dayHeader
+                                    }
+                                >
+
+                                    <div>
+
+                                        <span
+                                            style={
+                                                styles.dayBadge
+                                            }
+                                        >
+                                            DAY {day.day}
+                                        </span>
+
+                                        <h2
+                                            style={
+                                                styles.dayTitle
+                                            }
+                                        >
+                                            {
+                                                formatDate(
+                                                    day.date
+                                                )
+                                            }
+                                        </h2>
+
+                                        {day.notes && (
+
+                                            <p
+                                                style={
+                                                    styles.dayNotes
+                                                }
+                                            >
+                                                {day.notes}
+                                            </p>
+
+                                        )}
+
+                                    </div>
+
+                                    <button
+                                        className="btn-ghost"
+                                        onClick={() =>
+                                            openAddActivity(
+                                                day.id
+                                            )
+                                        }
+                                    >
+                                        + Activity
+                                    </button>
+
+                                </div>
+
+                                {/* ACTIVITIES */}
+
+                                {day.activities.length ===
+                                0 ? (
+
+                                    <div
+                                        style={
+                                            styles.noActivities
+                                        }
+                                    >
+
+                                        <span>
+                                            📌
+                                        </span>
+
+                                        <p>
+                                            No activities
+                                            planned for
+                                            this day.
+                                        </p>
+
+                                        <button
+                                            className="btn-ghost"
+                                            onClick={() =>
+                                                openAddActivity(
+                                                    day.id
+                                                )
+                                            }
+                                        >
+                                            + Add Activity
+                                        </button>
+
+                                    </div>
+
+                                ) : (
+
+                                    <div>
+
+                                        {day.activities.map(
+                                            (activity) => (
+
+                                                <div
+                                                    key={
+                                                        activity.id
+                                                    }
+                                                    style={
+                                                        styles.activity
+                                                    }
+                                                >
+
+                                                    {/* ICON */}
+
+                                                    <div
+                                                        style={
+                                                            styles.activityIcon
+                                                        }
+                                                    >
+                                                        {
+                                                            getActivityIcon(
+                                                                activity.type
+                                                            )
+                                                        }
+                                                    </div>
+
+                                                    {/* CONTENT */}
+
+                                                    <div
+                                                        style={
+                                                            styles.activityContent
+                                                        }
+                                                    >
+
+                                                        <h3
+                                                            style={
+                                                                styles.activityTitle
+                                                            }
+                                                        >
+                                                            {
+                                                                activity.title
+                                                            }
+                                                        </h3>
+
+                                                        {activity.location && (
+
+                                                            <p
+                                                                style={
+                                                                    styles.location
+                                                                }
+                                                            >
+                                                                📍{" "}
+                                                                {
+                                                                    activity.location
+                                                                }
+                                                            </p>
+
+                                                        )}
+
+                                                        <div
+                                                            style={
+                                                                styles.meta
+                                                            }
+                                                        >
+
+                                                            {activity.startTime && (
+
+                                                                <span>
+                                                                    🕒{" "}
+                                                                    {
+                                                                        activity.startTime
+                                                                    }
+
+                                                                    {activity.endTime &&
+                                                                        ` - ${activity.endTime}`}
+                                                                </span>
+
+                                                            )}
+
+                                                            <span
+                                                                style={
+                                                                    styles.type
+                                                                }
+                                                            >
+                                                                {
+                                                                    activity.type
+                                                                }
+                                                            </span>
+
+                                                            {activity.cost !==
+                                                                null &&
+                                                                activity.cost !==
+                                                                    undefined && (
+
+                                                                    <span>
+                                                                        💰 ₹
+                                                                        {Number(
+                                                                            activity.cost
+                                                                        ).toLocaleString(
+                                                                            "en-IN"
+                                                                        )}
+                                                                    </span>
+
+                                                                )}
+
+                                                        </div>
+
+                                                        {activity.description && (
+
+                                                            <p
+                                                                style={
+                                                                    styles.description
+                                                                }
+                                                            >
+                                                                {
+                                                                    activity.description
+                                                                }
+                                                            </p>
+
+                                                        )}
+
+                                                    </div>
+
+                                                    {/* ACTIONS */}
+
+                                                    <div
+                                                        style={
+                                                            styles.actions
+                                                        }
+                                                    >
+
+                                                        <button
+                                                            style={
+                                                                styles.editButton
+                                                            }
+                                                            onClick={() =>
+                                                                openEditActivity(
+                                                                    day.id,
+                                                                    activity
+                                                                )
+                                                            }
+                                                        >
+                                                            ✏️
+                                                        </button>
+
+                                                        <button
+                                                            style={
+                                                                styles.deleteButton
+                                                            }
+                                                            onClick={() =>
+                                                                handleDeleteActivity(
+                                                                    activity.id
+                                                                )
+                                                            }
+                                                        >
+                                                            🗑️
+                                                        </button>
+
+                                                    </div>
+
+                                                </div>
+
+                                            )
+                                        )}
+
+                                    </div>
+
+                                )}
+
+                            </div>
+
+                        ))}
+
+                    </div>
+
+                )}
+
+            </main>
+
+            {/* ==================================
+                ADD DAY MODAL
+            ================================== */}
+
+            {showDayModal && (
+
+                <div
+                    style={styles.overlay}
+                    onClick={closeDayModal}
+                >
+
+                    <div
+                        className="glass-card"
+                        style={styles.modal}
+                        onClick={(e) =>
+                            e.stopPropagation()
+                        }
+                    >
+
+                        <h2
+                            style={
+                                styles.modalTitle
+                            }
+                        >
+                            📅 Add Itinerary Day
+                        </h2>
+
+                        <form
+                            onSubmit={
+                                handleCreateDay
+                            }
+                        >
+
+                            <label
+                                style={
+                                    styles.label
+                                }
+                            >
+                                Date
+                            </label>
+
+                            <input
+                                type="date"
+                                name="date"
+                                value={
+                                    dayForm.date
+                                }
+                                onChange={
+                                    handleDayChange
+                                }
+                                required
+                                style={
+                                    styles.input
+                                }
+                            />
+
+                            <label
+                                style={
+                                    styles.label
+                                }
+                            >
+                                Notes
+                            </label>
+
+                            <textarea
+                                name="notes"
+                                value={
+                                    dayForm.notes
+                                }
+                                onChange={
+                                    handleDayChange
+                                }
+                                placeholder="What are you planning for this day?"
+                                rows="4"
+                                style={
+                                    styles.textarea
+                                }
+                            />
+
+                            <div
+                                style={
+                                    styles.modalActions
+                                }
+                            >
+
+                                <button
+                                    type="button"
+                                    style={
+                                        styles.cancelButton
+                                    }
+                                    onClick={
+                                        closeDayModal
+                                    }
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    className="btn-aurora"
+                                >
+                                    Create Day
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            )}
+
+            {/* ==================================
+                ACTIVITY MODAL
+            ================================== */}
+
+            {showActivityModal && (
+
+                <div
+                    style={styles.overlay}
+                    onClick={
+                        closeActivityModal
+                    }
+                >
+
+                    <div
+                        className="glass-card"
+                        style={
+                            styles.activityModal
+                        }
+                        onClick={(e) =>
+                            e.stopPropagation()
+                        }
+                    >
+
+                        <h2
+                            style={
+                                styles.modalTitle
+                            }
+                        >
+                            {activityMode === "edit"
+                                ? "✏️ Edit Activity"
+                                : "✨ Add Activity"}
+                        </h2>
+
+                        <form
+                            onSubmit={
+                                handleSaveActivity
+                            }
+                        >
+
+                            <div
+                                style={
+                                    styles.grid
+                                }
+                            >
+
+                                {/* TITLE */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            styles.label
+                                        }
+                                    >
+                                        Activity Title
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name="title"
+                                        value={
+                                            activityForm.title
+                                        }
+                                        onChange={
+                                            handleActivityChange
+                                        }
+                                        placeholder="Visit Marina Beach"
+                                        required
+                                        style={
+                                            styles.input
+                                        }
+                                    />
+
+                                </div>
+
+                                {/* TYPE */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            styles.label
+                                        }
+                                    >
+                                        Activity Type
+                                    </label>
+
+                                    <select
+                                        name="type"
+                                        value={
+                                            activityForm.type
+                                        }
+                                        onChange={
+                                            handleActivityChange
+                                        }
+                                        style={
+                                            styles.input
+                                        }
+                                    >
+
+                                        <option value="SIGHTSEEING">
+                                            📸 Sightseeing
+                                        </option>
+
+                                        <option value="TRANSPORTATION">
+                                            🚆 Transportation
+                                        </option>
+
+                                        <option value="ACCOMMODATION">
+                                            🏨 Accommodation
+                                        </option>
+
+                                        <option value="DINING">
+                                            🍽️ Dining
+                                        </option>
+
+                                        <option value="ADVENTURE">
+                                            🏔️ Adventure
+                                        </option>
+
+                                        <option value="SHOPPING">
+                                            🛍️ Shopping
+                                        </option>
+
+                                        <option value="OTHER">
+                                            📌 Other
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                                {/* START TIME */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            styles.label
+                                        }
+                                    >
+                                        Start Time
+                                    </label>
+
+                                    <input
+                                        type="time"
+                                        name="startTime"
+                                        value={
+                                            activityForm.startTime
+                                        }
+                                        onChange={
+                                            handleActivityChange
+                                        }
+                                        style={
+                                            styles.input
+                                        }
+                                    />
+
+                                </div>
+
+                                {/* END TIME */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            styles.label
+                                        }
+                                    >
+                                        End Time
+                                    </label>
+
+                                    <input
+                                        type="time"
+                                        name="endTime"
+                                        value={
+                                            activityForm.endTime
+                                        }
+                                        onChange={
+                                            handleActivityChange
+                                        }
+                                        style={
+                                            styles.input
+                                        }
+                                    />
+
+                                </div>
+
+                                {/* LOCATION */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            styles.label
+                                        }
+                                    >
+                                        Location
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name="location"
+                                        value={
+                                            activityForm.location
+                                        }
+                                        onChange={
+                                            handleActivityChange
+                                        }
+                                        placeholder="Chennai"
+                                        style={
+                                            styles.input
+                                        }
+                                    />
+
+                                </div>
+
+                                {/* COST */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            styles.label
+                                        }
+                                    >
+                                        Cost
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        name="cost"
+                                        value={
+                                            activityForm.cost
+                                        }
+                                        onChange={
+                                            handleActivityChange
+                                        }
+                                        placeholder="500"
+                                        style={
+                                            styles.input
+                                        }
+                                    />
+
+                                </div>
+
+                            </div>
+
+                            {/* DESCRIPTION */}
+
+                            <label
+                                style={
+                                    styles.label
+                                }
+                            >
+                                Description
+                            </label>
+
+                            <textarea
+                                name="description"
+                                value={
+                                    activityForm.description
+                                }
+                                onChange={
+                                    handleActivityChange
+                                }
+                                placeholder="Describe the activity..."
+                                rows="4"
+                                style={
+                                    styles.textarea
+                                }
+                            />
+
+                            {/* BUTTONS */}
+
+                            <div
+                                style={
+                                    styles.modalActions
+                                }
+                            >
+
+                                <button
+                                    type="button"
+                                    style={
+                                        styles.cancelButton
+                                    }
+                                    onClick={
+                                        closeActivityModal
+                                    }
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    className="btn-aurora"
+                                >
+                                    {activityMode === "edit"
+                                        ? "Update Activity"
+                                        : "Add Activity"}
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            )}
+
+        </div>
+    );
 };
 
+
+// ==========================================
+// STYLES
+// ==========================================
+
 const styles = {
-  container: {
-    display: "flex",
-    minHeight: "100vh",
-    background: "#0a0f1e",
-  },
 
-  main: {
-    marginLeft: "260px",
-    flex: 1,
-    padding: "32px",
-  },
+    container: {
+        display: "flex",
+        minHeight: "100vh",
+        background: "#0a0f1e"
+    },
 
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "30px",
-  },
+    main: {
+        marginLeft: "260px",
+        flex: 1,
+        padding: "32px"
+    },
 
-  title: {
-    fontSize: "34px",
-    fontWeight: "700",
-    color: "#ffffff",
-    marginBottom: "6px",
-  },
+    loading: {
+        padding: "50px",
+        textAlign: "center",
+        color: "#94a3b8"
+    },
 
-  subtitle: {
-    color: "#94a3b8",
-    fontSize: "15px",
-  },
+    header: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "30px",
+        gap: "20px"
+    },
 
-  emptyCard: {
-    textAlign: "center",
-    padding: "60px",
-    borderRadius: "18px",
-    background: "#1e293b",
-    color: "white",
-  },
+    eyebrow: {
+        color: "#7c3aed",
+        fontSize: "11px",
+        fontWeight: "700",
+        letterSpacing: "1.5px",
+        marginBottom: "7px"
+    },
 
-  dayCard: {
-    background: "#1e293b",
-    borderRadius: "18px",
-    padding: "24px",
-    marginBottom: "25px",
-    border: "1px solid rgba(255,255,255,.08)",
-  },
+    title: {
+        color: "#f1f5f9",
+        fontSize: "30px",
+        fontWeight: "700",
+        margin: 0,
+        fontFamily:
+            "'Space Grotesk', sans-serif"
+    },
 
-  dayHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "22px",
-  },
+    subtitle: {
+        color: "#94a3b8",
+        fontSize: "14px",
+        marginTop: "8px"
+    },
 
-  dayTitle: {
-    color: "#fff",
-    fontSize: "24px",
-    fontWeight: "700",
-  },
+    error: {
+        background:
+            "rgba(239,68,68,0.1)",
+        border:
+            "1px solid rgba(239,68,68,0.3)",
+        color: "#fca5a5",
+        padding: "13px",
+        borderRadius: "9px",
+        marginBottom: "20px"
+    },
 
-  dayDescription: {
-    color: "#94a3b8",
-    marginTop: "4px",
-  },
+    empty: {
+        padding: "70px 30px",
+        textAlign: "center",
+        color: "#94a3b8"
+    },
 
-  noActivity: {
-    padding: "20px",
-    textAlign: "center",
-    color: "#94a3b8",
-    border: "1px dashed #475569",
-    borderRadius: "12px",
-  },
+    emptyIcon: {
+        fontSize: "50px",
+        marginBottom: "12px"
+    },
 
-  activityCard: {
-    background: "#0f172a",
-    borderRadius: "14px",
-    padding: "18px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "15px",
-  },
+    dayCard: {
+        padding: "24px",
+        marginBottom: "20px"
+    },
 
-  left: {
-    display: "flex",
-    gap: "18px",
-    alignItems: "flex-start",
-  },
+    dayHeader: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: "20px",
+        paddingBottom: "18px",
+        marginBottom: "18px",
+        borderBottom:
+            "1px solid rgba(255,255,255,0.08)"
+    },
 
-  icon: {
-    width: "55px",
-    height: "55px",
-    borderRadius: "50%",
-    background: "#7c3aed22",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    fontSize: "24px",
-  },
+    dayBadge: {
+        display: "inline-block",
+        background:
+            "linear-gradient(135deg,#7c3aed,#06b6d4)",
+        color: "#fff",
+        fontSize: "10px",
+        fontWeight: "800",
+        padding: "6px 10px",
+        borderRadius: "7px",
+        letterSpacing: "1px",
+        marginBottom: "8px"
+    },
 
-  activityTitle: {
-    color: "#fff",
-    fontSize: "20px",
-    fontWeight: "600",
-    marginBottom: "5px",
-  },
+    dayTitle: {
+        color: "#f1f5f9",
+        fontSize: "20px",
+        margin: 0
+    },
 
-  activityLocation: {
-    color: "#94a3b8",
-    marginBottom: "8px",
-  },
+    dayNotes: {
+        color: "#94a3b8",
+        fontSize: "13px",
+        marginTop: "7px"
+    },
 
-  activityInfo: {
-    display: "flex",
-    gap: "20px",
-    color: "#22d3ee",
-    fontSize: "14px",
-    marginBottom: "8px",
-  },
+    noActivities: {
+        padding: "35px",
+        textAlign: "center",
+        color: "#64748b",
+        border:
+            "1px dashed rgba(255,255,255,0.1)",
+        borderRadius: "12px"
+    },
 
-  activityNotes: {
-    color: "#cbd5e1",
-    fontSize: "14px",
-  },
+    activity: {
+        display: "flex",
+        alignItems: "center",
+        gap: "15px",
+        padding: "17px",
+        marginBottom: "12px",
+        borderRadius: "12px",
+        background:
+            "rgba(255,255,255,0.035)",
+        border:
+            "1px solid rgba(255,255,255,0.06)"
+    },
 
-  buttons: {
-    display: "flex",
-    gap: "10px",
-  },
+    activityIcon: {
+        width: "48px",
+        height: "48px",
+        borderRadius: "12px",
+        background:
+            "rgba(124,58,237,0.12)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "22px",
+        flexShrink: 0
+    },
 
-  deleteButton: {
-    background: "#dc2626",
-    color: "white",
-    border: "none",
-    padding: "10px 18px",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: "600",
-  },
+    activityContent: {
+        flex: 1,
+        minWidth: 0
+    },
+
+    activityTitle: {
+        color: "#f1f5f9",
+        fontSize: "15px",
+        margin: 0
+    },
+
+    location: {
+        color: "#94a3b8",
+        fontSize: "12px",
+        marginTop: "5px"
+    },
+
+    meta: {
+        display: "flex",
+        gap: "15px",
+        flexWrap: "wrap",
+        color: "#22d3ee",
+        fontSize: "11px",
+        marginTop: "8px"
+    },
+
+    type: {
+        color: "#a78bfa"
+    },
+
+    description: {
+        color: "#94a3b8",
+        fontSize: "12px",
+        lineHeight: "1.5",
+        marginTop: "8px"
+    },
+
+    actions: {
+        display: "flex",
+        gap: "7px"
+    },
+
+    editButton: {
+        background:
+            "rgba(124,58,237,0.1)",
+        border:
+            "1px solid rgba(124,58,237,0.25)",
+        borderRadius: "7px",
+        padding: "8px 10px",
+        cursor: "pointer"
+    },
+
+    deleteButton: {
+        background:
+            "rgba(239,68,68,0.1)",
+        border:
+            "1px solid rgba(239,68,68,0.25)",
+        borderRadius: "7px",
+        padding: "8px 10px",
+        cursor: "pointer"
+    },
+
+    overlay: {
+        position: "fixed",
+        inset: 0,
+        background:
+            "rgba(0,0,0,0.72)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "20px",
+        zIndex: 1000,
+        overflowY: "auto"
+    },
+
+    modal: {
+        width: "100%",
+        maxWidth: "500px",
+        padding: "28px"
+    },
+
+    activityModal: {
+        width: "100%",
+        maxWidth: "700px",
+        padding: "28px"
+    },
+
+    modalTitle: {
+        color: "#f1f5f9",
+        fontSize: "21px",
+        marginBottom: "22px"
+    },
+
+    label: {
+        display: "block",
+        color: "#cbd5e1",
+        fontSize: "12px",
+        fontWeight: "600",
+        marginBottom: "7px"
+    },
+
+    input: {
+        width: "100%",
+        boxSizing: "border-box",
+        padding: "11px 12px",
+        marginBottom: "16px",
+        borderRadius: "8px",
+        border:
+            "1px solid rgba(255,255,255,0.1)",
+        background: "#111827",
+        color: "#f1f5f9",
+        outline: "none"
+    },
+
+    textarea: {
+        width: "100%",
+        boxSizing: "border-box",
+        padding: "11px 12px",
+        marginBottom: "16px",
+        borderRadius: "8px",
+        border:
+            "1px solid rgba(255,255,255,0.1)",
+        background: "#111827",
+        color: "#f1f5f9",
+        outline: "none",
+        resize: "vertical"
+    },
+
+    grid: {
+        display: "grid",
+        gridTemplateColumns:
+            "1fr 1fr",
+        gap: "0 15px"
+    },
+
+    modalActions: {
+        display: "flex",
+        justifyContent: "flex-end",
+        gap: "10px",
+        marginTop: "5px"
+    },
+
+    cancelButton: {
+        padding: "10px 16px",
+        borderRadius: "8px",
+        border:
+            "1px solid rgba(255,255,255,0.1)",
+        background:
+            "rgba(255,255,255,0.04)",
+        color: "#94a3b8",
+        cursor: "pointer"
+    }
 };
 
 export default Itineraries;

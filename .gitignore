@@ -1,0 +1,19 @@
+# Maven
+target/
+
+# Node
+node_modules/
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+uploads/

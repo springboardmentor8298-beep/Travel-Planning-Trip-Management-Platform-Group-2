@@ -8,6 +8,11 @@ import TripDetail from "./pages/TripDetail";
 import Destinations from "./pages/Destinations";
 import Profile from "./pages/Profile";
 import Itineraries from "./pages/Itineraries";
+import DestinationDetails from "./pages/DestinationDetails";
+import Collaboration from "./pages/Collaboration";
+import Notifications from "./pages/Notifications";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -28,6 +33,41 @@ function App() {
           <Route path="/trips/:id" element={<PrivateRoute><TripDetail /></PrivateRoute>} />
           <Route path="/destinations" element={<PrivateRoute><Destinations /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route
+  path="/trips/:id/collaboration"
+  element={
+    <PrivateRoute>
+      <Collaboration />
+    </PrivateRoute>
+  }
+/>
+<Route
+  path="/notifications"
+  element={
+    <PrivateRoute>
+      <Notifications />
+    </PrivateRoute>
+  }
+
+/>
+<Route
+  path="/forgot-password"
+  element={<ForgotPassword />}
+/>
+
+<Route
+  path="/reset-password"
+  element={<ResetPassword />}
+/>
+
+          <Route
+  path="/destinations/:id"
+  element={
+    <PrivateRoute>
+      <DestinationDetails />
+    </PrivateRoute>
+  }
+/>
         <Route
   path="/itineraries"
   element={

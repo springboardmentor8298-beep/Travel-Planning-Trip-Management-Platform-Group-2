@@ -2,16 +2,22 @@ package com.tripnest.dto;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class DestinationResponse {
+
     private Long id;
     private String name;
-    private String country;
-    private String city;
     private String description;
+    private String location;
+    private String city;
+    private String country;
     private String imageUrl;
-    private String climate;
-    private String bestTimeToVisit;
     private Double averageCost;
-    private boolean popular;
+    private String bestTimeToVisit;
+    private String climate;
+    private Boolean popular;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

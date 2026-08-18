@@ -15,67 +15,102 @@ const Sidebar = () => {
     { path: "/trips", icon: "✈️", label: "My Trips" },
     { path: "/itineraries", icon: "📅", label: "Itineraries" },
     { path: "/destinations", icon: "🌍", label: "Destinations" },
+    { path: "/notifications", icon: "🔔", label: "Notifications" },
     { path: "/profile", icon: "👤", label: "Profile" },
   ];
 
   return (
     <aside style={styles.sidebar}>
+
       {/* Logo */}
       <div style={styles.logo}>
         <span style={styles.logoIcon}>🧳</span>
-        <span style={styles.logoText} className="gradient-text">
+
+        <span
+          style={styles.logoText}
+          className="gradient-text"
+        >
           TripNest
         </span>
       </div>
 
       {/* User Info */}
       <div style={styles.userInfo}>
+
         <div style={styles.avatar}>
-          {user?.username?.charAt(0).toUpperCase()}
+          {user?.username
+            ?.charAt(0)
+            .toUpperCase()}
         </div>
+
         <div>
-          <p style={styles.userName}>{user?.username}</p>
+          <p style={styles.userName}>
+            {user?.username}
+          </p>
+
           <p style={styles.userRole}>
-            {user?.roles?.[0]?.replace("ROLE_", "") || "Traveler"}
+            {user?.roles?.[0]
+              ?.replace("ROLE_", "") ||
+              "Traveler"}
           </p>
         </div>
+
       </div>
 
       <div className="divider" />
 
-      {/* Nav Items */}
+      {/* Navigation */}
       <nav style={styles.nav}>
+
         {navItems.map((item) => (
+
           <NavLink
             key={item.path}
             to={item.path}
             style={({ isActive }) => ({
               ...styles.navItem,
-              ...(isActive ? styles.navItemActive : {}),
+              ...(isActive
+                ? styles.navItemActive
+                : {}),
             })}
           >
-            <span style={styles.navIcon}>{item.icon}</span>
-            <span>{item.label}</span>
+
+            <span style={styles.navIcon}>
+              {item.icon}
+            </span>
+
+            <span>
+              {item.label}
+            </span>
+
           </NavLink>
+
         ))}
+
       </nav>
 
       {/* Logout */}
-      <button onClick={handleLogout} style={styles.logoutBtn}>
+      <button
+        onClick={handleLogout}
+        style={styles.logoutBtn}
+      >
         <span>🚪</span>
         <span>Logout</span>
       </button>
+
     </aside>
   );
 };
 
 const styles = {
+
   sidebar: {
     width: "260px",
     minHeight: "100vh",
     background: "rgba(13, 21, 41, 0.95)",
     backdropFilter: "blur(20px)",
-    borderRight: "1px solid rgba(255,255,255,0.08)",
+    borderRight:
+      "1px solid rgba(255,255,255,0.08)",
     display: "flex",
     flexDirection: "column",
     padding: "24px 16px",
@@ -84,6 +119,7 @@ const styles = {
     left: 0,
     zIndex: 100,
   },
+
   logo: {
     display: "flex",
     alignItems: "center",
@@ -91,26 +127,35 @@ const styles = {
     padding: "0 8px",
     marginBottom: "32px",
   },
-  logoIcon: { fontSize: "28px" },
+
+  logoIcon: {
+    fontSize: "28px",
+  },
+
   logoText: {
     fontSize: "22px",
     fontWeight: "700",
-    fontFamily: "'Space Grotesk', sans-serif",
+    fontFamily:
+      "'Space Grotesk', sans-serif",
   },
+
   userInfo: {
     display: "flex",
     alignItems: "center",
     gap: "12px",
     padding: "12px",
-    background: "rgba(255,255,255,0.05)",
+    background:
+      "rgba(255,255,255,0.05)",
     borderRadius: "12px",
     marginBottom: "16px",
   },
+
   avatar: {
     width: "40px",
     height: "40px",
     borderRadius: "50%",
-    background: "linear-gradient(135deg, #7c3aed, #06b6d4)",
+    background:
+      "linear-gradient(135deg, #7c3aed, #06b6d4)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -119,21 +164,25 @@ const styles = {
     color: "white",
     flexShrink: 0,
   },
+
   userName: {
     color: "#f1f5f9",
     fontSize: "14px",
     fontWeight: "600",
   },
+
   userRole: {
     color: "#94a3b8",
     fontSize: "12px",
   },
+
   nav: {
     display: "flex",
     flexDirection: "column",
     gap: "4px",
     flex: 1,
   },
+
   navItem: {
     display: "flex",
     alignItems: "center",
@@ -144,14 +193,22 @@ const styles = {
     textDecoration: "none",
     fontSize: "14px",
     fontWeight: "500",
-    transition: "all 0.2s ease",
+    transition:
+      "all 0.2s ease",
   },
+
   navItemActive: {
-    background: "rgba(124, 58, 237, 0.15)",
+    background:
+      "rgba(124, 58, 237, 0.15)",
     color: "#a78bfa",
-    borderLeft: "3px solid #7c3aed",
+    borderLeft:
+      "3px solid #7c3aed",
   },
-  navIcon: { fontSize: "18px" },
+
+  navIcon: {
+    fontSize: "18px",
+  },
+
   logoutBtn: {
     display: "flex",
     alignItems: "center",
@@ -159,12 +216,14 @@ const styles = {
     padding: "10px 12px",
     borderRadius: "10px",
     background: "transparent",
-    border: "1px solid rgba(239, 68, 68, 0.3)",
+    border:
+      "1px solid rgba(239, 68, 68, 0.3)",
     color: "#fca5a5",
     fontSize: "14px",
     fontWeight: "500",
     cursor: "pointer",
-    transition: "all 0.2s ease",
+    transition:
+      "all 0.2s ease",
     marginTop: "16px",
     width: "100%",
   },

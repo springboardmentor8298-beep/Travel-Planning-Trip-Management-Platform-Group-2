@@ -9,7 +9,6 @@ import com.tripnest.entity.Trip;
 import com.tripnest.repository.ActivityRepository;
 import com.tripnest.repository.ItineraryRepository;
 import com.tripnest.repository.TripRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,34 +17,33 @@ import java.util.stream.Collectors;
 @Service
 public class ItineraryService {
 
-    @Autowired
-    private ItineraryRepository itineraryRepository;
+    private final ItineraryRepository itineraryRepository;
+    private final TripRepository tripRepository;
+    private final ActivityRepository activityRepository;
 
-    @Autowired
-    private TripRepository tripRepository;
+    public ItineraryService(ItineraryRepository itineraryRepository,
+                            TripRepository tripRepository,
+                            ActivityRepository activityRepository) {
 
-    @Autowired
-    private ActivityRepository activityRepository;
+        this.itineraryRepository = itineraryRepository;
+        this.tripRepository = tripRepository;
+        this.activityRepository = activityRepository;
+    }
 
     // ==========================
     // Create Itinerary
     // ==========================
-    public ItineraryResponse createItinerary(ItineraryRequest request, Long userId) {
+    public ItineraryResponse createItinerary(ItineraryRequest request,
+                                             Long userId) {
 
-        Trip trip = tripRepository.findById(request.getTripId())
-                .orElseThrow(() -> new RuntimeException("Trip not found"));
+        Trip trip = getAuthorizedTrip(request.getTripId(), userId);
 
-        if (!trip.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized");
-        }
-
-        // Prevent duplicate itinerary for same date
         if (itineraryRepository.existsByTripIdAndDate(
                 request.getTripId(),
                 request.getDate())) {
 
             throw new RuntimeException(
-                    "Itinerary already exists for this date");
+                    "An itinerary already exists for this date.");
         }
 
         Itinerary itinerary = new Itinerary();
@@ -53,23 +51,18 @@ public class ItineraryService {
         itinerary.setDate(request.getDate());
         itinerary.setNotes(request.getNotes());
 
-        Itinerary saved = itineraryRepository.save(itinerary);
-
-        return mapToResponse(saved);
+        return mapToResponse(
+                itineraryRepository.save(itinerary)
+        );
     }
 
     // ==========================
-    // Get Trip Itineraries
+    // Get All Itineraries
     // ==========================
     public List<ItineraryResponse> getTripItineraries(Long tripId,
                                                       Long userId) {
 
-        Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new RuntimeException("Trip not found"));
-
-        if (!trip.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized");
-        }
+        getAuthorizedTrip(tripId, userId);
 
         return itineraryRepository
                 .findByTripIdOrderByDateAsc(tripId)
@@ -84,57 +77,89 @@ public class ItineraryService {
     public ItineraryResponse getItinerary(Long id,
                                           Long userId) {
 
-        Itinerary itinerary = itineraryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Itinerary not found"));
-
-        if (!itinerary.getTrip().getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized");
-        }
+        Itinerary itinerary = getAuthorizedItinerary(id, userId);
 
         return mapToResponse(itinerary);
     }
 
     // ==========================
-    // Update
+    // Update Itinerary
     // ==========================
     public ItineraryResponse updateItinerary(Long id,
                                              ItineraryRequest request,
                                              Long userId) {
 
-        Itinerary itinerary = itineraryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Itinerary not found"));
+        Itinerary itinerary = getAuthorizedItinerary(id, userId);
 
-        if (!itinerary.getTrip().getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized");
+        boolean duplicate =
+                itineraryRepository.existsByTripIdAndDateAndIdNot(
+                        itinerary.getTrip().getId(),
+                        request.getDate(),
+                        itinerary.getId());
+
+        if (duplicate) {
+            throw new RuntimeException(
+                    "Another itinerary already exists for this date.");
         }
 
         itinerary.setDate(request.getDate());
         itinerary.setNotes(request.getNotes());
 
-        Itinerary updated = itineraryRepository.save(itinerary);
-
-        return mapToResponse(updated);
+        return mapToResponse(
+                itineraryRepository.save(itinerary)
+        );
     }
 
     // ==========================
-    // Delete
+    // Delete Itinerary
     // ==========================
     public void deleteItinerary(Long id,
                                 Long userId) {
 
-        Itinerary itinerary = itineraryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Itinerary not found"));
-
-        if (!itinerary.getTrip().getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized");
-        }
+        Itinerary itinerary = getAuthorizedItinerary(id, userId);
 
         itineraryRepository.delete(itinerary);
     }
 
     // ==========================
+    // Helper Methods
+    // ==========================
+
+    private Trip getAuthorizedTrip(Long tripId,
+                                   Long userId) {
+
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() ->
+                        new RuntimeException("Trip not found"));
+
+        if (!trip.getUser().getId().equals(userId)) {
+            throw new RuntimeException(
+                    "You are not authorized to access this trip.");
+        }
+
+        return trip;
+    }
+
+    private Itinerary getAuthorizedItinerary(Long itineraryId,
+                                             Long userId) {
+
+        Itinerary itinerary =
+                itineraryRepository.findById(itineraryId)
+                        .orElseThrow(() ->
+                                new RuntimeException("Itinerary not found"));
+
+        if (!itinerary.getTrip().getUser().getId().equals(userId)) {
+            throw new RuntimeException(
+                    "You are not authorized to access this itinerary.");
+        }
+
+        return itinerary;
+    }
+
+    // ==========================
     // Mapping
     // ==========================
+
     private ItineraryResponse mapToResponse(Itinerary itinerary) {
 
         ItineraryResponse response = new ItineraryResponse();
@@ -177,7 +202,8 @@ public class ItineraryService {
         response.setType(
                 activity.getType() != null
                         ? activity.getType().name()
-                        : null);
+                        : null
+        );
 
         response.setCost(activity.getCost());
 

@@ -20,4 +20,10 @@ public interface ItineraryRepository extends JpaRepository<Itinerary, Long> {
     // Check if a day already exists
     boolean existsByTripIdAndDate(Long tripId, LocalDate date);
 
+    // Check duplicate date while updating
+    boolean existsByTripIdAndDateAndIdNot(
+            Long tripId,
+            LocalDate date,
+            Long id
+    );
 }
