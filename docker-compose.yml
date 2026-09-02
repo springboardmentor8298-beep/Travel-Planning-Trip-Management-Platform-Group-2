@@ -1,0 +1,114 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────
+# TripNest — Docker Compose
+#
+# Usage:
+#   Development (MySQL):
+#     docker-compose up
+#
+#   Production (PostgreSQL):
+#     APP_PROFILE=postgres docker-compose --profile postgres up
+#
+# First run creates tripnest_db automatically.
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  # ── MySQL (default local dev DB) ─────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: tripnest-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-swami@06}
+      MYSQL_DATABASE: tripnest_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── PostgreSQL (activate with --profile postgres) ─────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: tripnest-postgres
+    restart: unless-stopped
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_DB:       tripnest_db
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-swami@06}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── Spring Boot backend ───────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tripnest-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # Profile (local = MySQL  |  postgres = PostgreSQL)
+      APP_PROFILE:          ${APP_PROFILE:-local}
+      # MySQL
+      MYSQL_USERNAME:       root
+      MYSQL_PASSWORD:       ${MYSQL_ROOT_PASSWORD:-swami@06}
+      # PostgreSQL (only used when APP_PROFILE=postgres)
+      DATABASE_URL:         jdbc:postgresql://postgres:5432/tripnest_db
+      DB_USERNAME:          postgres
+      DB_PASSWORD:          ${DB_PASSWORD:-swami@06}
+      # JWT
+      JWT_SECRET:           ${JWT_SECRET:-TripNestSuperSecretKeyForJWTSigningChangeThisInProduction}
+      # Mail (set real values via .env file)
+      MAIL_USERNAME:        ${MAIL_USERNAME:-your-gmail@gmail.com}
+      MAIL_PASSWORD:        ${MAIL_PASSWORD:-your-app-password}
+      # Frontend URL for email links
+      FRONTEND_URL:         ${FRONTEND_URL:-http://localhost:3000}
+      # CORS
+      CORS_ORIGINS:         http://localhost:3000,http://frontend:80
+      # Google OAuth2 (optional)
+      GOOGLE_CLIENT_ID:     ${GOOGLE_CLIENT_ID:-YOUR_GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-YOUR_GOOGLE_CLIENT_SECRET}
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads_data:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/auth/oauth-enabled || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ── React frontend (Nginx) ────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tripnest-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+
+volumes:
+  mysql_data:
+  postgres_data:
+  uploads_data:
