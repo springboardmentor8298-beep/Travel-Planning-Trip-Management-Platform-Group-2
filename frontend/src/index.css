@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary: #2563EB;
+  --secondary: #3B82F6;
+  --bg: #0F172A;
+  --cards: #1E293B;
+  --accent: #38BDF8;
+  --text: #F8FAFC;
+  --secondary-text: #CBD5E1;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-solid: #334155;
+  --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-family);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+h1 {
+  font-size: 42px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  color: var(--text) !important;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  color: var(--text) !important;
+  letter-spacing: -0.015em;
+}
+
+h3 {
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+  color: var(--text) !important;
+}
+
+p, body, span {
+  font-size: 16px;
+  color: var(--secondary-text);
+}
+
+small, .text-small, .text-muted {
+  font-size: 14px !important;
+  color: #94A3B8 !important;
+}
+
+/* Force dark select dropdowns across the whole app */
+select, select.form-select, select.app-form-select {
+  height: 52px !important;
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+  border: 1px solid #334155 !important;
+  border-radius: 12px !important;
+  padding: 0 16px !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  color-scheme: dark !important;
+}
+
+select option {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+  padding: 12px !important;
+}
+
+select:focus, input:focus, textarea:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35) !important;
+  outline: none !important;
+}

@@ -1,0 +1,23 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+# Java / Spring Boot
+backend/target/
+*.class
+# Node / React
+frontend/node_modules/
+frontend/dist/
+# Logs / crash dumps
+*.log
+hs_err_pid*
+replay_pid*
+# IDE
+.vscode/
+.idea/
+*.iml
+# OS
+.DS_Store
+Thumbs.db
+# Old incorrect Git metadata
+.git_wrong/

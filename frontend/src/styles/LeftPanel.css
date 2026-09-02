@@ -1,0 +1,203 @@
+/* ── TripNest Auth — 10/10 Rating Left Panel Cover ─────────────────────── */
+
+:root {
+  --auth-overlay-color: rgba(10, 20, 60, 0.65);
+  --auth-glass-bg-cards: rgba(255, 255, 255, 0.08);
+  --auth-glass-border-cards: rgba(255, 255, 255, 0.12);
+  --auth-glass-hover-cards: rgba(255, 255, 255, 0.15);
+}
+
+.auth-left-panel {
+  width: 42%;
+  height: 100vh;
+  position: relative;
+  color: #ffffff;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 0;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* Image overlay: rgba(10,20,60,0.65) */
+.auth-left-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 20, 60, 0.7) 0%,
+    var(--auth-overlay-color) 100%
+  );
+  z-index: 1;
+}
+
+.auth-left-overlay {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  padding: 3.5rem 3rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+  box-sizing: border-box;
+}
+
+/* ── Brand Header (Official Logo Image) ──────────────────────────────────── */
+
+.auth-left-brand {
+  display: flex;
+  align-items: center;
+}
+
+.auth-left-logo-img {
+  height: 52px;
+  width: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.auth-left-logo-img:hover {
+  transform: translateY(-2px);
+}
+
+/* ── Hero Section (60px Title & 18px Subtitle, 30px Line-height) ────────── */
+
+.auth-left-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.auth-hero-title {
+  font-size: 60px; /* EXACT 60px from specification */
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.auth-hero-gradient {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+}
+
+.auth-hero-tagline {
+  font-size: 18px; /* EXACT 18px from specification */
+  line-height: 30px; /* EXACT 30px from specification */
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ── 2x2 Feature Grid Layout (80px height & 18px Radius) ─────────────────── */
+
+.auth-feature-list {
+  display: grid; /* EXACT 2x2 Grid from specification */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.15rem;
+  margin: 1rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auth-feature-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  height: 80px;
+  border-radius: 18px;
+  background: var(--auth-glass-bg-cards);
+  border: 1px solid var(--auth-glass-border-cards);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 0 1rem;
+  box-sizing: border-box;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+.auth-feature-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  background-color: var(--auth-glass-hover-cards);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+.auth-feature-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.auth-feature-card:hover .auth-feature-icon-wrap {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.auth-feature-icon {
+  font-size: 1.05rem;
+  color: #ffffff;
+}
+
+.auth-feature-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1rem;
+}
+
+.auth-feature-content h4 {
+  font-size: 0.92rem;
+  font-weight: 750;
+  margin: 0;
+  color: #ffffff;
+}
+
+.auth-feature-content p {
+  font-size: 0.76rem;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0;
+}
+
+/* ── Footer ── */
+
+.auth-left-footer {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.05em;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+/* ── Responsive breakpoints ── */
+
+@media (max-width: 992px) {
+  .auth-left-panel {
+    display: none;
+  }
+}

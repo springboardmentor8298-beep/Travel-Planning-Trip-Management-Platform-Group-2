@@ -1,0 +1,320 @@
+/* TripNest Reports Stylesheet */
+
+.reports-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background-color: #F8FAFC;
+  min-height: 100vh;
+}
+
+.reports-header-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  border: 1px solid #E2E8F0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.reports-title-area h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reports-title-area p {
+  color: #64748B;
+  font-size: 0.95rem;
+  margin: 0.35rem 0 0 0;
+}
+
+.reports-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.report-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #334155;
+}
+
+.report-action-btn:hover {
+  background: #F1F5F9;
+  border-color: #94A3B8;
+}
+
+.report-action-btn.primary {
+  background: #0284C7;
+  color: #FFFFFF;
+  border-color: #0284C7;
+}
+
+.report-action-btn.primary:hover {
+  background: #0369A1;
+}
+
+/* Overview KPIs */
+.reports-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.report-kpi-card {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.report-kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.report-kpi-info .kpi-label {
+  font-size: 0.8rem;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.report-kpi-info .kpi-val {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+/* Filter Card */
+.reports-filter-card {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid #E2E8F0;
+}
+
+.reports-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.filter-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.filter-group select,
+.filter-group input {
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #CBD5E1;
+  font-size: 0.9rem;
+  color: #1E293B;
+  background: #F8FAFC;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+  border-color: #0284C7;
+  background: #FFFFFF;
+}
+
+/* Tab Navigation */
+.reports-tabs-wrap {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #E2E8F0;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.report-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #64748B;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.report-tab-btn:hover {
+  color: #0284C7;
+}
+
+.report-tab-btn.active {
+  color: #0284C7;
+  border-bottom-color: #0284C7;
+}
+
+/* Report Content Cards & Tables */
+.report-table-card {
+  background: #FFFFFF;
+  border-radius: 14px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+.report-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tripnest-report-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.tripnest-report-table th {
+  background: #F8FAFC;
+  color: #475569;
+  font-weight: 600;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #E2E8F0;
+  white-space: nowrap;
+}
+
+.tripnest-report-table td {
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid #F1F5F9;
+  color: #1E293B;
+  vertical-align: middle;
+}
+
+.tripnest-report-table tr:hover td {
+  background: #F8FAFC;
+}
+
+/* Badges */
+.report-badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.report-badge.upcoming {
+  background: #E0F2FE;
+  color: #0369A1;
+}
+
+.report-badge.active {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.report-badge.completed {
+  background: #F1F5F9;
+  color: #475569;
+}
+
+.report-badge.cancelled {
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+
+.report-badge.on-track {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.report-badge.warning {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.report-badge.over-budget {
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+
+/* Empty State */
+.report-empty-state {
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  color: #64748B;
+}
+
+.report-empty-state svg {
+  font-size: 3rem;
+  color: #94A3B8;
+  margin-bottom: 1rem;
+}
+
+.report-empty-state h3 {
+  font-size: 1.15rem;
+  color: #1E293B;
+  margin-bottom: 0.5rem;
+}
+
+/* Print Styling */
+@media print {
+  .app-sidebar,
+  .app-navbar,
+  .reports-actions,
+  .reports-filter-card,
+  .reports-tabs-wrap {
+    display: none !important;
+  }
+  .reports-root {
+    padding: 0;
+    background: #FFFFFF;
+  }
+  .report-table-card {
+    border: none;
+    box-shadow: none;
+  }
+}

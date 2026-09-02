@@ -1,0 +1,86 @@
+/* ── TripNest Auth — Professional Social Login Buttons ──────────────────── */
+
+.social-buttons-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.google-btn-container {
+  width: 100%;
+}
+
+/* Side-by-Side row container for Facebook & LinkedIn */
+.social-grid-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+.social-btn {
+  height: 50px; /* EXACT 50px height from specification */
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.social-btn:hover:not(:disabled) {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.social-btn:active:not(:disabled) {
+  background-color: #f1f5f9;
+}
+
+.social-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.social-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* Brand icon colors on white buttons */
+.social-btn.facebook .social-icon {
+  color: #1877f2;
+}
+
+.social-btn.linkedin .social-icon {
+  color: #0a66c2;
+}
+
+/* Secondary helper text below buttons */
+.social-helper-text {
+  font-size: 0.85rem;
+  font-weight: 550;
+  color: #94a3b8;
+  text-align: center;
+  margin: 0.15rem 0 0 0;
+}
+
+/* ── Responsive rules ── */
+
+@media (max-width: 576px) {
+  .social-grid-row {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+}

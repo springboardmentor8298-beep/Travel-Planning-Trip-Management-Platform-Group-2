@@ -1,0 +1,39 @@
+services:
+  # TripNest Backend Spring Boot Service
+  - type: web
+    name: tripnest-backend-api
+    env: docker
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    plan: free
+    healthCheckPath: /api/dashboard
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://tripnest.vercel.app,http://localhost:5173
+
+  # TripNest Frontend React SPA (if deployed on Render)
+  - type: web
+    name: tripnest-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: tripnest-backend-api
+          property: host
